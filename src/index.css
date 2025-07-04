@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  background-color: #0B1F1F; /* Replace with your exact platerly-dark color */
+  color: #ffffff;
+  margin: 0;
+  min-height: 100vh;
+}
+

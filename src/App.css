@@ -1,0 +1,10 @@
+/* App.css — cleaned up for Platerly */
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #062e2e; /* fallback if Tailwind fails */
+  color: white;
+  font-family: system-ui, sans-serif;
+}
