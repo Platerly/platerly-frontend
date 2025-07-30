@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import AppLayout from './components/layout/AppLayout'
 import Landing from './pages/Landing'
 import Register from './pages/Register'
+import VerifyEmail from './pages/VerifyEmail'
 import Login from './pages/Login'
 import Feed from './pages/Feed'
 import CreateRecipe from './pages/CreateRecipe'
@@ -20,6 +21,7 @@ import ExploreChefsPage from './pages/ExploreChefsPage'
 import SettingsPage from './pages/SettingsPage' 
 import PrivateRoute from './components/auth/PrivateRoute'
 
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
@@ -28,7 +30,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/" element={<Landing />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        
+        <Route path="/verify-email" element={<VerifyEmail />} />
+
         {/* Authenticated pages (with AppLayout) */}
         <Route path="/feed" element={<AppLayout><Feed /></AppLayout>} />
         <Route path="/create" element={<PrivateRoute><AppLayout><CreateRecipe /></AppLayout></PrivateRoute>} />
