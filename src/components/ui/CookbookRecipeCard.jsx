@@ -2,17 +2,20 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { API_BASE_URL } from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
+
+
 
 const CookbookRecipeCard = ({ recipe, cookbookId, onRemove }) => {
   const navigate = useNavigate();
-
+  const {token} = useAuth();
   const handleCardClick = () => {
     navigate(`/recipe/${recipe.id}`);
   };
 
   const handleRemoveClick = async (e) => {
     e.stopPropagation();
-    const token = localStorage.getItem('platerly_token');
+    
 
     try {
       const res = await fetch(

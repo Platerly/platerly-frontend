@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
-import { login } from '../utils/auth'
+import { useAuth } from '../context/AuthContext'
 import { API_BASE_URL } from '../utils/api'
 
 const Register = () => {
@@ -18,6 +18,7 @@ const Register = () => {
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const { login } = useAuth()
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -56,13 +57,13 @@ const Register = () => {
         })
       })
 
+      const data = await response.json() // <-- Only call this once
+
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Registration failed.')
+        throw new Error(data.message || 'Registration failed.')
       }
 
-      const data = await response.json()
-      login(data.token, data.userId)
+      await login(data.token, data.userId)
       navigate('/feed')
     } catch (err) {
       setErrors({ email: err.message })

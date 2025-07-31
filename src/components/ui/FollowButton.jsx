@@ -1,11 +1,14 @@
 import React, { useState } from 'react'
 import { API_BASE_URL } from '../../utils/api'
+import { useAuth } from '../../context/AuthContext'
+
+
 
 const FollowButton = ({ targetUserId, isInitiallyFollowing }) => {
   const [isFollowing, setIsFollowing] = useState(isInitiallyFollowing)
-
+  const {token} = useAuth()
   const handleToggleFollow = async () => {
-    const token = localStorage.getItem('platerly_token')
+    
     const method = isFollowing ? 'DELETE' : 'POST'
 
     try {

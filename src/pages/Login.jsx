@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
-import { login } from '../utils/auth'
 import { API_BASE_URL } from '../utils/api'
+import { useAuth } from '../context/AuthContext' // ✅ Import context
 
 const Login = () => {
+  const { setUser, setToken } = useAuth() // ✅ Access AuthContext
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -33,13 +34,23 @@ const Login = () => {
         })
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Invalid login credentials')
+        throw new Error(data.message || 'Invalid login credentials')
       }
 
-      const data = await response.json()
-      login(data.token, data.userId)
+      
+
+      // ✅ Store token locally
+      //localStorage.setItem('token', data.token)
+      setToken(data.token) // ← assumes backend returns `token`
+
+
+      // ✅ Store user globally
+      setUser(data.user) // ← assumes backend returns `user` object
+
+      // ✅ Redirect
       navigate(redirectPath)
     } catch (err) {
       setError(err.message)

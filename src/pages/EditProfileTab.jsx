@@ -3,6 +3,9 @@ import { API_BASE_URL } from '../utils/api'
 import Input from '../components/ui/Input'
 import Textarea from '../components/ui/Textarea'
 import Button from '../components/ui/Button'
+import { useAuth } from '../context/AuthContext'
+
+
 
 const EditProfileTab = () => {
   const [form, setForm] = useState({
@@ -15,8 +18,8 @@ const EditProfileTab = () => {
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
-
-  const token = localStorage.getItem('platerly_token')
+  const {token} = useAuth()
+  
 
   useEffect(() => {
     const fetchProfile = async () => {

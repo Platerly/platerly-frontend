@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import RecipeCard from '../components/ui/RecipeCard'
-import { isAuthenticated } from '../utils/auth'
 import { API_BASE_URL } from '../utils/api'
+import { useAuth } from '../context/AuthContext'
+
+
 
 const Feed = () => {
   const [recipes, setRecipes] = useState([])
@@ -11,11 +13,11 @@ const Feed = () => {
   const [currentUserId, setCurrentUserId] = useState(null)
 
   const navigate = useNavigate()
-
+  const { token } = useAuth()
+  
   useEffect(() => {
     const fetchFeed = async (tab) => {
       try {
-        const token = localStorage.getItem('platerly_token')
         const res = await fetch(`${API_BASE_URL}/api/feed/${tab}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         })
@@ -29,7 +31,6 @@ const Feed = () => {
 
     const fetchUserAllergies = async () => {
       try {
-        const token = localStorage.getItem('platerly_token')
         const res = await fetch(`${API_BASE_URL}/api/Allergy/my-allergies`, {
           headers: { Authorization: `Bearer ${token}` }
         })
@@ -44,7 +45,6 @@ const Feed = () => {
 
     const fetchCurrentUserId = async () => {
       try {
-        const token = localStorage.getItem('platerly_token')
         const res = await fetch(`${API_BASE_URL}/api/user/me`, {
           headers: { Authorization: `Bearer ${token}` }
         })
@@ -58,7 +58,7 @@ const Feed = () => {
     }
 
     const init = async () => {
-      if (isAuthenticated()) {
+      if (token) {
         await fetchUserAllergies()
         await fetchCurrentUserId()
       }
@@ -86,7 +86,7 @@ const Feed = () => {
           </button>
           <button
             onClick={() => {
-              if (!isAuthenticated()) return navigate('/login')
+              if (!token) return navigate('/login')
               setActiveTab('following')
             }}
             className={`px-5 py-2 rounded-full text-sm font-medium transition ${

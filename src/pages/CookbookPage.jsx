@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import CookbookCard from "../components/ui/CookbookCard"; // New import
 import { API_BASE_URL } from "../utils/api";
-
+import { useAuth } from "../context/AuthContext"; // Importing the Auth context
 const CookbookPage = () => {
   const [cookbooks, setCookbooks] = useState([]);
   const [title, setTitle] = useState("");
   const [isPublic, setIsPublic] = useState(false);
-  const token = localStorage.getItem("platerly_token");
 
+  const { token } = useAuth();
   const fetchCookbooks = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/Cookbook/my-cookbooks`, {

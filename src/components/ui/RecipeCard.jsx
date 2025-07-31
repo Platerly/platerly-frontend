@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Heart, Repeat2, Wand2 } from 'lucide-react'
 import { API_BASE_URL } from '../../utils/api'
+import { useAuth } from '../../context/AuthContext'
 
 const RecipeCard = ({
   id,
@@ -21,6 +22,7 @@ const RecipeCard = ({
   const [isReposted, setIsReposted] = useState(isRepostedByCurrentUser)
   const [repostCount, setRepostCount] = useState(typeof reposts === 'number' ? reposts : 0)
   const navigate = useNavigate()
+  const {token} = useAuth()
 
   const handleCardClick = () => navigate(`/recipe/${id}`)
   const handleProfileClick = (e) => {
@@ -40,7 +42,6 @@ const RecipeCard = ({
   }, [reposts])
 
   const handleLikeToggle = async () => {
-    const token = localStorage.getItem('platerly_token')
     const method = isLikedState ? 'DELETE' : 'POST'
 
     try {
@@ -58,7 +59,6 @@ const RecipeCard = ({
   }
 
   const handleRepostToggle = async () => {
-    const token = localStorage.getItem('platerly_token')
     const intendedToUnrepost = isReposted
 
     try {

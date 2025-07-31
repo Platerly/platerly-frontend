@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { API_BASE_URL } from '../utils/api'
+import { useAuth } from '../context/AuthContext'
 
 const UserProfilePage = () => {
   const { username } = useParams()

@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../utils/api";
+import { useAuth } from "../context/AuthContext";
 
 const SaveToCookbookSection = ({ recipeId }) => {
   const [cookbooks, setCookbooks] = useState([]);
   const [saving, setSaving] = useState(null);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
-  const token = localStorage.getItem("platerly_token");
+  const { token } = useAuth();
 
   useEffect(() => {
     const fetchCookbooks = async () => {

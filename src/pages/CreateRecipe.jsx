@@ -4,6 +4,9 @@ import Button from '../components/ui/Button'
 import Textarea from '../components/ui/Textarea'
 import { useNavigate } from 'react-router-dom'
 import { API_BASE_URL } from "../utils/api";
+import { useAuth } from '../context/AuthContext'
+
+
 
 const CreateRecipe = () => {
   const [form, setForm] = useState({
@@ -20,7 +23,8 @@ const CreateRecipe = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-
+  const {token} = useAuth()
+  
   const handleChange = (e) => {
     const { name, value, files } = e.target
     if (name === 'imageFile') {
@@ -35,7 +39,7 @@ const CreateRecipe = () => {
   }
 
   const uploadImage = async () => {
-    const token = localStorage.getItem('platerly_token')
+    
     const formData = new FormData()
     formData.append('file', form.imageFile)
 
@@ -56,7 +60,6 @@ const CreateRecipe = () => {
     setLoading(true)
 
     try {
-      const token = localStorage.getItem('platerly_token')
       const imageUrl = await uploadImage()
 
       const ingredients = form.ingredientsText.split('\n').map(line => {

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../utils/api";
+import { useAuth } from "../context/AuthContext";
 
 const SaveToCookbookDropdown = ({ recipeId, onClose, anchorRef }) => {
   const [cookbooks, setCookbooks] = useState([]);
@@ -10,7 +11,7 @@ const SaveToCookbookDropdown = ({ recipeId, onClose, anchorRef }) => {
   const [position, setPosition] = useState({ top: 0, left: 0, flipUp: false });
   const [isPositioned, setIsPositioned] = useState(false); // only render after position is known
   const dropdownRef = useRef(null);
-  const token = localStorage.getItem("platerly_token");
+  const { token } = useAuth();
 
   useEffect(() => {
     const fetchCookbooks = async () => {

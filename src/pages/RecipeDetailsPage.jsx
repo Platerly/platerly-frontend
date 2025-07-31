@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import SaveToCookbookSection from '../pages/SaveToCookbookSection'
 import { API_BASE_URL } from '../utils/api'
+import { useAuth } from '../context/AuthContext'
+
 
 const RecipeDetailsPage = () => {
   const { id } = useParams()
@@ -12,9 +14,8 @@ const RecipeDetailsPage = () => {
 
   const [userAllergies, setUserAllergies] = useState([])
   const [matchingAllergens, setMatchingAllergens] = useState([])
-
-  const token = localStorage.getItem('platerly_token')
-
+  const { token } = useAuth()
+  
   // Fetch recipe & comments
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -181,15 +182,17 @@ const RecipeDetailsPage = () => {
         </div>
       </div>
 
-      {/* Save to Cookbook */}
-      {recipe?.id && <SaveToCookbookSection recipeId={recipe.id} />}
+      {/* Save to Cookbook (Only if user is logged in)*/}
+      {token && recipe?.id && <SaveToCookbookSection recipeId={recipe.id} />}
     </div>
 
-    {/* Comments */}
+    {/* Comments Section (Only if user is logged in) */}
+    {token && (
     <div className="mt-14 pt-10 border-t border-neutral-700 space-y-6">
       <h2 className="text-2xl font-semibold">💬 Comments</h2>
 
       {/* Comment box */}
+      
       <div className="space-y-3">
         <textarea
           rows="3"
@@ -223,9 +226,8 @@ const RecipeDetailsPage = () => {
         </div>
       )}
     </div>
+    )}
   </div>
-)
-
-}
+)}
 
 export default RecipeDetailsPage

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../utils/api";
+import { useAuth } from "../context/AuthContext"; // Use the Auth context
 
 const AllergySettingsTab = () => {
   const [allAllergies, setAllAllergies] = useState([]);
   const [selectedNames, setSelectedNames] = useState([]); // ✅ Use names, not IDs
-  const token = localStorage.getItem("platerly_token");
-
+  const { token } = useAuth(); // Use the Auth context to get the token
+  
   useEffect(() => {
     const fetchData = async () => {
       try {

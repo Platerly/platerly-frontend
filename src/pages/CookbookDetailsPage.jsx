@@ -3,12 +3,13 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import CookbookRecipeCard from "../components/ui/CookbookRecipeCard"; // ✅ new component
 import { API_BASE_URL } from "../utils/api";
+import { useAuth } from "../context/AuthContext";
 
 const CookbookDetailsPage = () => {
   const { id } = useParams();
   const [cookbook, setCookbook] = useState(null);
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("platerly_token");
+  const { token } = useAuth();
 
   useEffect(() => {
     const fetchCookbook = async () => {

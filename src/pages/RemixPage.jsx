@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { API_BASE_URL } from '../utils/api'
+import { useAuth } from '../context/AuthContext'
+
 
 const RemixPage = () => {
   const { originalId } = useParams()
@@ -13,6 +15,7 @@ const RemixPage = () => {
   const [imageUrl, setImageUrl] = useState('')
   const [ingredients, setIngredients] = useState([{ name: '', quantity: '' }])
   const [uploading, setUploading] = useState(false)
+  const { token } = useAuth()
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0]
@@ -23,7 +26,7 @@ const RemixPage = () => {
     setUploading(true)
 
     try {
-      const token = localStorage.getItem('platerly_token')
+      
       const res = await fetch(`${API_BASE_URL}/api/Recipe/upload-recipe-image`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -59,8 +62,6 @@ const RemixPage = () => {
   }
 
   const handleSubmit = async () => {
-    const token = localStorage.getItem('platerly_token')
-
     try {
       const response = await fetch(`${API_BASE_URL}/api/Recipe/${originalId}/remix`, {
         method: 'POST',

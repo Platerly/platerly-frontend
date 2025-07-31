@@ -2,13 +2,15 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import EditProfileTab from './EditProfileTab'
 import AllergySettingsTab from './AllergySettingsTab'
-import { logout } from '../utils/auth'
+import {useAuth} from '../context/AuthContext'
+
+
 
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('profile')
   const navigate = useNavigate()
-
+  const { logout } = useAuth()
   const handleLogout = () => {
     logout()
     navigate('/login')              // Redirect to login
