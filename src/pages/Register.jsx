@@ -18,7 +18,7 @@ const Register = () => {
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const { setUser, setToken } = useAuth()
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -63,7 +63,9 @@ const Register = () => {
         throw new Error(data.message || 'Registration failed.')
       }
 
-      await login(data.token, data.userId)
+      // await login(data.token, data.userId)
+      setToken(data.token)
+      setUser(data.user)
       navigate('/feed')
     } catch (err) {
       setErrors({ email: err.message })

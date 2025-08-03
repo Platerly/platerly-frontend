@@ -17,6 +17,8 @@ import UserProfilePage from '../pages/UserProfilePage'
 import SearchResultsPage from '../pages/SearchResultsPage'
 import ExploreChefsPage from '../pages/ExploreChefsPage'
 import SettingsPage from '../pages/SettingsPage'
+import ForgotPassword from '../pages/ForgotPassword'
+import ResetPassword from '../pages/ResetPassword'
 
 const AppRoutes = () =>
   useRoutes([
@@ -25,7 +27,10 @@ const AppRoutes = () =>
     { path: '/register', element: <Register /> },
     { path: '/login', element: <Login /> },
     { path: '/verify-email', element: <VerifyEmail /> },
+    { path: '/reset-password', element: <ResetPassword /> },
+    { path: '/forgot-password', element: <ForgotPassword /> },
 
+    
     // Authenticated pages with layout
     { path: '/feed', element: <AppLayout><Feed /></AppLayout> },
     { path: '/create', element: <RequireAuth><AppLayout><CreateRecipe /></AppLayout></RequireAuth> },

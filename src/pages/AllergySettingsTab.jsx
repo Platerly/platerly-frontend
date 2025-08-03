@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../utils/api";
 import { useAuth } from "../context/AuthContext"; // Use the Auth context
+import { toast } from "react-hot-toast"
 
 const AllergySettingsTab = () => {
   const [allAllergies, setAllAllergies] = useState([]);
@@ -52,10 +53,10 @@ const AllergySettingsTab = () => {
         },
       });
 
-      alert("Preferences saved!");
+      toast.success("Allergy preferences saved successfully!");
     } catch (err) {
       console.error("Failed to update allergies", err);
-      alert("Failed to save preferences.");
+      toast.error("Failed to save preferences.");
     }
   };
 

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { API_BASE_URL } from "../utils/api";
+import { API_BASE_URL, fetchCurrentUser } from "../utils/api";
+import { useAuth } from "../context/AuthContext";
+import { toast } from "react-hot-toast";
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
@@ -9,9 +11,10 @@ export default function VerifyEmail() {
   const navigate = useNavigate();
   const timeoutRef = useRef(null);
   const isMounted = useRef(true);
-  const hasVerified = useRef(false); // <-- Add this
+  const hasVerified = useRef(false);
 
   const token = searchParams.get("token");
+  const { token: authToken, setUser } = useAuth();
 
   useEffect(() => {
     isMounted.current = true;
@@ -21,7 +24,7 @@ export default function VerifyEmail() {
       return;
     }
 
-    if (hasVerified.current) return; // <-- Prevent double verification
+    if (hasVerified.current) return;
     hasVerified.current = true;
 
     const verify = async () => {
@@ -31,7 +34,26 @@ export default function VerifyEmail() {
         const response = await axios.get(`${API_BASE_URL}/api/User/verify-email?token=${token}`);
 
         if (response.status === 200 && isMounted.current) {
+          toast.success("Email verified successfully!");
+
+          // Try to refresh current user if logged in
+          try {
+            const storedToken = authToken || localStorage.getItem("token");
+
+            // After successful verification, always refresh user via token (even if auth context is empty)
+            // Fixes issue where isEmailVerified was not syncing unless user was fully logged in
+
+            if (storedToken) {
+              const updatedUser = await fetchCurrentUser(storedToken);
+              setUser(updatedUser);
+              localStorage.setItem("user", JSON.stringify(updatedUser));
+            }
+          } catch (refreshError) {
+            console.warn("⚠️ Failed to refresh user after verification:", refreshError);
+          }
+
           setStatus("success");
+
           timeoutRef.current = setTimeout(() => {
             if (isMounted.current) navigate("/feed");
           }, 2500);
@@ -50,7 +72,7 @@ export default function VerifyEmail() {
       isMounted.current = false;
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [token, navigate]);
+  }, [token, navigate, authToken, setUser]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen text-white bg-gray-900 text-center">

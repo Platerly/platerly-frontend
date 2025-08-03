@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useUser } from "../context/UserContext"; // adjust this to your actual context
-import { resendVerificationEmail } from "../utils/api"; // we'll add this endpoint
+import {useAuth} from "../../context/AuthContext"; // assuming you have an AuthContext
+import { resendVerificationEmail } from "../../utils/api"; // we'll add this endpoint
 import { toast } from "react-hot-toast";
 
 export default function EmailVerificationBanner() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
@@ -13,7 +13,7 @@ export default function EmailVerificationBanner() {
   const handleResend = async () => {
     try {
       setLoading(true);
-      await resendVerificationEmail(); // API call
+      await resendVerificationEmail(user.email);
       toast.success("Verification email sent!");
     } catch (err) {
       toast.error("Failed to send verification email.");
