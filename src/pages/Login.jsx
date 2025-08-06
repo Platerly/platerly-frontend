@@ -90,11 +90,7 @@ const Login = () => {
           />
 
           <div className="flex justify-end text-sm">
-            {/* <label className="flex items-center gap-2">
-              <input type="checkbox" className="form-checkbox h-4 w-4 text-green-600" />
-              <span className="text-gray-400">Remember me</span>
-            </label> */}
-
+            
             <Link to="/forgot-password" className="text-green-500 hover:underline">
               Forgot password?
             </Link>
