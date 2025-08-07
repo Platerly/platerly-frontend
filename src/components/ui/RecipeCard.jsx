@@ -16,6 +16,10 @@ const RecipeCard = ({
   isRepostedByCurrentUser = false,
   ingredients = [],
   userAllergies = [],
+  prepTime,
+  cookTime,
+  difficulty,
+  tags = ''
 }) => {
   const [isLikedState, setIsLikedState] = useState(isLiked)
   const [likeCount, setLikeCount] = useState(likes)
@@ -113,6 +117,34 @@ const RecipeCard = ({
         </p>
 
         <p className="text-sm text-platerly-subtle mb-2">{description}</p>
+
+        <div className="text-sm text-platerly-subtle mb-2 flex flex-wrap gap-x-2 gap-y-1">
+  {difficulty && (
+    <span>
+      <span className="font-semibold text-white">Difficulty:</span> {difficulty}
+    </span>
+  )}
+
+  {(prepTime > 0 || cookTime > 0) && (
+    <span>
+      <span className="font-semibold text-white">Time:</span>{' '}
+      {prepTime > 0 && `${prepTime} min prep`}
+      {prepTime > 0 && cookTime > 0 && ', '}
+      {cookTime > 0 && `${cookTime} min cook`}
+    </span>
+  )}
+
+  {Array.isArray(tags) && tags.filter(t => t.trim() !== '').length > 0 && (
+    <span>
+      <span className="font-semibold text-white">Tags:</span>{' '}
+      {tags.filter(t => t.trim() !== '').join(', ')}
+    </span>
+  )}
+</div>
+
+
+   
+
 
         {hasAllergyMatch && (
           <div className="text-sm text-red-400 font-medium mb-2">

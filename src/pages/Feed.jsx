@@ -122,6 +122,10 @@ const Feed = () => {
               userId={recipe.postedBy?.userId}
               isFollowing={recipe.isFollowing}
               currentUserId={currentUserId}
+              prepTime={recipe.prepTimeMinutes}
+              cookTime={recipe.cookTimeMinutes}
+              difficulty={recipe.difficulty}
+              tags={recipe.tags}
             />
           ))
         )}
