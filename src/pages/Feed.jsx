@@ -117,7 +117,10 @@ const Feed = () => {
               isLiked={recipe.isLikedByCurrentUser}
               reposts={recipe.repostCount}
               isRepostedByCurrentUser={recipe.isRepostedByCurrentUser}
-              ingredients={recipe.ingredients}
+              ingredients={recipe.ingredients.map(i => ({
+                name: i.globalIngredient?.name || i.name,
+                quantity: i.quantity
+              }))}
               userAllergies={userAllergies}
               userId={recipe.postedBy?.userId}
               isFollowing={recipe.isFollowing}

@@ -35,8 +35,9 @@ const RecipeCard = ({
   }
 
   const matchingAllergies = ingredients
-    .map(i => i.name?.toLowerCase())
-    .filter(name => userAllergies.includes(name))
+  .map(i => (i.globalIngredient?.name || i.name)?.toLowerCase())
+  .filter(name => userAllergies.includes(name))
+
   const hasAllergyMatch = matchingAllergies.length > 0
 
   useEffect(() => setIsLikedState(isLiked), [isLiked])
