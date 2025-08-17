@@ -12,7 +12,7 @@ const CreateRecipe = () => {
     description: '',
     instructions: '',
     region: '',
-    ingredients:[],
+    ingredients:[{ name: '', quantity: '' }],
     imageFile: null,
     imageUrl: '',
     imageBlobName: '',           // <-- NEW
@@ -170,16 +170,21 @@ const CreateRecipe = () => {
         required
       />
       <button
-        type="button"
-        onClick={() => {
-          const updated = [...form.ingredients]
+      type="button"
+      onClick={() => {
+        const updated = [...form.ingredients]
+        if (updated.length > 1) {
           updated.splice(index, 1)
           setForm((prev) => ({ ...prev, ingredients: updated }))
-        }}
-        className="text-red-400 hover:text-red-500 text-sm"
-      >
-        ✕
-      </button>
+        }
+      }}
+      disabled={form.ingredients.length === 1}
+      className={`text-red-400 hover:text-red-500 text-sm transition ${
+        form.ingredients.length === 1 ? 'opacity-50 cursor-not-allowed' : ''
+      }`}
+    >
+      ✕
+    </button>
     </div>
   ))}
   <button
