@@ -8,14 +8,26 @@ const UserProfilePage = () => {
   const [profile, setProfile] = useState(null)
   const [recipes, setRecipes] = useState([])
   const [cookbooks, setCookbooks] = useState([])
+  const [followers, setFollowers] = useState([])
+  const [following, setFollowing] = useState([])
+  const [isFollowing, setIsFollowing] = useState(false)
   const [loading, setLoading] = useState(true)
+  const { user, token } = useAuth()
+
+  const isOwnProfile = user?.username === username
 
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const [userRes, cookbooksRes] = await Promise.all([
+        const [userRes, cookbooksRes, followersRes, followingRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/user/profile/${username}`),
-          fetch(`${API_BASE_URL}/api/user/profile/${username}/cookbooks`)
+          fetch(`${API_BASE_URL}/api/user/profile/${username}/cookbooks`),
+          fetch(`${API_BASE_URL}/api/user/${username}/followers`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${API_BASE_URL}/api/user/${username}/following`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
         ])
 
         if (!userRes.ok || !cookbooksRes.ok) throw new Error('Failed to load profile.')
@@ -24,6 +36,8 @@ const UserProfilePage = () => {
         setProfile(userData.user)
         setRecipes(userData.recipes)
         setCookbooks(await cookbooksRes.json())
+        setFollowers(await followersRes.json())
+        setFollowing(await followingRes.json())
       } catch (err) {
         console.error(err)
       } finally {
@@ -32,7 +46,39 @@ const UserProfilePage = () => {
     }
 
     fetchProfileData()
-  }, [username])
+  }, [username, token])
+
+  useEffect(() => {
+    if (!token || !user || !followers.length) return
+    setIsFollowing(followers.some(f => f.username === user.username))
+  }, [followers, user])
+
+  const handleFollowToggle = async () => {
+    if (!token || !profile) return
+
+    const endpoint = `${API_BASE_URL}/api/user/${profile.id}/follow`
+    const method = isFollowing ? 'DELETE' : 'POST'
+
+    try {
+      const res = await fetch(endpoint, {
+        method,
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      if (!res.ok) throw new Error('Failed to toggle follow.')
+
+      // Update local state without reloading whole page
+      if (isFollowing) {
+        setFollowers(prev => prev.filter(f => f.username !== user.username))
+      } else {
+        setFollowers(prev => [...prev, { username: user.username }])
+      }
+
+      setIsFollowing(!isFollowing)
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   if (loading) return <p className="text-center text-gray-400 py-6">Loading profile...</p>
   if (!profile) return <p className="text-center text-red-400 py-6">User not found.</p>
@@ -57,6 +103,24 @@ const UserProfilePage = () => {
           <h1 className="text-2xl font-bold">@{profile.username}</h1>
           <p className="text-platerly-subtle">{profile.displayName}</p>
           {profile.bio && <p className="mt-2 text-gray-300 text-sm">{profile.bio}</p>}
+
+          <div className="flex items-center gap-6 mt-3 text-sm text-gray-400">
+            <span><strong>{followers.length}</strong> Followers</span>
+            <span><strong>{following.length}</strong> Following</span>
+
+            {!isOwnProfile && token && (
+              <button
+                onClick={handleFollowToggle}
+                className={`ml-4 px-4 py-1.5 rounded-md font-medium border transition ${
+                  isFollowing
+                    ? 'bg-neutral-800 border-red-500 text-red-400 hover:bg-red-900/50'
+                    : 'bg-green-600 hover:bg-green-700 text-white border-green-700'
+                }`}
+              >
+                {isFollowing ? 'Unfollow' : 'Follow'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

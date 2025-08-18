@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams,Link } from 'react-router-dom'
 import SaveToCookbookSection from '../pages/SaveToCookbookSection'
 import { API_BASE_URL } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
+
 
 const DIFFICULTY_MAP = { 0: 'Easy', 1: 'Medium', 2: 'Hard' }
 
@@ -166,7 +167,9 @@ const RecipeDetailsPage = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 flex flex-col justify-end">
           <h1 className="text-4xl font-bold text-white mb-2">{recipe.title}</h1>
           <div className="flex justify-between items-center text-sm text-gray-300">
-            <span>@{recipe.authorUsername}</span>
+            <Link to={`/profile/${recipe.authorUsername}`} className="hover:text-platerly-green hover:underline  text-gray-300 transition-all">
+              @{recipe.authorUsername}
+            </Link>
             <span>
               {new Date(recipe.createdAt).toLocaleDateString(undefined, {
                 year: 'numeric',
@@ -281,22 +284,28 @@ const RecipeDetailsPage = () => {
             </button>
           </div>
 
-          {/* Existing comments */}
-          {comments.length === 0 ? (
-            <p className="text-gray-500">No comments yet. Be the first to share your thoughts!</p>
-          ) : (
-            <div className="space-y-4">
-              {comments.map((comment) => (
-                <div key={comment.id} className="bg-neutral-900 border border-neutral-700 p-4 rounded-lg">
-                  <div className="flex justify-between items-center text-sm text-gray-400 mb-1">
-                    <span className="font-medium">@{comment.username}</span>
-                    <span>{new Date(comment.createdAt).toLocaleString()}</span>
-                  </div>
-                  <p className="text-gray-200">{comment.content}</p>
-                </div>
-              ))}
-            </div>
-          )}
+         {/* Existing comments */}
+{comments.length === 0 ? (
+  <p className="text-gray-500">No comments yet. Be the first to share your thoughts!</p>
+) : (
+  <div className="space-y-4">
+    {comments.map((comment) => (
+      <div key={comment.id} className="bg-neutral-900 border border-neutral-700 p-4 rounded-lg">
+        <div className="flex justify-between items-center text-sm text-gray-400 mb-1">
+          <Link
+            to={`/profile/${comment.username}`}
+            className="font-medium hover:text-platerly-green transition-colors"
+          >
+            @{comment.username}
+          </Link>
+          <span>{new Date(comment.createdAt).toLocaleString()}</span>
+        </div>
+        <p className="text-gray-200">{comment.content}</p>
+      </div>
+    ))}
+  </div>
+)}
+
         </div>
       )}
     </div>
