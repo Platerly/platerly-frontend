@@ -19,6 +19,7 @@ import ExploreChefsPage from '../pages/ExploreChefsPage'
 import SettingsPage from '../pages/SettingsPage'
 import ForgotPassword from '../pages/ForgotPassword'
 import ResetPassword from '../pages/ResetPassword'
+import EditRecipePage from '../pages/EditRecipePage'
 
 const AppRoutes = () =>
   useRoutes([
@@ -30,7 +31,8 @@ const AppRoutes = () =>
     { path: '/reset-password', element: <ResetPassword /> },
     { path: '/forgot-password', element: <ForgotPassword /> },
 
-    
+    { path: '/edit-recipe/:id', element: <RequireAuth><AppLayout><EditRecipePage /></AppLayout></RequireAuth> },
+
     // Authenticated pages with layout
     { path: '/feed', element: <AppLayout><Feed /></AppLayout> },
     { path: '/create', element: <RequireAuth><AppLayout><CreateRecipe /></AppLayout></RequireAuth> },

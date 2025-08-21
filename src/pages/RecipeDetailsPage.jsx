@@ -1,9 +1,15 @@
-import React, { useEffect, useState } from 'react'
-import { useParams,Link } from 'react-router-dom'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import SaveToCookbookSection from '../pages/SaveToCookbookSection'
 import { API_BASE_URL } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
-
+import {
+  MoreVertical,
+  Pencil,
+  Trash2,
+  RefreshCw,
+  BookmarkPlus,
+} from 'lucide-react'
 
 const DIFFICULTY_MAP = { 0: 'Easy', 1: 'Medium', 2: 'Hard' }
 
@@ -26,22 +32,70 @@ function coerceTags(v) {
 function toMinutes(v) {
   if (v === null || v === undefined) return 0
   if (typeof v === 'number' && !Number.isNaN(v)) return v
-  // be forgiving if backend sends "10" or "10 min"
   const n = parseInt(String(v), 10)
   return Number.isNaN(n) ? 0 : n
 }
 
+/** Lightweight confirm modal (no external UI lib needed) */
+function ConfirmModal({ open, title = 'Are you sure?', description, confirmText = 'Confirm', cancelText = 'Cancel', onConfirm, onCancel, danger }) {
+  if (!open) return null
+  return (
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel} />
+      <div className="relative w-full sm:w-[420px] bg-neutral-900 border border-neutral-700 rounded-xl shadow-2xl mx-3 mb-3 sm:mx-0 sm:mb-0">
+        <div className="px-5 py-4">
+          <h3 className="text-lg font-semibold text-white">{title}</h3>
+          {description && <p className="mt-1.5 text-sm text-neutral-300">{description}</p>}
+          <div className="mt-5 flex gap-2 justify-end">
+            <button
+              onClick={onCancel}
+              className="px-4 py-2 rounded-md border border-neutral-600 text-neutral-200 hover:bg-neutral-800"
+            >
+              {cancelText}
+            </button>
+            <button
+              onClick={onConfirm}
+              className={`px-4 py-2 rounded-md text-white ${danger ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+            >
+              {confirmText}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const RecipeDetailsPage = () => {
   const { id } = useParams()
+  const navigate = useNavigate()
+  const { token, user } = useAuth()
+
   const [recipe, setRecipe] = useState(null)
+  const [remixMeta, setRemixMeta] = useState(null)
   const [comments, setComments] = useState([])
   const [newComment, setNewComment] = useState('')
   const [loading, setLoading] = useState(true)
-
   const [userAllergies, setUserAllergies] = useState([])
   const [matchingAllergens, setMatchingAllergens] = useState([])
-  const { token } = useAuth()
-  
+
+  // UI state
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [saveOpen, setSaveOpen] = useState(false)
+  const [commentsOpen, setCommentsOpen] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const menuRef = useRef(null)
+
+  // Close kebab menu on outside click
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!menuRef.current) return
+      if (!menuRef.current.contains(e.target)) setMenuOpen(false)
+    }
+    document.addEventListener('click', onDocClick)
+    return () => document.removeEventListener('click', onDocClick)
+  }, [])
+
   // Fetch recipe & comments
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -52,6 +106,7 @@ const RecipeDetailsPage = () => {
         if (!res.ok) throw new Error('Failed to fetch recipe')
         const data = await res.json()
         setRecipe(data.recipe)
+        setRemixMeta(data.remixMeta ?? null)
       } catch (err) {
         console.error(err)
       } finally {
@@ -131,8 +186,33 @@ const RecipeDetailsPage = () => {
       })
       const updated = await refreshed.json()
       setComments(updated)
+      setCommentsOpen(true) // open comments after posting
     } catch (err) {
       console.error(err)
+    }
+  }
+
+  // Ownership check (hide edit/delete if we can't determine)
+  const isOwner = useMemo(() => {
+    if (!user?.username || !recipe?.authorUsername) return false
+    return String(user.username).toLowerCase() === String(recipe.authorUsername).toLowerCase()
+  }, [user?.username, recipe?.authorUsername])
+
+  // Actions
+  const goEdit = () => navigate(`/edit-recipe/${id}`)
+  const goRemix = () => navigate(`/remix/${id}`)
+
+  const doDelete = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok && res.status !== 204) throw new Error('Delete failed')
+      navigate('/')
+    } catch (e) {
+      console.error(e)
+      alert('Sorry, delete failed.')
     }
   }
 
@@ -164,8 +244,18 @@ const RecipeDetailsPage = () => {
           alt={recipe.title}
           className="w-full h-full object-cover"
         />
+
+        {/* Dark overlay with title/author/date (bottom-left) */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 flex flex-col justify-end">
-          <h1 className="text-4xl font-bold text-white mb-2">{recipe.title}</h1>
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-4xl font-bold text-white">{recipe.title}</h1>
+            {remixMeta?.isRemix && (
+              <span className="px-2 py-0.5 text-xs rounded-full bg-purple-200/20 text-purple-100 ring-1 ring-purple-300/30">
+                Remix
+              </span>
+            )}
+          </div>
+
           <div className="flex justify-between items-center text-sm text-gray-300">
             <Link to={`/profile/${recipe.authorUsername}`} className="hover:text-platerly-green hover:underline  text-gray-300 transition-all">
               @{recipe.authorUsername}
@@ -179,7 +269,90 @@ const RecipeDetailsPage = () => {
             </span>
           </div>
         </div>
+
+        {/* Kebab actions (top-right) */}
+        <div ref={menuRef} className="absolute top-3 right-3">
+          <button
+            onClick={() => setMenuOpen(v => !v)}
+            className="p-2 rounded-full bg-black/45 hover:bg-black/60 border border-white/10 text-white shadow"
+            aria-label="Actions"
+          >
+            <MoreVertical className="w-5 h-5" />
+          </button>
+          {menuOpen && (
+            <div className="mt-2 w-44 rounded-md bg-neutral-900/95 backdrop-blur border border-white/10 shadow-lg overflow-hidden">
+              {isOwner && (
+                <>
+                  <button onClick={goEdit} className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-800 flex items-center gap-2">
+                    <Pencil className="w-4 h-4" /> Edit
+                  </button>
+                  <button
+                    onClick={() => { setMenuOpen(false); setConfirmOpen(true) }}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-800 text-red-300 flex items-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" /> Delete
+                  </button>
+                  <div className="h-px bg-white/10" />
+                </>
+              )}
+              <button onClick={goRemix} className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-800 flex items-center gap-2">
+                <RefreshCw className="w-4 h-4" /> Remix
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Floating Save button (top-left, subtle) */}
+        {token && (
+          <div className="absolute top-3 left-3">
+            <button
+              onClick={() => setSaveOpen(v => !v)}
+              className="px-3 py-1.5 rounded-full text-xs sm:text-sm bg-emerald-600 hover:bg-emerald-700 text-white shadow inline-flex items-center gap-1.5"
+            >
+              <BookmarkPlus className="w-4 h-4" /> Save
+            </button>
+          </div>
+        )}
+
+        {/* Remix lineage pill (bottom-right) */}
+        {remixMeta?.isRemix && (
+          <div className="absolute bottom-3 right-3 text-[11px] sm:text-xs bg-black/45 backdrop-blur rounded-full px-3 py-1.5 border border-white/10 shadow-md">
+            <span className="opacity-80 mr-1">Lineage:</span>
+            <span className="space-x-1">
+              {remixMeta.parentRecipeId ? (
+                <Link
+                  to={`/recipe/${remixMeta.parentRecipeId}`}
+                  className="underline hover:no-underline"
+                  title="Direct recipe this was remixed from"
+                >
+                  source
+                </Link>
+              ) : (
+                <span className="opacity-70">source</span>
+              )}
+              <span aria-hidden>·</span>
+              {remixMeta.originalRecipeId ? (
+                <Link
+                  to={`/recipe/${remixMeta.originalRecipeId}`}
+                  className="underline hover:no-underline"
+                  title="Root/original recipe in this remix chain"
+                >
+                  origin
+                </Link>
+              ) : (
+                <span className="opacity-70">origin</span>
+              )}
+            </span>
+          </div>
+        )}
       </div>
+
+      {/* Inline save panel (compact) */}
+      {token && saveOpen && recipe?.id && (
+        <div className="mt-3 rounded-lg border border-neutral-700 bg-neutral-900 p-4">
+          <SaveToCookbookSection recipeId={recipe.id} />
+        </div>
+      )}
 
       {/* Info Row: Difficulty / Time / Total */}
       <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -227,87 +400,108 @@ const RecipeDetailsPage = () => {
         </div>
       )}
 
-      {/* Recipe Info Sections */}
-      <div className="space-y-8 mt-10">
-        <div>
-          <h2 className="text-2xl font-semibold border-b border-platerly-border pb-2 mb-2">📍 Region</h2>
-          <p className="text-gray-300">{recipe.region}</p>
-        </div>
+      {/* Recipe Info Sections (collapsible) */}
+      <div className="space-y-4 mt-10">
+        <details open className="rounded-lg border border-neutral-700">
+          <summary className="cursor-pointer select-none px-4 py-3 text-lg font-semibold">📍 Region</summary>
+          <div className="px-4 pb-4 text-gray-300">{recipe.region || '—'}</div>
+        </details>
 
-        <div>
-          <h2 className="text-2xl font-semibold border-b border-platerly-border pb-2 mb-2">📝 Description</h2>
-          <p className="text-gray-300">{recipe.description || 'No description provided.'}</p>
-        </div>
+        <details open className="rounded-lg border border-neutral-700">
+          <summary className="cursor-pointer select-none px-4 py-3 text-lg font-semibold">📝 Description</summary>
+          <div className="px-4 pb-4 text-gray-300">{recipe.description || 'No description provided.'}</div>
+        </details>
 
-        <div>
-          <h2 className="text-2xl font-semibold border-b border-platerly-border pb-2 mb-2">📋 Instructions</h2>
-          <p className="text-gray-300 whitespace-pre-line">{recipe.instructions || 'No instructions provided.'}</p>
-        </div>
+        <details open className="rounded-lg border border-neutral-700">
+          <summary className="cursor-pointer select-none px-4 py-3 text-lg font-semibold">📋 Instructions</summary>
+          <div className="px-4 pb-4 text-gray-300 whitespace-pre-line">{recipe.instructions || 'No instructions provided.'}</div>
+        </details>
 
-        <div>
-          <h2 className="text-2xl font-semibold border-b border-platerly-border pb-2 mb-4">🧂 Ingredients</h2>
-          <div className="flex flex-wrap gap-3">
-            {(recipe.ingredients || []).map((ing, i) => (
-              <span
-                key={i}
-                className="px-3 py-1 rounded-full text-sm bg-neutral-800 border border-neutral-600 text-white"
-              >
-                <span className="text-green-400 font-semibold">{ing.quantity}</span> {ing.name}
-              </span>
-            ))}
+        <details open className="rounded-lg border border-neutral-700">
+          <summary className="cursor-pointer select-none px-4 py-3 text-lg font-semibold">🧂 Ingredients</summary>
+          <div className="px-4 pb-4">
+            <div className="flex flex-wrap gap-3">
+              {(recipe.ingredients || []).map((ing, i) => (
+                <span
+                  key={i}
+                  className="px-3 py-1 rounded-full text-sm bg-neutral-800 border border-neutral-600 text-white"
+                >
+                  <span className="text-green-400 font-semibold">{ing.quantity}</span> {ing.name}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-
-        {/* Save to Cookbook (Only if user is logged in)*/}
-        {token && recipe?.id && <SaveToCookbookSection recipeId={recipe.id} />}
+        </details>
       </div>
 
-      {/* Comments Section (Only if user is logged in) */}
+      {/* Comments Section (collapsed by default) */}
       {token && (
-        <div className="mt-14 pt-10 border-t border-neutral-700 space-y-6">
-          <h2 className="text-2xl font-semibold">💬 Comments</h2>
-
-          {/* Comment box */}
-          <div className="space-y-3">
-            <textarea
-              rows="3"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Write a comment..."
-              className="w-full bg-neutral-900 border border-neutral-700 text-white rounded-md p-3 focus:outline-none focus:ring focus:ring-green-500"
-            />
-            <button
-              onClick={handleSubmitComment}
-              className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition"
-            >
-              Post Comment
-            </button>
-          </div>
-
-         {/* Existing comments */}
-{comments.length === 0 ? (
-  <p className="text-gray-500">No comments yet. Be the first to share your thoughts!</p>
-) : (
-  <div className="space-y-4">
-    {comments.map((comment) => (
-      <div key={comment.id} className="bg-neutral-900 border border-neutral-700 p-4 rounded-lg">
-        <div className="flex justify-between items-center text-sm text-gray-400 mb-1">
-          <Link
-            to={`/profile/${comment.username}`}
-            className="font-medium hover:text-platerly-green transition-colors"
+        <div className="mt-10 pt-8 border-t border-neutral-700">
+          <button
+            onClick={() => setCommentsOpen(v => !v)}
+            className="mb-4 inline-flex items-center gap-2 text-left text-lg font-semibold hover:text-platerly-green transition"
           >
-            @{comment.username}
-          </Link>
-          <span>{new Date(comment.createdAt).toLocaleString()}</span>
-        </div>
-        <p className="text-gray-200">{comment.content}</p>
-      </div>
-    ))}
-  </div>
-)}
+            <span>💬 Comments</span>
+            <span className="text-sm text-neutral-400">({comments.length})</span>
+            <span className="text-neutral-400">{commentsOpen ? '▾' : '▸'}</span>
+          </button>
 
+          {commentsOpen && (
+            <>
+              {/* Comment box */}
+              <div className="space-y-3 mb-6">
+                <textarea
+                  rows="3"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Write a comment..."
+                  className="w-full bg-neutral-900 border border-neutral-700 text-white rounded-md p-3 focus:outline-none focus:ring focus:ring-green-500"
+                />
+                <button
+                  onClick={handleSubmitComment}
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md font-medium transition"
+                >
+                  Post Comment
+                </button>
+              </div>
+
+              {/* Existing comments */}
+              {comments.length === 0 ? (
+                <p className="text-gray-500">No comments yet. Be the first to share your thoughts!</p>
+              ) : (
+                <div className="space-y-4">
+                  {comments.map((comment) => (
+                    <div key={comment.id} className="bg-neutral-900 border border-neutral-700 p-4 rounded-lg">
+                      <div className="flex justify-between items-center text-sm text-gray-400 mb-1">
+                        <Link
+                          to={`/profile/${comment.username}`}
+                          className="font-medium hover:text-platerly-green transition-colors"
+                        >
+                          @{comment.username}
+                        </Link>
+                        <span>{new Date(comment.createdAt).toLocaleString()}</span>
+                      </div>
+                      <p className="text-gray-200">{comment.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        open={confirmOpen}
+        title="Delete recipe?"
+        description="This will hide the recipe for everyone else. You can’t recover it here."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={async () => { setConfirmOpen(false); await doDelete() }}
+        danger
+      />
     </div>
   )
 }
