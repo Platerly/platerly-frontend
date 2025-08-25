@@ -97,59 +97,76 @@ const RecipeDetailsPage = () => {
   }, [])
 
   // Fetch recipe & comments
-  useEffect(() => {
-    const fetchRecipe = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (!res.ok) throw new Error('Failed to fetch recipe')
-        const data = await res.json()
-        setRecipe(data.recipe)
-        setRemixMeta(data.remixMeta ?? null)
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
+useEffect(() => {
+  const recipeCtl = new AbortController();
+  const commentsCtl = new AbortController();
+
+  const fetchRecipe = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: recipeCtl.signal,
+      });
+      if (!res.ok) throw new Error('Failed to fetch recipe');
+      const data = await res.json();
+      setRecipe(data.recipe);
+      setRemixMeta(data.remixMeta ?? null);
+    } catch (err) {
+      if (err.name !== 'AbortError') console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchComments = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: commentsCtl.signal,
+      });
+      if (!res.ok) throw new Error('Failed to fetch comments');
+      const data = await res.json();
+      setComments(data);
+    } catch (err) {
+      if (err.name !== 'AbortError') console.error(err);
+    }
+  };
+
+  fetchRecipe();
+  fetchComments();
+
+  return () => {
+    recipeCtl.abort();
+    commentsCtl.abort();
+  };
+}, [id, token]);
+
+// Fetch allergy list
+useEffect(() => {
+  if (!token) return;
+  const ctl = new AbortController();
+
+  const fetchAllergies = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/Allergy/my-allergies`, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: ctl.signal,
+      });
+      if (!res.ok) return;
+      const allergyData = await res.json();
+      const lowerAllergies = allergyData.map((a) => a.toLowerCase());
+      setUserAllergies(lowerAllergies);
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error('Error loading allergies:', err);
       }
     }
+  };
 
-    const fetchComments = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (!res.ok) throw new Error('Failed to fetch comments')
-        const data = await res.json()
-        setComments(data)
-      } catch (err) {
-        console.error(err)
-      }
-    }
+  fetchAllergies();
+  return () => ctl.abort();
+}, [token]);
 
-    fetchRecipe()
-    fetchComments()
-  }, [id, token])
-
-  // Fetch allergy list
-  useEffect(() => {
-    const fetchAllergies = async () => {
-      if (!token) return
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/Allergy/my-allergies`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (!res.ok) return
-        const allergyData = await res.json()
-        const lowerAllergies = allergyData.map((a) => a.toLowerCase())
-        setUserAllergies(lowerAllergies)
-      } catch (err) {
-        console.error('Error loading allergies:', err)
-      }
-    }
-
-    fetchAllergies()
-  }, [token])
 
   // Compare recipe ingredients to allergies
   useEffect(() => {
