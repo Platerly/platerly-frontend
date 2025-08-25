@@ -101,6 +101,7 @@ const RecipeDetailsPage = () => {
     const fetchRecipe = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
+          credentials: 'include',
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) throw new Error('Failed to fetch recipe')
@@ -117,6 +118,7 @@ const RecipeDetailsPage = () => {
     const fetchComments = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
+          credentials: 'include',
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) throw new Error('Failed to fetch comments')
@@ -137,6 +139,7 @@ const RecipeDetailsPage = () => {
       if (!token) return
       try {
         const res = await fetch(`${API_BASE_URL}/api/Allergy/my-allergies`, {
+          credentials: 'include',
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) return
@@ -168,6 +171,7 @@ const RecipeDetailsPage = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -182,6 +186,7 @@ const RecipeDetailsPage = () => {
       setNewComment('')
 
       const refreshed = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
+        credentials: 'include',
         headers: { Authorization: `Bearer ${token}` },
       })
       const updated = await refreshed.json()
@@ -206,10 +211,22 @@ const RecipeDetailsPage = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
         method: 'DELETE',
+        credentials: 'include', // important for prod cookie-auth
         headers: { Authorization: `Bearer ${token}` },
       })
-      if (!res.ok && res.status !== 204) throw new Error('Delete failed')
-      navigate('/')
+
+      // Treat any 2xx (including 204) as success; do not parse body
+      if (res.ok || res.status === 204) {
+        navigate('/')
+        return
+      }
+
+      if (res.status === 401 || res.status === 403) {
+        // If you have a global logout, you can invoke it here
+        throw new Error('Unauthorized')
+      }
+
+      throw new Error(`Delete failed (${res.status})`)
     } catch (e) {
       console.error(e)
       alert('Sorry, delete failed.')
