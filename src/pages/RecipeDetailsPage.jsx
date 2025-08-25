@@ -229,7 +229,7 @@ useEffect(() => {
     // Treat 2xx (incl. 204) as success — do NOT parse body
     if (res.status === 204 || (res.ok && res.status >= 200 && res.status < 300)) {
       // Hard redirect to the feed to avoid SPA guards/interceptors sending you to /login
-      window.location.assign('/'); // if your feed is a different route, put it here
+      window.location.assign('/feed'); // if your feed is a different route, put it here
       return;
     }
 
