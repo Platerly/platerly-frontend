@@ -203,18 +203,35 @@ const RecipeDetailsPage = () => {
   const goRemix = () => navigate(`/remix/${id}`)
 
   const doDelete = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!res.ok && res.status !== 204) throw new Error('Delete failed')
-      navigate('/')
-    } catch (e) {
-      console.error(e)
-      alert('Sorry, delete failed.')
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    // Treat 2xx (incl. 204) as success — do NOT parse body
+    if (res.status === 204 || (res.ok && res.status >= 200 && res.status < 300)) {
+      // Hard redirect to the feed to avoid SPA guards/interceptors sending you to /login
+      window.location.assign('/'); // if your feed is a different route, put it here
+      return;
     }
+
+    if (res.status === 401 || res.status === 403) {
+      // Respect real auth failures
+      window.location.assign('/login');
+      return;
+    }
+
+    // Try to read any server message without breaking on empty bodies
+    let msg = '';
+    try { msg = await res.text(); } catch {}
+    throw new Error(`Delete failed (${res.status})${msg ? `: ${msg}` : ''}`);
+  } catch (e) {
+    console.error('Delete error:', e);
+    alert('Sorry, delete failed.');
   }
+};
+
 
   if (loading) return <p className="text-gray-400 p-4">Loading recipe...</p>
   if (!recipe) return <p className="text-red-500 p-4">Recipe not found.</p>
