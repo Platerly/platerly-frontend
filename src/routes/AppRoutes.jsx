@@ -1,4 +1,4 @@
-import { useRoutes, Navigate } from 'react-router-dom'
+import { useRoutes } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
 import RequireAuth from '../components/RequireAuth'
 import Landing from '../pages/Landing'
@@ -20,27 +20,11 @@ import SettingsPage from '../pages/SettingsPage'
 import ForgotPassword from '../pages/ForgotPassword'
 import ResetPassword from '../pages/ResetPassword'
 import EditRecipePage from '../pages/EditRecipePage'
-import { useAuth } from '../context/AuthContext'
-
-// Inline smart root redirect
-function RootRedirect() {
-  const { user, token, loading } = useAuth()
-  if (loading) return null
-  const stored = (typeof window !== 'undefined')
-    ? (localStorage.getItem('token') || sessionStorage.getItem('token'))
-    : null
-  return (user || token || stored)
-    ? <Navigate to="/feed" replace />
-    : <Navigate to="/login" replace />
-}
 
 const AppRoutes = () =>
   useRoutes([
-    // Root decides where to go
-    { path: '/', element: <RootRedirect /> },
-
-    // Keep the marketing page (optional) at /welcome
-    { path: '/welcome', element: <Landing /> },
+    // Marketing landing at root
+    { path: '/', element: <Landing /> },
 
     // Public auth routes
     { path: '/register', element: <Register /> },

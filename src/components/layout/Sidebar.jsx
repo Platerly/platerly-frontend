@@ -5,16 +5,31 @@ import { useAuth } from '../../context/AuthContext'
 
 const Sidebar = () => {
   const location = useLocation()
-  const { user } = useAuth()
+  const { user, token, loading } = useAuth()
+
+  // Treat as authed if context has a session OR token exists in storage (handles cold starts)
+  const storedToken =
+    (typeof window !== 'undefined') &&
+    (localStorage.getItem('token') || sessionStorage.getItem('token'))
+  const authed = !!(user || token || storedToken)
 
   const isActive = (path) => location.pathname === path
+  const homeTarget = authed ? '/feed' : '/login'
 
   return (
     <div className="bg-platerly-light text-platerly-text w-[260px] h-screen fixed top-0 left-0 p-6 flex flex-col justify-between border-r border-platerly-border">
       <div>
-        <div className="text-3xl font-bold text-platerly-green mb-10">Platerly</div>
+        {/* Smart, clickable logo */}
+        <Link
+          to={homeTarget}
+          aria-label="Platerly Home"
+          title={`Go to ${authed ? '/feed' : '/login'}`}
+          className="text-3xl font-bold text-platerly-green mb-10 block"
+        >
+          Platerly
+        </Link>
 
-        {user ? (
+        {authed ? (
           <nav className="flex flex-col space-y-4">
             <Link
               to="/feed"
