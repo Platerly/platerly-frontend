@@ -20,7 +20,12 @@ import SettingsPage from '../pages/SettingsPage'
 import ForgotPassword from '../pages/ForgotPassword'
 import ResetPassword from '../pages/ResetPassword'
 import EditRecipePage from '../pages/EditRecipePage'
-import { TermsPage,PrivacyPage,GuidelinesPage,AllergyDisclaimerPage,RefundsPage,ContactPage,} from '../pages/public'
+import TermsPage from '../pages/public/TermsPage'
+import PrivacyPage from '../pages/public/PrivacyPage'
+import GuidelinesPage from '../pages/public/GuidelinesPage'
+import AllergyDisclaimerPage from '../pages/public/AllergyDisclaimerPage'
+import RefundsPage from '../pages/public/RefundsPage'
+import ContactPage from '../pages/public/ContactPage'
 import NotFoundPage from '../pages/NotFoundPage'
 
 const AppRoutes = () =>
