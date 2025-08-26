@@ -26,7 +26,7 @@ import GuidelinesPage from '../pages/public/GuidelinesPage'
 import AllergyDisclaimerPage from '../pages/public/AllergyDisclaimerPage'
 import RefundsPage from '../pages/public/RefundsPage'
 import ContactPage from '../pages/public/ContactPage'
-import NotFoundPage from '../pages/NotFoundPage'
+import NotFoundPage from '../pages/public/NotFoundPage'
 
 const AppRoutes = () =>
   useRoutes([
