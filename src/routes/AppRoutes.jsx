@@ -20,6 +20,8 @@ import SettingsPage from '../pages/SettingsPage'
 import ForgotPassword from '../pages/ForgotPassword'
 import ResetPassword from '../pages/ResetPassword'
 import EditRecipePage from '../pages/EditRecipePage'
+import { TermsPage,PrivacyPage,GuidelinesPage,AllergyDisclaimerPage,RefundsPage,ContactPage,} from '../pages/public'
+import NotFoundPage from '../pages/NotFoundPage'
 
 const AppRoutes = () =>
   useRoutes([
@@ -32,6 +34,13 @@ const AppRoutes = () =>
     { path: '/verify-email', element: <VerifyEmail /> },
     { path: '/reset-password', element: <ResetPassword /> },
     { path: '/forgot-password', element: <ForgotPassword /> },
+
+    { path: '/terms', element: <TermsPage /> },
+    { path: '/privacy', element: <PrivacyPage /> },
+    { path: '/guidelines', element: <GuidelinesPage /> },
+    { path: '/disclaimer', element: <AllergyDisclaimerPage /> },
+    { path: '/refunds', element: <RefundsPage /> },
+    { path: '/contact', element: <ContactPage /> },
 
     // Protected
     { path: '/feed', element: <RequireAuth><AppLayout><Feed /></AppLayout></RequireAuth> },
@@ -51,6 +60,8 @@ const AppRoutes = () =>
 
     // Optional protected explore
     { path: '/explore-chefs', element: <RequireAuth><AppLayout><ExploreChefsPage /></AppLayout></RequireAuth> },
+
+    { path: '*', element: <NotFoundPage /> },
   ])
 
 export default AppRoutes

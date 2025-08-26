@@ -2,6 +2,7 @@ import React from 'react'
 import Sidebar from './Sidebar'
 import RightColumn from './RightColumn'
 import EmailVerificationBanner from '../layout/EmailVerificationBanner'
+import Footer from '../Footer'
 
 
 const AppLayout = ({ children }) => {
@@ -16,6 +17,8 @@ const AppLayout = ({ children }) => {
           {/* Email Verification Banner */}
           <EmailVerificationBanner />
           {children}
+          <div className="h-8" />
+          <Footer variant="contained" />
         </div>
       </main>
 
