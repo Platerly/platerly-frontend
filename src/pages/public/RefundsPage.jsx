@@ -1,4 +1,7 @@
-export const RefundsPage = () => (
+import React from "react";
+import PublicPage from "./PublicPage";
+
+const RefundsPage = () => (
   <PublicPage
     title="Refund & Subscription Policy"
     subtitle="How billing, cancellations, and refunds work."
@@ -25,3 +28,5 @@ export const RefundsPage = () => (
     <p className="mt-8 text-sm text-platerly-subtle">Last updated: Aug 26, 2025</p>
   </PublicPage>
 );
+
+export default RefundsPage;

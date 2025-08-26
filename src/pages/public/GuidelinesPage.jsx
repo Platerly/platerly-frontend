@@ -1,4 +1,8 @@
-export const GuidelinesPage = () => (
+import React from "react";
+import PublicPage from "./PublicPage";
+
+
+const GuidelinesPage = () => (
   <PublicPage
     title="Community Guidelines"
     subtitle="Be kind. Credit creators. Cook safely."
@@ -30,3 +34,5 @@ export const GuidelinesPage = () => (
     <p className="mt-8 text-sm text-platerly-subtle">Last updated: Aug 26, 2025</p>
   </PublicPage>
 );
+
+export default GuidelinesPage;

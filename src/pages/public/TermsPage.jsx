@@ -1,4 +1,8 @@
-export const TermsPage = () => (
+import React from "react";
+import PublicPage from "./PublicPage";
+
+
+const TermsPage = () => (
   <PublicPage
     title="Terms of Service"
     subtitle="The rules of using Platerly. Please read carefully."
@@ -80,3 +84,5 @@ export const TermsPage = () => (
     <p className="mt-8 text-sm text-platerly-subtle">Last updated: Aug 26, 2025</p>
   </PublicPage>
 );
+
+export default TermsPage;

@@ -1,4 +1,8 @@
-export const PrivacyPage = () => (
+import React from "react";
+import PublicPage from "./PublicPage";
+
+
+const PrivacyPage = () => (
   <PublicPage
     title="Privacy Policy"
     subtitle="How we collect, use, and protect your data."
@@ -51,3 +55,5 @@ export const PrivacyPage = () => (
     <p className="mt-8 text-sm text-platerly-subtle">Last updated: Aug 26, 2025</p>
   </PublicPage>
 );
+
+export default PrivacyPage;

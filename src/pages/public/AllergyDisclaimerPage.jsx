@@ -1,4 +1,7 @@
-export const AllergyDisclaimerPage = () => (
+import React from "react";
+import PublicPage from "./PublicPage";
+
+const AllergyDisclaimerPage = () => (
   <PublicPage
     title="Allergy & Medical Disclaimer"
     subtitle="Platerly is not a medical service. Always verify ingredients."
@@ -20,3 +23,5 @@ export const AllergyDisclaimerPage = () => (
     <p className="mt-8 text-sm text-platerly-subtle">Last updated: Aug 26, 2025</p>
   </PublicPage>
 );
+
+export default AllergyDisclaimerPage;

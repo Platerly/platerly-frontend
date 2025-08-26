@@ -1,4 +1,7 @@
-export const NotFoundPage = () => (
+import React from "react";
+import PublicPage from "./PublicPage";
+
+const NotFoundPage = () => (
 <PublicPage title="404 – Page Not Found">
 <p>
 The page you’re looking for doesn’t exist. Head back to the
@@ -7,3 +10,5 @@ The page you’re looking for doesn’t exist. Head back to the
 </p>
 </PublicPage>
 );
+
+export default NotFoundPage;
