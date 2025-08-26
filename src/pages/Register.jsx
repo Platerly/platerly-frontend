@@ -87,7 +87,7 @@ const Register = () => {
           name="name"
           value={form.name}
           onChange={handleChange}
-          placeholder="e.g. Ayub A."
+          placeholder="Full Name"
           error={errors.name}
           required
         />
@@ -97,7 +97,7 @@ const Register = () => {
           name="username"
           value={form.username}
           onChange={handleChange}
-          placeholder="e.g. starcircuit"
+          placeholder="User Name"
           error={errors.username}
           required
         />
