@@ -3,13 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import SaveToCookbookSection from '../pages/SaveToCookbookSection'
 import { API_BASE_URL } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
-import {
-  MoreVertical,
-  Pencil,
-  Trash2,
-  RefreshCw,
-  BookmarkPlus,
-} from 'lucide-react'
+import { MoreVertical, Pencil, Trash2, RefreshCw, BookmarkPlus } from 'lucide-react'
 
 const DIFFICULTY_MAP = { 0: 'Easy', 1: 'Medium', 2: 'Hard' }
 
@@ -24,9 +18,7 @@ function fmtMinutes(mins) {
 
 function coerceTags(v) {
   if (!v) return []
-  return Array.isArray(v)
-    ? v
-    : String(v).split(',').map(t => t.trim()).filter(Boolean)
+  return Array.isArray(v) ? v : String(v).split(',').map(t => t.trim()).filter(Boolean)
 }
 
 function toMinutes(v) {
@@ -36,7 +28,7 @@ function toMinutes(v) {
   return Number.isNaN(n) ? 0 : n
 }
 
-/** Lightweight confirm modal (no external UI lib needed) */
+/** Lightweight confirm modal */
 function ConfirmModal({ open, title = 'Are you sure?', description, confirmText = 'Confirm', cancelText = 'Cancel', onConfirm, onCancel, danger }) {
   if (!open) return null
   return (
@@ -47,16 +39,10 @@ function ConfirmModal({ open, title = 'Are you sure?', description, confirmText 
           <h3 className="text-lg font-semibold text-white">{title}</h3>
           {description && <p className="mt-1.5 text-sm text-neutral-300">{description}</p>}
           <div className="mt-5 flex gap-2 justify-end">
-            <button
-              onClick={onCancel}
-              className="px-4 py-2 rounded-md border border-neutral-600 text-neutral-200 hover:bg-neutral-800"
-            >
+            <button onClick={onCancel} className="px-4 py-2 rounded-md border border-neutral-600 text-neutral-200 hover:bg-neutral-800">
               {cancelText}
             </button>
-            <button
-              onClick={onConfirm}
-              className={`px-4 py-2 rounded-md text-white ${danger ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
-            >
+            <button onClick={onConfirm} className={`px-4 py-2 rounded-md text-white ${danger ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
               {confirmText}
             </button>
           </div>
@@ -76,6 +62,8 @@ const RecipeDetailsPage = () => {
   const [comments, setComments] = useState([])
   const [newComment, setNewComment] = useState('')
   const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
+  const [error, setError] = useState('')
   const [userAllergies, setUserAllergies] = useState([])
   const [matchingAllergens, setMatchingAllergens] = useState([])
 
@@ -96,114 +84,121 @@ const RecipeDetailsPage = () => {
     return () => document.removeEventListener('click', onDocClick)
   }, [])
 
-  // Fetch recipe & comments
-useEffect(() => {
-  const recipeCtl = new AbortController();
-  const commentsCtl = new AbortController();
+  // Fetch recipe (authoritative) + start comments in parallel
+  useEffect(() => {
+    setRecipe(null)
+    setRemixMeta(null)
+    setLoading(true)
+    setNotFound(false)
+    setError('')
 
-  const fetchRecipe = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        signal: recipeCtl.signal,
-      });
-      if (!res.ok) throw new Error('Failed to fetch recipe');
-      const data = await res.json();
-      setRecipe(data.recipe);
-      setRemixMeta(data.remixMeta ?? null);
-    } catch (err) {
-      if (err.name !== 'AbortError') console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const recipeCtl = new AbortController()
+    const commentsCtl = new AbortController()
 
-  const fetchComments = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
-        headers: { Authorization: `Bearer ${token}` },
-        signal: commentsCtl.signal,
-      });
-      if (!res.ok) throw new Error('Failed to fetch comments');
-      const data = await res.json();
-      setComments(data);
-    } catch (err) {
-      if (err.name !== 'AbortError') console.error(err);
-    }
-  };
+    const authHeader = token ? { Authorization: `Bearer ${token}` } : {}
 
-  fetchRecipe();
-  fetchComments();
+    const fetchRecipe = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
+          headers: authHeader,
+          signal: recipeCtl.signal,
+        })
 
-  return () => {
-    recipeCtl.abort();
-    commentsCtl.abort();
-  };
-}, [id, token]);
+        if (res.status === 404) {
+          setNotFound(true)
+          setLoading(false)
+          return
+        }
+        if (!res.ok) throw new Error(`Failed to fetch recipe (${res.status})`)
 
-// Fetch allergy list
-useEffect(() => {
-  if (!token) return;
-  const ctl = new AbortController();
-
-  const fetchAllergies = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/Allergy/my-allergies`, {
-        headers: { Authorization: `Bearer ${token}` },
-        signal: ctl.signal,
-      });
-      if (!res.ok) return;
-      const allergyData = await res.json();
-      const lowerAllergies = allergyData.map((a) => a.toLowerCase());
-      setUserAllergies(lowerAllergies);
-    } catch (err) {
-      if (err.name !== 'AbortError') {
-        console.error('Error loading allergies:', err);
+        const data = await res.json()
+        setRecipe(data.recipe ?? data)
+        setRemixMeta(data.remixMeta ?? null)
+        setLoading(false) // only now flip loading off
+      } catch (err) {
+        if (recipeCtl.signal.aborted) return
+        console.error(err)
+        setError('Something went wrong loading this recipe.')
+        setLoading(false)
       }
     }
-  };
 
-  fetchAllergies();
-  return () => ctl.abort();
-}, [token]);
+    const fetchComments = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
+          headers: authHeader,
+          signal: commentsCtl.signal,
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        setComments(Array.isArray(data) ? data : [])
+      } catch (err) {
+        if (!commentsCtl.signal.aborted) console.error(err)
+      }
+    }
 
+    fetchRecipe()
+    fetchComments()
+
+    return () => {
+      recipeCtl.abort()
+      commentsCtl.abort()
+    }
+  }, [id, token])
+
+  // Fetch allergy list (does not affect main loading state)
+  useEffect(() => {
+    if (!token) return
+    const ctl = new AbortController()
+    const load = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/Allergy/my-allergies`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: ctl.signal,
+        })
+        if (!res.ok) return
+        const list = await res.json()
+        setUserAllergies(Array.isArray(list) ? list.map(a => String(a || '').toLowerCase()) : [])
+      } catch (e) {
+        if (!ctl.signal.aborted) console.error('Error loading allergies:', e)
+      }
+    }
+    load()
+    return () => ctl.abort()
+  }, [token])
 
   // Compare recipe ingredients to allergies
   useEffect(() => {
-    if (!recipe || !userAllergies.length) return
-
+    if (!recipe || userAllergies.length === 0) {
+      setMatchingAllergens([])
+      return
+    }
     const matched = (recipe.ingredients || [])
-      .map(i => i.name?.toLowerCase())
-      .filter(name => !!name && userAllergies.includes(name))
-
+      .map(i => i?.name?.toLowerCase())
+      .filter(Boolean)
+      .filter(name => userAllergies.includes(name))
     setMatchingAllergens(matched)
   }, [recipe, userAllergies])
 
   const handleSubmitComment = async () => {
     if (!newComment.trim()) return
-
     try {
       const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          recipeId: id,
-          content: newComment,
-        }),
+        body: JSON.stringify({ recipeId: id, content: newComment }),
       })
-
       if (!res.ok) throw new Error('Failed to post comment')
       setNewComment('')
-
       const refreshed = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
       const updated = await refreshed.json()
-      setComments(updated)
-      setCommentsOpen(true) // open comments after posting
+      setComments(Array.isArray(updated) ? updated : [])
+      setCommentsOpen(true)
     } catch (err) {
       console.error(err)
     }
@@ -220,44 +215,66 @@ useEffect(() => {
   const goRemix = () => navigate(`/remix/${id}`)
 
   const doDelete = async () => {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
 
-    // Treat 2xx (incl. 204) as success — do NOT parse body
-    if (res.status === 204 || (res.ok && res.status >= 200 && res.status < 300)) {
-      // Hard redirect to the feed to avoid SPA guards/interceptors sending you to /login
-      window.location.assign('/feed'); // if your feed is a different route, put it here
-      return;
+      // 2xx incl. 204 = success
+      if (res.status === 204 || (res.ok && res.status >= 200 && res.status < 300)) {
+        window.location.assign('/feed')
+        return
+      }
+      if (res.status === 401 || res.status === 403) {
+        window.location.assign('/login')
+        return
+      }
+      let msg = ''
+      try { msg = await res.text() } catch {}
+      throw new Error(`Delete failed (${res.status})${msg ? `: ${msg}` : ''}`)
+    } catch (e) {
+      console.error('Delete error:', e)
+      alert('Sorry, delete failed.')
     }
-
-    if (res.status === 401 || res.status === 403) {
-      // Respect real auth failures
-      window.location.assign('/login');
-      return;
-    }
-
-    // Try to read any server message without breaking on empty bodies
-    let msg = '';
-    try { msg = await res.text(); } catch {}
-    throw new Error(`Delete failed (${res.status})${msg ? `: ${msg}` : ''}`);
-  } catch (e) {
-    console.error('Delete error:', e);
-    alert('Sorry, delete failed.');
   }
-};
 
+  // ---------- Render states ----------
+  if (loading) {
+    return (
+      <div className="px-6 py-10 text-platerly-subtle">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-1/2 bg-platerly-card rounded" />
+          <div className="h-80 w-full bg-platerly-card rounded" />
+          <div className="h-4 w-3/4 bg-platerly-card rounded" />
+          <div className="h-4 w-2/3 bg-platerly-card rounded" />
+        </div>
+      </div>
+    )
+  }
 
-  if (loading) return <p className="text-gray-400 p-4">Loading recipe...</p>
-  if (!recipe) return <p className="text-red-500 p-4">Recipe not found.</p>
+  if (notFound) {
+    return (
+      <div className="px-6 py-12">
+        <p className="text-red-400 text-lg font-medium">Recipe not found.</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="px-6 py-12">
+        <p className="text-red-400">{error}</p>
+      </div>
+    )
+  }
 
   // --- Derived fields for the info row ---
   const difficultyRaw = recipe.difficulty ?? recipe.difficultyLevel
-  const difficulty = typeof difficultyRaw === 'number'
-    ? (DIFFICULTY_MAP[difficultyRaw] ?? String(difficultyRaw))
-    : difficultyRaw
+  const difficulty =
+    typeof difficultyRaw === 'number'
+      ? (DIFFICULTY_MAP[difficultyRaw] ?? String(difficultyRaw))
+      : difficultyRaw
 
   const prepRaw = recipe.prepTimeMinutes ?? recipe.prepMinutes ?? recipe.prepTime
   const cookRaw = recipe.cookTimeMinutes ?? recipe.cookMinutes ?? recipe.cookTime
@@ -273,13 +290,11 @@ useEffect(() => {
     <div className="max-w-5xl mx-auto px-4 py-10 text-platerly-text">
       {/* Header Image Section */}
       <div className="relative w-full h-80 rounded-xl overflow-hidden shadow-lg">
-        <img
-          src={recipe.imageUrl}
-          alt={recipe.title}
-          className="w-full h-full object-cover"
-        />
+        {recipe.imageUrl && (
+          <img src={recipe.imageUrl} alt={recipe.title} className="w-full h-full object-cover" />
+        )}
 
-        {/* Dark overlay with title/author/date (bottom-left) */}
+        {/* Dark overlay with title/author/date */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 flex flex-col justify-end">
           <div className="flex items-center gap-2 mb-1">
             <h1 className="text-4xl font-bold text-white">{recipe.title}</h1>
@@ -291,7 +306,7 @@ useEffect(() => {
           </div>
 
           <div className="flex justify-between items-center text-sm text-gray-300">
-            <Link to={`/profile/${recipe.authorUsername}`} className="hover:text-platerly-green hover:underline  text-gray-300 transition-all">
+            <Link to={`/profile/${recipe.authorUsername}`} className="hover:text-platerly-green hover:underline text-gray-300 transition-all">
               @{recipe.authorUsername}
             </Link>
             <span>
@@ -304,7 +319,7 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Kebab actions (top-right) */}
+        {/* Kebab actions */}
         <div ref={menuRef} className="absolute top-3 right-3">
           <button
             onClick={() => setMenuOpen(v => !v)}
@@ -336,7 +351,7 @@ useEffect(() => {
           )}
         </div>
 
-        {/* Floating Save button (top-left, subtle) */}
+        {/* Save button */}
         {token && (
           <div className="absolute top-3 left-3">
             <button
@@ -348,17 +363,13 @@ useEffect(() => {
           </div>
         )}
 
-        {/* Remix lineage pill (bottom-right) */}
+        {/* Remix lineage pill */}
         {remixMeta?.isRemix && (
           <div className="absolute bottom-3 right-3 text-[11px] sm:text-xs bg-black/45 backdrop-blur rounded-full px-3 py-1.5 border border-white/10 shadow-md">
             <span className="opacity-80 mr-1">Lineage:</span>
             <span className="space-x-1">
               {remixMeta.parentRecipeId ? (
-                <Link
-                  to={`/recipe/${remixMeta.parentRecipeId}`}
-                  className="underline hover:no-underline"
-                  title="Direct recipe this was remixed from"
-                >
+                <Link to={`/recipe/${remixMeta.parentRecipeId}`} className="underline hover:no-underline" title="Direct recipe this was remixed from">
                   source
                 </Link>
               ) : (
@@ -366,11 +377,7 @@ useEffect(() => {
               )}
               <span aria-hidden>·</span>
               {remixMeta.originalRecipeId ? (
-                <Link
-                  to={`/recipe/${remixMeta.originalRecipeId}`}
-                  className="underline hover:no-underline"
-                  title="Root/original recipe in this remix chain"
-                >
+                <Link to={`/recipe/${remixMeta.originalRecipeId}`} className="underline hover:no-underline" title="Root/original recipe in this remix chain">
                   origin
                 </Link>
               ) : (
@@ -381,14 +388,13 @@ useEffect(() => {
         )}
       </div>
 
-      {/* Inline save panel (compact) */}
       {token && saveOpen && recipe?.id && (
         <div className="mt-3 rounded-lg border border-neutral-700 bg-neutral-900 p-4">
           <SaveToCookbookSection recipeId={recipe.id} />
         </div>
       )}
 
-      {/* Info Row: Difficulty / Time / Total */}
+      {/* Info Row */}
       <div className="mt-4 flex flex-wrap items-center gap-2">
         {difficulty && (
           <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-900/30 px-3 py-1 text-sm text-emerald-200">
@@ -413,13 +419,10 @@ useEffect(() => {
       </div>
 
       {/* Tags */}
-      {tags.length > 0 && (
+      {Array.isArray(tags) && tags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {tags.map(tag => (
-            <span
-              key={tag}
-              className="rounded-full bg-emerald-900/20 px-2.5 py-0.5 text-xs font-medium text-emerald-200 ring-1 ring-emerald-700/40"
-            >
+            <span key={tag} className="rounded-full bg-emerald-900/20 px-2.5 py-0.5 text-xs font-medium text-emerald-200 ring-1 ring-emerald-700/40">
               #{tag}
             </span>
           ))}
@@ -434,7 +437,7 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Recipe Info Sections (collapsible) */}
+      {/* Sections */}
       <div className="space-y-4 mt-10">
         <details open className="rounded-lg border border-neutral-700">
           <summary className="cursor-pointer select-none px-4 py-3 text-lg font-semibold">📍 Region</summary>
@@ -456,10 +459,7 @@ useEffect(() => {
           <div className="px-4 pb-4">
             <div className="flex flex-wrap gap-3">
               {(recipe.ingredients || []).map((ing, i) => (
-                <span
-                  key={i}
-                  className="px-3 py-1 rounded-full text-sm bg-neutral-800 border border-neutral-600 text-white"
-                >
+                <span key={i} className="px-3 py-1 rounded-full text-sm bg-neutral-800 border border-neutral-600 text-white">
                   <span className="text-green-400 font-semibold">{ing.quantity}</span> {ing.name}
                 </span>
               ))}
@@ -468,7 +468,7 @@ useEffect(() => {
         </details>
       </div>
 
-      {/* Comments Section (collapsed by default) */}
+      {/* Comments */}
       {token && (
         <div className="mt-10 pt-8 border-t border-neutral-700">
           <button
@@ -482,7 +482,6 @@ useEffect(() => {
 
           {commentsOpen && (
             <>
-              {/* Comment box */}
               <div className="space-y-3 mb-6">
                 <textarea
                   rows="3"
@@ -499,7 +498,6 @@ useEffect(() => {
                 </button>
               </div>
 
-              {/* Existing comments */}
               {comments.length === 0 ? (
                 <p className="text-gray-500">No comments yet. Be the first to share your thoughts!</p>
               ) : (
@@ -507,10 +505,7 @@ useEffect(() => {
                   {comments.map((comment) => (
                     <div key={comment.id} className="bg-neutral-900 border border-neutral-700 p-4 rounded-lg">
                       <div className="flex justify-between items-center text-sm text-gray-400 mb-1">
-                        <Link
-                          to={`/profile/${comment.username}`}
-                          className="font-medium hover:text-platerly-green transition-colors"
-                        >
+                        <Link to={`/profile/${comment.username}`} className="font-medium hover:text-platerly-green transition-colors">
                           @{comment.username}
                         </Link>
                         <span>{new Date(comment.createdAt).toLocaleString()}</span>
@@ -525,7 +520,6 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Confirm Delete Modal */}
       <ConfirmModal
         open={confirmOpen}
         title="Delete recipe?"
