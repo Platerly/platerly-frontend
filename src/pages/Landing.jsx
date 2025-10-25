@@ -28,7 +28,7 @@ const Landing = () => {
         </h1>
 
         <p className="text-lg text-platerly-subtle">
-          The recipe network for the future — allergy-aware, halal by design, and powered by intelligent ingredients. Built for everyone, everywhere.
+          The recipe network for the future allergy-aware, halal by design, and powered by intelligent ingredients. Built for everyone, everywhere.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
@@ -38,6 +38,7 @@ const Landing = () => {
           <Link to="/login">
             <Button variant="secondary" size="lg" className="w-40">Log In</Button>
           </Link>
+          
         </div>
       </div>
     </div>

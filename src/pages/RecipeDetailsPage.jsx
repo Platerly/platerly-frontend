@@ -7,6 +7,58 @@ import { MoreVertical, Pencil, Trash2, RefreshCw, BookmarkPlus } from 'lucide-re
 
 const DIFFICULTY_MAP = { 0: 'Easy', 1: 'Medium', 2: 'Hard' }
 
+// ---------- Severity classes (match RecipeCard palette) ----------
+const SEVERITY_CLASS = {
+  high:   'bg-red-900/60 border-red-500 text-red-100',
+  medium: 'bg-orange-900/60 border-orange-500 text-orange-100',
+  low:    'bg-green-900/40 border-green-600 text-green-100',
+  safe:   'bg-green-900/40 border-green-600 text-green-100',
+}
+const getSeverityTextColor = (severity) => {
+  switch ((severity || '').toLowerCase()) {
+    case 'high': return 'text-red-200'
+    case 'medium': return 'text-orange-200'
+    case 'low': return 'text-green-300'
+    default: return 'text-green-300'
+  }
+}
+
+// normalize like backend: lowercase + single spaces
+const norm = (s) => String(s || '').toLowerCase().trim().replace(/\s+/g, ' ')
+
+// plural/singular tolerance: "almond" <-> "almonds"
+const variants = (s) => {
+  const x = norm(s)
+  if (!x) return []
+  const out = new Set([x])
+  if (x.endsWith('s')) out.add(x.slice(0, -1))
+  else out.add(`${x}s`)
+  return Array.from(out)
+}
+
+// Only medium/high count as banner-worthy
+const isSevere = (s) => {
+  const x = String(s || '').toLowerCase()
+  return x === 'high' || x === 'medium'
+}
+
+// Prefer arrays from either top-level or recipe object; fallback to legacy CSV
+function coerceTags(recipeObj, topLevel) {
+  const arr =
+    (Array.isArray(topLevel?.tagNames) && topLevel.tagNames) ||
+    (Array.isArray(recipeObj?.tagNames) && recipeObj.tagNames) ||
+    (Array.isArray(recipeObj?.tags) && recipeObj.tags)
+
+  if (Array.isArray(arr)) return arr.filter(Boolean)
+
+  const csv =
+    (typeof topLevel?.recipe?.tags === 'string' && topLevel.recipe.tags) ||
+    (typeof recipeObj?.tags === 'string' && recipeObj.tags) ||
+    ''
+
+  return String(csv).split(',').map(t => t.trim()).filter(Boolean)
+}
+
 function fmtMinutes(mins) {
   if (mins === null || mins === undefined) return null
   const h = Math.floor(mins / 60)
@@ -15,12 +67,6 @@ function fmtMinutes(mins) {
   if (h) return `${h} hr`
   return `${m} min`
 }
-
-function coerceTags(v) {
-  if (!v) return []
-  return Array.isArray(v) ? v : String(v).split(',').map(t => t.trim()).filter(Boolean)
-}
-
 function toMinutes(v) {
   if (v === null || v === undefined) return 0
   if (typeof v === 'number' && !Number.isNaN(v)) return v
@@ -56,16 +102,21 @@ const RecipeDetailsPage = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const { token, user } = useAuth()
+  
 
+  // --------- ONE place for hooks (fixed order) ---------
   const [recipe, setRecipe] = useState(null)
   const [remixMeta, setRemixMeta] = useState(null)
+  const [topLevelForTags, setTopLevelForTags] = useState(null)
   const [comments, setComments] = useState([])
   const [newComment, setNewComment] = useState('')
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [error, setError] = useState('')
-  const [userAllergies, setUserAllergies] = useState([])
-  const [matchingAllergens, setMatchingAllergens] = useState([])
+
+  // Backend allergy data only
+  const [backendTerms /* kept for compatibility */, setBackendTerms] = useState([])
+  const [severityMap, setSeverityMap] = useState({})   // recipe.matchedAllergenSeverity (normalized)
 
   // UI state
   const [menuOpen, setMenuOpen] = useState(false)
@@ -84,17 +135,19 @@ const RecipeDetailsPage = () => {
     return () => document.removeEventListener('click', onDocClick)
   }, [])
 
-  // Fetch recipe (authoritative) + start comments in parallel
+  // Fetch recipe + comments in parallel
   useEffect(() => {
     setRecipe(null)
     setRemixMeta(null)
+    setTopLevelForTags(null)
+    setBackendTerms([])
+    setSeverityMap({})
     setLoading(true)
     setNotFound(false)
     setError('')
 
     const recipeCtl = new AbortController()
     const commentsCtl = new AbortController()
-
     const authHeader = token ? { Authorization: `Bearer ${token}` } : {}
 
     const fetchRecipe = async () => {
@@ -112,9 +165,26 @@ const RecipeDetailsPage = () => {
         if (!res.ok) throw new Error(`Failed to fetch recipe (${res.status})`)
 
         const data = await res.json()
-        setRecipe(data.recipe ?? data)
+        setTopLevelForTags(data)
+        const core = data.recipe ?? data
+        setRecipe(core)
         setRemixMeta(data.remixMeta ?? null)
-        setLoading(false) // only now flip loading off
+
+        // ✅ STRICTLY backend fields on the recipe object
+        const terms = Array.isArray(core?.matchedAllergenTerms) ? core.matchedAllergenTerms : []
+        const sevMap = core?.matchedAllergenSeverity && typeof core.matchedAllergenSeverity === 'object'
+          ? core.matchedAllergenSeverity
+          : {}
+
+        const normalized = {}
+        Object.entries(sevMap).forEach(([k, v]) => {
+          if (!k) return
+          normalized[norm(k)] = String(v || '').toLowerCase()
+        })
+        setBackendTerms(terms.map(norm).filter(Boolean))
+        setSeverityMap(normalized)
+
+        setLoading(false)
       } catch (err) {
         if (recipeCtl.signal.aborted) return
         console.error(err)
@@ -146,71 +216,73 @@ const RecipeDetailsPage = () => {
     }
   }, [id, token])
 
-  // Fetch allergy list (does not affect main loading state)
-  useEffect(() => {
-    if (!token) return
-    const ctl = new AbortController()
-    const load = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/Allergy/my-allergies`, {
-          headers: { Authorization: `Bearer ${token}` },
-          signal: ctl.signal,
-        })
-        if (!res.ok) return
-        const list = await res.json()
-        setUserAllergies(Array.isArray(list) ? list.map(a => String(a || '').toLowerCase()) : [])
-      } catch (e) {
-        if (!ctl.signal.aborted) console.error('Error loading allergies:', e)
+  // Build a set of only medium/high severity keys (normalized)
+  const severeKeySet = useMemo(() => {
+    const s = new Set()
+    Object.entries(severityMap || {}).forEach(([k, v]) => {
+      if (k && isSevere(v)) s.add(norm(k))
+    })
+    return s
+  }, [severityMap])
+
+  // ---------- Banner terms: ONLY ingredients that matched medium/high ----------
+  const bannerTerms = useMemo(() => {
+    if (!recipe?.ingredients || !severeKeySet.size) return []
+    const out = []
+    for (const ing of recipe.ingredients) {
+      const n = norm(ing?.name)
+      for (const v of variants(n)) {
+        if (severeKeySet.has(v)) {
+          out.push(ing.name) // display original-cased ingredient name
+          break
+        }
       }
     }
-    load()
-    return () => ctl.abort()
-  }, [token])
+    return Array.from(new Set(out)) // unique, preserve first-seen order
+  }, [recipe?.ingredients, severeKeySet])
 
-  // Compare recipe ingredients to allergies
-  useEffect(() => {
-    if (!recipe || userAllergies.length === 0) {
-      setMatchingAllergens([])
-      return
-    }
-    const matched = (recipe.ingredients || [])
-      .map(i => i?.name?.toLowerCase())
-      .filter(Boolean)
-      .filter(name => userAllergies.includes(name))
-    setMatchingAllergens(matched)
-  }, [recipe, userAllergies])
+  const hasAnyAllergen = bannerTerms.length > 0
 
-  const handleSubmitComment = async () => {
-    if (!newComment.trim()) return
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
-        method: 'POST',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ recipeId: id, content: newComment }),
-      })
-      if (!res.ok) throw new Error('Failed to post comment')
-      setNewComment('')
-      const refreshed = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      const updated = await refreshed.json()
-      setComments(Array.isArray(updated) ? updated : [])
-      setCommentsOpen(true)
-    } catch (err) {
-      console.error(err)
+  // ---------- Severity lookup from backend map only ----------
+  const lookupSeverity = (ingredientName, ing) => {
+    const candidates = [
+      ing?.globalIngredientName,
+      ing?.globalIngredient?.name,
+      ingredientName,
+    ].map(norm).filter(Boolean)
+
+    for (const cand of candidates) {
+      for (const v of variants(cand)) {
+        const sev = severityMap[v]
+        if (sev) return sev // 'high'|'medium'|'low'
+      }
     }
+    return null
   }
 
-  // Ownership check (hide edit/delete if we can't determine)
+  // ---------- Derived fields ----------
+  const difficultyRaw = recipe?.difficulty ?? recipe?.difficultyLevel
+  const difficulty =
+    typeof difficultyRaw === 'number'
+      ? (DIFFICULTY_MAP[difficultyRaw] ?? String(difficultyRaw))
+      : difficultyRaw
+
+  const prepRaw = recipe?.prepTimeMinutes ?? recipe?.prepMinutes ?? recipe?.prepTime
+  const cookRaw = recipe?.cookTimeMinutes ?? recipe?.cookMinutes ?? recipe?.cookTime
+  const prepMin = toMinutes(prepRaw)
+  const cookMin = toMinutes(cookRaw)
+  const prep = prepMin ? fmtMinutes(prepMin) : null
+  const cook = cookMin ? fmtMinutes(cookMin) : null
+  const totalFmt = (prepMin + cookMin) > 0 ? fmtMinutes(prepMin + cookMin) : null
+
+  const tags = coerceTags(recipe, topLevelForTags)
+
+  // ---------- Ownership & actions ----------
   const isOwner = useMemo(() => {
     if (!user?.username || !recipe?.authorUsername) return false
     return String(user.username).toLowerCase() === String(recipe.authorUsername).toLowerCase()
   }, [user?.username, recipe?.authorUsername])
 
-  // Actions
   const goEdit = () => navigate(`/edit-recipe/${id}`)
   const goRemix = () => navigate(`/remix/${id}`)
 
@@ -220,8 +292,6 @@ const RecipeDetailsPage = () => {
         method: 'DELETE',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
-
-      // 2xx incl. 204 = success
       if (res.status === 204 || (res.ok && res.status >= 200 && res.status < 300)) {
         window.location.assign('/feed')
         return
@@ -268,23 +338,6 @@ const RecipeDetailsPage = () => {
       </div>
     )
   }
-
-  // --- Derived fields for the info row ---
-  const difficultyRaw = recipe.difficulty ?? recipe.difficultyLevel
-  const difficulty =
-    typeof difficultyRaw === 'number'
-      ? (DIFFICULTY_MAP[difficultyRaw] ?? String(difficultyRaw))
-      : difficultyRaw
-
-  const prepRaw = recipe.prepTimeMinutes ?? recipe.prepMinutes ?? recipe.prepTime
-  const cookRaw = recipe.cookTimeMinutes ?? recipe.cookMinutes ?? recipe.cookTime
-  const prepMin = toMinutes(prepRaw)
-  const cookMin = toMinutes(cookRaw)
-  const prep = prepMin ? fmtMinutes(prepMin) : null
-  const cook = cookMin ? fmtMinutes(cookMin) : null
-  const totalFmt = (prepMin + cookMin) > 0 ? fmtMinutes(prepMin + cookMin) : null
-
-  const tags = coerceTags(recipe.tags)
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 text-platerly-text">
@@ -429,11 +482,16 @@ const RecipeDetailsPage = () => {
         </div>
       )}
 
-      {/* Allergy Notice */}
-      {matchingAllergens.length > 0 && (
-        <div className="mt-6 bg-red-900/80 border border-red-500 text-red-300 px-5 py-3 rounded-lg shadow-sm">
-          ⚠️ <strong>This recipe contains allergens:</strong>{' '}
-          <span className="font-semibold">{matchingAllergens.join(', ')}</span>
+      {/* Allergy Notice (backend-only, medium/high only) */}
+      {token && hasAnyAllergen && (
+        <div className="mt-6 bg-red-900/80 border border-red-500 text-red-200 px-5 py-3 rounded-lg shadow-sm">
+          ⚠️ <strong>Potential allergens detected</strong>
+          <div className="mt-1 text-sm">
+            Matched:{' '}
+            <span className="font-semibold">
+              {bannerTerms.join(', ')}
+            </span>
+          </div>
         </div>
       )}
 
@@ -454,15 +512,31 @@ const RecipeDetailsPage = () => {
           <div className="px-4 pb-4 text-gray-300 whitespace-pre-line">{recipe.instructions || 'No instructions provided.'}</div>
         </details>
 
+        {/* 🧂 Ingredients — backend-only severity coloring */}
         <details open className="rounded-lg border border-neutral-700">
           <summary className="cursor-pointer select-none px-4 py-3 text-lg font-semibold">🧂 Ingredients</summary>
           <div className="px-4 pb-4">
             <div className="flex flex-wrap gap-3">
-              {(recipe.ingredients || []).map((ing, i) => (
-                <span key={i} className="px-3 py-1 rounded-full text-sm bg-neutral-800 border border-neutral-600 text-white">
-                  <span className="text-green-400 font-semibold">{ing.quantity}</span> {ing.name}
-                </span>
-              ))}
+              {(recipe.ingredients || []).map((ing, i) => {
+                const sev = lookupSeverity(ing?.name, ing) // 'high' | 'medium' | 'low' | null
+                const visual = sev || 'safe'
+                const cls =
+                  visual === 'high'   ? SEVERITY_CLASS.high   :
+                  visual === 'medium' ? SEVERITY_CLASS.medium :
+                                        SEVERITY_CLASS.safe
+                const qtyColor = getSeverityTextColor(visual)
+
+                return (
+                  <span
+                    key={i}
+                    className={`px-3 py-1 rounded-full text-sm border ${cls}`}
+                    title={sev ? `Severity: ${sev}` : undefined}
+                  >
+                    {(visual === 'high' || visual === 'medium') && <span className="mr-1">⚠</span>}
+                    <span className={`${qtyColor} font-semibold`}>{ing.quantity}</span> {ing.name}
+                  </span>
+                )
+              })}
             </div>
           </div>
         </details>
@@ -491,7 +565,27 @@ const RecipeDetailsPage = () => {
                   className="w-full bg-neutral-900 border border-neutral-700 text-white rounded-md p-3 focus:outline-none focus:ring focus:ring-green-500"
                 />
                 <button
-                  onClick={handleSubmitComment}
+                  onClick={async () => {
+                    if (!newComment.trim()) return
+                    try {
+                      const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
+                        method: 'POST',
+                        headers: {
+                          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ recipeId: id, content: newComment }),
+                      })
+                      if (!res.ok) throw new Error('Failed to post comment')
+                      setNewComment('')
+                      const refreshed = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
+                        headers: token ? { Authorization: `Bearer ${token}` } : {},
+                      })
+                      const updated = await refreshed.json()
+                      setComments(Array.isArray(updated) ? updated : [])
+                      setCommentsOpen(true)
+                    } catch (err) { console.error(err) }
+                  }}
                   className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md font-medium transition"
                 >
                   Post Comment

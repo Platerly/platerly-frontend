@@ -13,32 +13,32 @@ const Feed = () => {
 
   const [sp, setSp] = useSearchParams()
   const navigate = useNavigate()
-  const { token } = useAuth()
+  const { user, token } = useAuth()
 
-  // ---- Tab from URL (defaults to explore)
-  const tab = sp.get('tab') === 'following' ? 'following' : 'explore'
+  // ✅ Auth check (handles cold starts)
+  const authed = !!(user || token || (typeof window !== 'undefined' &&
+    (localStorage.getItem('token') || sessionStorage.getItem('token'))))
 
-  // ---- Filters (managed by RightColumn, read here from URL)
-  const difficulty = (sp.get('difficulty') || '').trim()            // '', 'Easy', 'Medium', 'Hard'
-  const tagsQs = (sp.get('tags') || '').trim()                      // "vegan, breakfast"
+  // ✅ Force guests to stay in Explore tab
+  const rawTab = sp.get('tab')
+  const tab = authed && rawTab === 'following' ? 'following' : 'explore'
+
+  const difficulty = (sp.get('difficulty') || '').trim()
+  const tagsQs = (sp.get('tags') || '').trim()
   const requireAllTags = sp.get('requireAllTags') === 'true'
   const hideRemixes = sp.get('hideRemixes') === 'true'
   const hideMyAllergens = sp.get('hideMyAllergens') === 'true'
 
-  // Parsed tags array (lowercased, unique)
   const tags = useMemo(() => {
     if (!tagsQs) return []
     return Array.from(
       new Set(
-        tagsQs
-          .split(',')
-          .map(t => t.trim().toLowerCase())
-          .filter(Boolean)
+        tagsQs.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
       )
     )
   }, [tagsQs])
 
-  // --- URL helpers
+
   const updateParams = (updates) => {
     const next = new URLSearchParams(sp)
     Object.entries(updates).forEach(([k, v]) => {
@@ -47,13 +47,13 @@ const Feed = () => {
     })
     setSp(next, { replace: true })
   }
+
   const goExplore = () => updateParams({ tab: 'explore' })
   const goFollowing = () => {
-    if (!token) return navigate('/login')
+    if (!authed) return navigate('/login')
     updateParams({ tab: 'following' })
   }
 
-  // --- Build explore URL for server-side filtering
   const buildExploreUrl = () => {
     const params = new URLSearchParams()
     if (difficulty) params.set('difficulty', difficulty)
@@ -64,7 +64,6 @@ const Feed = () => {
     return `${API_BASE_URL}/api/feed/explore${params.toString() ? `?${params.toString()}` : ''}`
   }
 
-  // --- Fetchers
   const fetchUserAllergies = async () => {
     if (!token) return
     try {
@@ -100,8 +99,9 @@ const Feed = () => {
       setLoading(true)
       setError('')
 
-      const url =
-        tab === 'explore' ? buildExploreUrl() : `${API_BASE_URL}/api/feed/following`
+      const url = tab === 'explore'
+        ? buildExploreUrl()
+        : `${API_BASE_URL}/api/feed/following`
 
       const headers = token ? { Authorization: `Bearer ${token}` } : {}
       const res = await fetch(url, { headers })
@@ -117,59 +117,74 @@ const Feed = () => {
     }
   }
 
-  // --- Client-side filtering for Following tab
+  // ---------- helpers for allergen filtering ----------
+  const norm = (s) => String(s || '').toLowerCase().trim().replace(/\s+/g, ' ')
+  const variants = (s) => {
+    const x = norm(s); if (!x) return []
+    const out = new Set([x])
+    if (x.endsWith('s')) out.add(x.slice(0, -1)); else out.add(`${x}s`)
+    return Array.from(out)
+  }
+  const isSevere = (s) => {
+    const x = String(s || '').toLowerCase()
+    return x === 'high' || x === 'medium'
+  }
+
+  const getIngredientNames = (r) => {
+    if (Array.isArray(r.ingredientNames)) return r.ingredientNames
+    if (Array.isArray(r.ingredients)) {
+      return r.ingredients.map(i => (i?.globalIngredient?.name || i?.name || '')).filter(Boolean)
+    }
+    return []
+  }
+
+  const hasSevereAllergen = (r) => {
+    const sevMap = r?.matchedAllergenSeverity
+    if (!sevMap || typeof sevMap !== 'object') return false
+
+    const severeKeys = new Set()
+    for (const [k, v] of Object.entries(sevMap)) {
+      if (k && isSevere(v)) severeKeys.add(norm(k))
+    }
+    if (severeKeys.size === 0) return false
+
+    const names = getIngredientNames(r)
+    for (const n of names) {
+      for (const v of variants(n)) {
+        if (severeKeys.has(v)) return true
+      }
+    }
+    return false
+  }
+
   const filteredFollowing = useMemo(() => {
     if (tab !== 'following') return recipes
 
     let list = recipes
-
-    // hide remixes
-    if (hideRemixes) {
-      list = list.filter(r => !r.isRemix)
-    }
-
-    // difficulty
-    if (difficulty) {
-      const target = difficulty.toLowerCase()
-      list = list.filter(r => (r.difficulty || '').toLowerCase() === target)
-    }
-
-    // tags
+    if (hideRemixes) list = list.filter(r => !r.isRemix)
+    if (difficulty) list = list.filter(r => (r.difficulty || '').toLowerCase() === difficulty.toLowerCase())
     if (tags.length > 0) {
       list = list.filter(r => {
-        const recipeTags = Array.isArray(r.tags)
-          ? r.tags.map(t => (t || '').toLowerCase())
-          : []
-        if (requireAllTags) {
-          return tags.every(t => recipeTags.some(rt => rt.includes(t)))
-        } else {
-          return tags.some(t => recipeTags.some(rt => rt.includes(t)))
-        }
+        const recipeTags = Array.isArray(r.tags) ? r.tags.map(t => (t || '').toLowerCase()) : []
+        return requireAllTags
+          ? tags.every(t => recipeTags.some(rt => rt.includes(t)))
+          : tags.some(t => recipeTags.some(rt => rt.includes(t)))
       })
     }
-
-    // hide my allergens (requires user allergies and ingredients)
-    if (hideMyAllergens && userAllergies.length > 0) {
-      list = list.filter(r => {
-        const names = Array.isArray(r.ingredientNames)
-          ? r.ingredientNames.map(n => (n || '').toLowerCase())
-          : Array.isArray(r.ingredients)
-            ? r.ingredients
-                .map(i => (i.globalIngredient?.name || i.name || '').toLowerCase())
-            : []
-        return !userAllergies.some(a => names.some(n => n.includes(a)))
-      })
+    if (hideMyAllergens) {
+      list = list.filter(r => !hasSevereAllergen(r))
     }
-
     return list
-  }, [tab, recipes, hideRemixes, difficulty, tags, requireAllTags, hideMyAllergens, userAllergies])
+  }, [tab, recipes, hideRemixes, difficulty, tags, requireAllTags, hideMyAllergens])
 
-  // --- Effects
   useEffect(() => {
     const init = async () => {
       if (token) {
         await fetchUserAllergies()
         await fetchCurrentUserId()
+      } else {
+        setUserAllergies([])
+        setCurrentUserId(null)
       }
       await fetchFeed()
     }
@@ -181,7 +196,6 @@ const Feed = () => {
 
   return (
     <div className="flex flex-col bg-platerly-dark text-platerly-text min-h-screen">
-      {/* Tabs */}
       <div className="sticky top-0 z-20 bg-platerly-dark py-4 border-b border-platerly-border">
         <div className="flex justify-center gap-4">
           <button
@@ -194,20 +208,23 @@ const Feed = () => {
           >
             Explore
           </button>
-          <button
-            onClick={goFollowing}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition ${
-              tab === 'following'
-                ? 'bg-platerly-green text-white shadow'
-                : 'bg-platerly-card text-platerly-subtle hover:bg-platerly-green/20'
-            }`}
-          >
-            Following
-          </button>
+
+          {/* ✅ Show Following only if user is signed in */}
+          {authed && (
+            <button
+              onClick={goFollowing}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition ${
+                tab === 'following'
+                  ? 'bg-platerly-green text-white shadow'
+                  : 'bg-platerly-card text-platerly-subtle hover:bg-platerly-green/20'
+              }`}
+            >
+              Following
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Feed */}
       <div className="flex flex-col gap-6 px-6 py-8">
         {loading && <p className="text-platerly-subtle text-center">Loading…</p>}
         {!loading && error && <p className="text-red-400 text-center">{error}</p>}
@@ -228,14 +245,18 @@ const Feed = () => {
             reposts={recipe.repostCount}
             isRepostedByCurrentUser={recipe.isRepostedByCurrentUser}
             ingredients={recipe.ingredients}
+            ingredientNames={recipe.ingredientNames}
+            allergenMatches={recipe.allergenMatches}
+            matchedAllergenTerms={recipe.matchedAllergenTerms}
             userAllergies={userAllergies}
+            allergenSeverity={recipe.matchedAllergenSeverity}
             userId={recipe.postedBy?.userId}
             isFollowing={recipe.isFollowing}
             currentUserId={currentUserId}
             prepTime={recipe.prepTimeMinutes}
             cookTime={recipe.cookTimeMinutes}
-            difficulty={recipe.difficulty}   // string from API
-            tags={recipe.tags}               // array from API
+            difficulty={recipe.difficulty}
+            tags={recipe.tags}
           />
         ))}
       </div>

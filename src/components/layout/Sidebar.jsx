@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Home, PlusCircle, Book, Settings } from 'lucide-react'
+import { Home, PlusCircle, Book, Settings, User } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
 const Sidebar = () => {
@@ -80,6 +80,29 @@ const Sidebar = () => {
               <Book className="w-6 h-6" />
               My Cookbooks
             </Link>
+
+            {/* New: Profile link */}
+            {user && (
+              <Link
+                to={`/profile/${user.username}`}
+                className={`flex items-center gap-4 text-lg px-4 py-2 rounded-md transition ${
+                  location.pathname.startsWith(`/profile/${user.username}`)
+                    ? 'bg-platerly-green text-white'
+                    : 'hover:bg-platerly-card hover:text-white'
+                }`}
+              >
+                {user.profileImageUrl ? (
+                  <img
+                    src={user.profileImageUrl}
+                    alt={user.username}
+                    className="w-6 h-6 rounded-full object-cover"
+                  />
+                ) : (
+                  <User className="w-6 h-6" />
+                )}
+                Profile
+              </Link>
+            )}
 
             <Link
               to="/settings"

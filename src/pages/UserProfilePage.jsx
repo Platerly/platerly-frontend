@@ -140,10 +140,11 @@ const UserProfilePage = () => {
         const [userRes, cookbooksRes, followersRes, followingRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}`),
           fetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}/cookbooks`),
-          fetch(`${API_BASE_URL}/api/user/${encodeURIComponent(username)}/followers`, {
+          // ✅ use Follow controller with username query
+          fetch(`${API_BASE_URL}/api/Follow/followers?username=${encodeURIComponent(username)}`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           }),
-          fetch(`${API_BASE_URL}/api/user/${encodeURIComponent(username)}/following`, {
+          fetch(`${API_BASE_URL}/api/Follow/following?username=${encodeURIComponent(username)}`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           }),
         ]);
@@ -175,7 +176,9 @@ const UserProfilePage = () => {
 
   useEffect(() => {
     if (!token || !user || !followers.length) return;
-    setIsFollowing(followers.some((f) => f.username === user.username));
+    setIsFollowing(
+      followers.some((f) => f.username?.toLowerCase?.() === user.username?.toLowerCase?.())
+    );
   }, [followers, user, token]);
 
   const followerCount = followers.length;
@@ -183,7 +186,8 @@ const UserProfilePage = () => {
 
   const handleFollowToggle = async () => {
     if (!token || !profile) return;
-    const endpoint = `${API_BASE_URL}/api/user/${profile.id}/follow`;
+    // ✅ Follow controller (POST to follow, DELETE to unfollow)
+    const endpoint = `${API_BASE_URL}/api/Follow/${profile.id}`;
     const method = isFollowing ? "DELETE" : "POST";
 
     try {
@@ -193,6 +197,7 @@ const UserProfilePage = () => {
       });
       if (!res.ok) throw new Error("Failed to toggle follow");
 
+      // optimistic count update
       if (isFollowing) {
         setFollowers((prev) => prev.filter((f) => f.username !== user.username));
       } else {
@@ -318,7 +323,7 @@ const UserProfilePage = () => {
           {/* Social icons */}
           <SocialLinksRow
             websiteUrl={profile.websiteUrl}
-            youTubeUrl={profile.youTubeUrl} /* backend uses capital T */
+            youTubeUrl={profile.youTubeUrl}
             xUrl={profile.xUrl}
             instagramUrl={profile.instagramUrl}
           />
@@ -337,12 +342,21 @@ const UserProfilePage = () => {
               {websiteShort}
             </a>
           )}
-          <span>
+
+          {/* ✅ Link counts to dedicated pages */}
+          <Link
+            to={`/user/${profile.username}/followers`}
+            className="underline-offset-2 hover:underline"
+          >
             <b>{followerCount}</b> Followers
-          </span>
-          <span>
+          </Link>
+
+          <Link
+            to={`/user/${profile.username}/following`}
+            className="underline-offset-2 hover:underline"
+          >
             <b>{followingCount}</b> Following
-          </span>
+          </Link>
         </div>
 
         {/* Bio */}

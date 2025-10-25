@@ -27,6 +27,7 @@ import AllergyDisclaimerPage from '../pages/public/AllergyDisclaimerPage'
 import RefundsPage from '../pages/public/RefundsPage'
 import ContactPage from '../pages/public/ContactPage'
 import NotFoundPage from '../pages/public/NotFoundPage'
+import FollowListPage from '../pages/FollowListPage'
 
 const AppRoutes = () =>
   useRoutes([
@@ -48,7 +49,6 @@ const AppRoutes = () =>
     { path: '/contact', element: <ContactPage /> },
 
     // Protected
-    { path: '/feed', element: <RequireAuth><AppLayout><Feed /></AppLayout></RequireAuth> },
     { path: '/create', element: <RequireAuth><AppLayout><CreateRecipe /></AppLayout></RequireAuth> },
     { path: '/remix/:originalId', element: <RequireAuth><AppLayout><RemixPage /></AppLayout></RequireAuth> },
     { path: '/cookbooks', element: <RequireAuth><AppLayout><CookbookPage /></AppLayout></RequireAuth> },
@@ -57,8 +57,11 @@ const AppRoutes = () =>
     { path: '/settings/allergies', element: <RequireAuth><AppLayout><AllergySettingsPage /></AppLayout></RequireAuth> },
     { path: '/settings/profile', element: <RequireAuth><AppLayout><MyProfileSettingsPage /></AppLayout></RequireAuth> },
     { path: '/edit-recipe/:id', element: <RequireAuth><AppLayout><EditRecipePage /></AppLayout></RequireAuth> },
+    {path: '/user/:username/followers', element: <RequireAuth><AppLayout><FollowListPage type="followers" /></AppLayout></RequireAuth> },
+    {path: '/user/:username/following', element: <RequireAuth><AppLayout><FollowListPage type="following" /></AppLayout></RequireAuth> },
 
     // Public content
+    { path: '/feed', element: <AppLayout><Feed /></AppLayout>},
     { path: '/recipe/:id', element: <AppLayout><RecipeDetailsPage /></AppLayout> },
     { path: '/profile/:username', element: <AppLayout><UserProfilePage /></AppLayout> },
     { path: '/search', element: <AppLayout><SearchResultsPage /></AppLayout> },
