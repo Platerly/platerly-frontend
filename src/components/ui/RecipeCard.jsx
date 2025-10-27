@@ -67,7 +67,7 @@ const RecipeCard = ({
 
   const safeImg = imageUrl || '/placeholder.png'
   // Updated shareUrl to use the SWA proxied route explicitly
-  const shareUrl = `${window.location.origin}/share/recipe/${id}`
+  const shareUrl = `${window.location.origin}/api/share/recipe/${id}`
 
   // Validate share URL on mount
   useEffect(() => {

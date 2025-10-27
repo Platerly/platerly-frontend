@@ -8,16 +8,5 @@
       "rewrite": "/index.html",
       "statusCode": 200
     }
-  },
-  "routes": [
-    {
-      "route": "/share/recipe/*",
-      "rewrite": "https://platerly-api-g9htcadmbda6h8ej.canadacentral-01.azurewebsites.net/share/recipe/*",
-      "allowedRoles": ["anonymous"]
-    },
-    {
-      "route": "/api/*",
-      "allowedRoles": ["anonymous"]
-    }
-  ]
+  }
 }
