@@ -67,13 +67,8 @@ const RecipeCard = ({
 
   const safeImg = imageUrl || '/placeholder.png'
   // Updated shareUrl to use the SWA proxied route explicitly
-  const shareUrl = `${window.location.origin}/api/share/recipe/${id}`
+  const shareUrl = `${window.location.origin}/s/${id}`
 
-  // Validate share URL on mount
-  useEffect(() => {
-    fetch(shareUrl, { method: 'HEAD' })
-      .catch(err => console.error('Share URL validation failed:', err));
-  }, [shareUrl]);
 
   const rawTags = Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',') : [])
   const lowerToOriginal = useMemo(() => {
@@ -208,7 +203,8 @@ const RecipeCard = ({
     e.stopPropagation()
     if (navigator.share) {
       try {
-        await navigator.share({ title, text: title, url: `${shareUrl}?v=${Date.now()}` })
+       const versioned = `${shareUrl}?v=${Date.now()}`
+        await navigator.share({ title, text: title, url: versioned })
       } catch (err) {
         console.error('Native share failed:', err);
       }
