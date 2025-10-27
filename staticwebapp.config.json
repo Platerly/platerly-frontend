@@ -4,9 +4,26 @@
     "exclude": ["/api/*", "/assets/*", "/static/*"]
   },
   "responseOverrides": {
-    "404": {
-      "rewrite": "/index.html",
-      "statusCode": 200
+    "404": { "rewrite": "/index.html", "statusCode": 200 }
+  },
+  "routes": [
+    {
+      "route": "/s/:id",
+      "rewrite": "/api/share/recipe/:id",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/share/recipe/*",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/og/recipe/:id.png",
+      "rewrite": "/api/share/og/recipe/:id.png",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/share/og/recipe/*",
+      "allowedRoles": ["anonymous"]
     }
-  }
+  ]
 }
