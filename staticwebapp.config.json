@@ -11,8 +11,8 @@
   },
   "routes": [
     {
-      "route": "/share/recipe/{id}",
-      "rewrite": "https://platerly-api-g9htcadmbda6h8ej.canadacentral-01.azurewebsites.net/share/recipe/{id}",
+      "route": "/share/recipe/*",
+      "rewrite": "https://platerly-api-g9htcadmbda6h8ej.canadacentral-01.azurewebsites.net/share/recipe/*",
       "allowedRoles": ["anonymous"]
     },
     {
