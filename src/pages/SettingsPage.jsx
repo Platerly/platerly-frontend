@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import AllergySettingsTab from "./AllergySettingsTab";
+import BillingPanel from "../components/account/BillingPanel";
 import { API_BASE_URL } from "../utils/api";
 
 /* helper */
@@ -156,6 +157,14 @@ const SettingsPage = () => {
         >
           Allergies
         </button>
+        <button
+          className={`pb-2 font-medium ${
+            activeTab === "subscription" ? "border-b-2 border-green-500 text-green-400" : "text-gray-400"
+          }`}
+          onClick={() => setActiveTab("subscription")}
+        >
+          Subscription
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -274,8 +283,10 @@ const SettingsPage = () => {
               </button>
             </div>
           </form>
-        ) : (
+        ) : activeTab === "allergies" ? (
           <AllergySettingsTab />
+        ) : (
+          <BillingPanel />
         )}
       </div>
 

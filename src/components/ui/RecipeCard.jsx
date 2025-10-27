@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Heart, Repeat2, Wand2 } from 'lucide-react'
+import { Heart, Repeat2, Wand2, Share2, Link as LinkIcon, Copy, Mail, MessageSquare } from 'lucide-react'
 import { API_BASE_URL } from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
 
@@ -13,7 +13,6 @@ const PRIORITY = {
 const BUCKETS = ['sensitivity','diet','course','style']
 const MAX_INLINE = 2
 
-// Map severity → text color (for the small “Potential allergens” line)
 const severityTextClass = (severity) => {
   switch ((severity || '').toLowerCase()) {
     case 'high':   return 'text-red-400 font-semibold'
@@ -22,11 +21,7 @@ const severityTextClass = (severity) => {
     default:       return 'text-platerly-subtle'
   }
 }
-
-// Severity rank helper for picking the “strongest”
 const sevRank = (s) => (s === 'high' ? 3 : s === 'medium' ? 2 : s === 'low' ? 1 : 0)
-
-// ---- Normalizers / helpers (match details page logic) ----
 const norm = (s) => String(s || '').toLowerCase().trim().replace(/\s+/g, ' ')
 const variants = (s) => {
   const x = norm(s)
@@ -51,13 +46,9 @@ const RecipeCard = ({
   isLiked = false,
   reposts = 0,
   isRepostedByCurrentUser = false,
-
-  // ✅ Backend-driven allergy inputs
-  ingredientNames = [],                  // array of strings
-  matchedAllergenTerms = [],             // (unused for rendering now; kept for future)
-  allergenSeverity = {},                 // { [normalizedIngredientName]: 'high'|'medium'|'low' }
-
-  // Other recipe metadata
+  ingredientNames = [],
+  matchedAllergenTerms = [],
+  allergenSeverity = {},
   prepTime,
   cookTime,
   difficulty,
@@ -69,12 +60,23 @@ const RecipeCard = ({
   const [repostCount, setRepostCount] = useState(typeof reposts === 'number' ? reposts : 0)
   const [showAllTags, setShowAllTags] = useState(false)
 
+  // NEW: share UI state
+  const [shareOpen, setShareOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+
   const navigate = useNavigate()
   const { token } = useAuth()
 
   const safeImg = imageUrl || '/placeholder.png'
+  const recipeUrl = `${window.location.origin}/recipe/${id}`
 
-  // ----- Tags: keep your ordering rules -----
+  // ✅ NEW: Share link uses backend OG endpoint
+  const backendBase = API_BASE_URL.includes('localhost')
+    ? window.location.origin // fallback for local dev
+    : API_BASE_URL.replace(/\/+$/, '')
+  const shareUrl = `${backendBase}/share/recipe/${id}`
+
+  // ----- Tags ordering
   const rawTags = Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',') : [])
   const lowerToOriginal = useMemo(() => {
     const m = new Map()
@@ -108,7 +110,7 @@ const RecipeCard = ({
   const prep = Number.isFinite(prepTime) ? prepTime : undefined
   const cook = Number.isFinite(cookTime) ? cookTime : undefined
 
-  // ----- Backend-only allergy display (medium/high only) -----
+  // ----- Allergy display (medium/high only)
   const ingredientNamesLower = useMemo(
     () => (Array.isArray(ingredientNames) ? ingredientNames : [])
       .map(n => norm(n))
@@ -116,7 +118,6 @@ const RecipeCard = ({
     [ingredientNames]
   )
 
-  // Normalize severity map keys once (server already uses lowercased keys, but be safe)
   const severityMap = useMemo(() => {
     const out = {}
     Object.entries(allergenSeverity || {}).forEach(([k, v]) => {
@@ -126,14 +127,12 @@ const RecipeCard = ({
     return out
   }, [allergenSeverity])
 
-  // Set of only medium/high keys from server
   const severeKeySet = useMemo(() => {
     const s = new Set()
     Object.entries(severityMap).forEach(([k, v]) => { if (isSevere(v)) s.add(k) })
     return s
   }, [severityMap])
 
-  // Strongest severity for a specific ingredient name
   const severityForIngredient = (name) => {
     const n = norm(name)
     let best = null
@@ -146,7 +145,6 @@ const RecipeCard = ({
     return best
   }
 
-  // List of ingredient *names* in this recipe that are medium/high per backend
   const severeIngredients = useMemo(() => {
     const out = []
     for (const ing of ingredientNames) {
@@ -155,14 +153,12 @@ const RecipeCard = ({
         if (severeKeySet.has(v)) { out.push(ing); break }
       }
     }
-    // unique, preserve display casing
     return Array.from(new Set(out))
   }, [ingredientNames, severeKeySet])
 
-  // “Any allergen?” -> only if we have any medium/high ingredient matches
   const hasAllergyMatch = severeIngredients.length > 0
 
-  // ----- Actions -----
+  // ----- Actions
   const handleCardClick = () => navigate(`/recipe/${id}`)
   const handleProfileClick = (e) => { e.stopPropagation(); navigate(`/profile/${author}`) }
 
@@ -210,6 +206,42 @@ const RecipeCard = ({
     if (count >= 1_000_000) return (count / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M'
     if (count >= 1_000) return (count / 1_000).toFixed(1).replace(/\.0$/, '') + 'K'
     return count.toString()
+  }
+
+  // ----- Share helpers
+  const openNativeShare = async (e) => {
+    e.stopPropagation()
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text: title, url: shareUrl })
+      } catch { /* user canceled */ }
+    } else {
+      setShareOpen((v) => !v)
+    }
+  }
+
+  const shareTo = (e, platform) => {
+    e.stopPropagation()
+    const text = `${title}`
+    const links = {
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+      pinterest: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(shareUrl)}&description=${encodeURIComponent(text)}`,
+      whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + shareUrl)}`,
+      email: `mailto:?subject=${encodeURIComponent('Check this recipe on Platerly')}&body=${encodeURIComponent(text + '\n' + shareUrl)}`
+    }
+    const u = links[platform]
+    if (u) window.open(u, '_blank', 'noopener,noreferrer')
+    setShareOpen(false)
+  }
+
+  const copyLink = async (e) => {
+    e.stopPropagation()
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {}
   }
 
   const Pill = ({ as: Comp = 'span', className = '', children, ...rest }) => (
@@ -301,10 +333,9 @@ const RecipeCard = ({
           )}
         </div>
 
-        {/* 🟠 Potential allergens — only show ingredients with medium/high severity */}
         {hasAllergyMatch && (
           <div className="text-sm font-medium mb-2">
-            ⚠️ Potential allergens:{' '}
+            ⚠️ Potential allergens{' '}
             {severeIngredients.map((name) => {
               const sev = severityForIngredient(name)
               return (
@@ -316,32 +347,96 @@ const RecipeCard = ({
           </div>
         )}
 
-        <div className="flex gap-6 items-center text-sm text-platerly-subtle">
-          <button
-            onClick={(e) => { e.stopPropagation(); handleLikeToggle() }}
-            className="flex items-center gap-1 hover:text-red-500"
-          >
-            <Heart className={`w-4 h-4 ${isLikedState ? 'fill-red-500 text-red-500' : ''}`} />
-            {formatCount(likeCount)}
-          </button>
+        {/* Actions row: left = like/repost/remix, right = share */}
+        <div className="flex items-center justify-between">
+          <div className="flex gap-6 items-center text-sm text-platerly-subtle">
+            <button
+              onClick={(e) => { e.stopPropagation(); handleLikeToggle() }}
+              className="flex items-center gap-1 hover:text-red-500"
+            >
+              <Heart className={`w-4 h-4 ${isLikedState ? 'fill-red-500 text-red-500' : ''}`} />
+              {formatCount(likeCount)}
+            </button>
 
-          <button
-            onClick={(e) => { e.stopPropagation(); handleRepostToggle() }}
-            className={`flex items-center gap-1 hover:text-green-500 ${isReposted ? 'text-green-500' : ''}`}
-          >
-            <Repeat2 className="w-4 h-4" />
-            {formatCount(repostCount)}
-          </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleRepostToggle() }}
+              className={`flex items-center gap-1 hover:text-green-500 ${isReposted ? 'text-green-500' : ''}`}
+            >
+              <Repeat2 className="w-4 h-4" />
+              {formatCount(repostCount)}
+            </button>
 
-          <button
-            onClick={(e) => { e.stopPropagation(); handleRemixClick() }}
-            className="flex items-center gap-1 hover:text-purple-400"
-          >
-            <Wand2 className="w-4 h-4" />
-            Remix
-          </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleRemixClick() }}
+              className="flex items-center gap-1 hover:text-purple-400"
+            >
+              <Wand2 className="w-4 h-4" />
+              Remix
+            </button>
+          </div>
+
+          {/* Share button + dropdown */}
+          <div className="relative">
+            <button
+              onClick={openNativeShare}
+              onMouseDown={(e) => e.stopPropagation()}
+              className="flex items-center gap-2 text-sm text-platerly-subtle hover:text-emerald-300"
+              aria-haspopup="menu"
+              aria-expanded={shareOpen}
+            >
+              <Share2 className="w-4 h-4" />
+              Share
+            </button>
+
+            {shareOpen && (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="absolute right-0 mt-2 w-56 rounded-xl border border-platerly-border bg-platerly-elev shadow-lg p-1 z-20"
+                role="menu"
+              >
+                <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-emerald-900/30 text-left"
+                        onClick={(e) => shareTo(e, 'twitter')} role="menuitem">
+                  <MessageSquare className="w-4 h-4" />
+                  Share on X (Twitter)
+                </button>
+                <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-emerald-900/30 text-left"
+                        onClick={(e) => shareTo(e, 'facebook')} role="menuitem">
+                  <MessageSquare className="w-4 h-4" />
+                  Share on Facebook
+                </button>
+                <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-emerald-900/30 text-left"
+                        onClick={(e) => shareTo(e, 'pinterest')} role="menuitem">
+                  <MessageSquare className="w-4 h-4" />
+                  Share on Pinterest
+                </button>
+                <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-emerald-900/30 text-left"
+                        onClick={(e) => shareTo(e, 'whatsapp')} role="menuitem">
+                  <MessageSquare className="w-4 h-4" />
+                  Share on WhatsApp
+                </button>
+                <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-emerald-900/30 text-left"
+                        onClick={(e) => shareTo(e, 'email')} role="menuitem">
+                  <Mail className="w-4 h-4" />
+                  Share via Email
+                </button>
+                <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-emerald-900/30 text-left"
+                        onClick={copyLink} role="menuitem">
+                  <LinkIcon className="w-4 h-4" />
+                  {copied ? 'Copied!' : 'Copy Link'}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {shareOpen && (
+        <button
+          aria-hidden
+          className="fixed inset-0 cursor-default"
+          onClick={(e) => { e.stopPropagation(); setShareOpen(false) }}
+        />
+      )}
     </div>
   )
 }

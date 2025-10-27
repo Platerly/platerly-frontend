@@ -28,6 +28,7 @@ import RefundsPage from '../pages/public/RefundsPage'
 import ContactPage from '../pages/public/ContactPage'
 import NotFoundPage from '../pages/public/NotFoundPage'
 import FollowListPage from '../pages/FollowListPage'
+import AccountPage from '../components/account/AccountPage'
 
 const AppRoutes = () =>
   useRoutes([
@@ -57,9 +58,10 @@ const AppRoutes = () =>
     { path: '/settings/allergies', element: <RequireAuth><AppLayout><AllergySettingsPage /></AppLayout></RequireAuth> },
     { path: '/settings/profile', element: <RequireAuth><AppLayout><MyProfileSettingsPage /></AppLayout></RequireAuth> },
     { path: '/edit-recipe/:id', element: <RequireAuth><AppLayout><EditRecipePage /></AppLayout></RequireAuth> },
-    {path: '/user/:username/followers', element: <RequireAuth><AppLayout><FollowListPage type="followers" /></AppLayout></RequireAuth> },
-    {path: '/user/:username/following', element: <RequireAuth><AppLayout><FollowListPage type="following" /></AppLayout></RequireAuth> },
-
+    { path: '/user/:username/followers', element: <RequireAuth><AppLayout><FollowListPage type="followers" /></AppLayout></RequireAuth> },
+    { path: '/user/:username/following', element: <RequireAuth><AppLayout><FollowListPage type="following" /></AppLayout></RequireAuth> },
+    { path: '/account', element: <RequireAuth><AppLayout><AccountPage /></AppLayout></RequireAuth> },
+    
     // Public content
     { path: '/feed', element: <AppLayout><Feed /></AppLayout>},
     { path: '/recipe/:id', element: <AppLayout><RecipeDetailsPage /></AppLayout> },
