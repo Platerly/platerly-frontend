@@ -71,10 +71,7 @@ const RecipeCard = ({
   const recipeUrl = `${window.location.origin}/recipe/${id}`
 
   // ✅ NEW: Share link uses backend OG endpoint
-  const backendBase = API_BASE_URL.includes('localhost')
-    ? window.location.origin // fallback for local dev
-    : API_BASE_URL.replace(/\/+$/, '')
-  const shareUrl = `${backendBase}/share/recipe/${id}`
+  const shareUrl = `${window.location.origin}/share/recipe/${id}`
 
   // ----- Tags ordering
   const rawTags = Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',') : [])
