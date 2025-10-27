@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Heart, Repeat2, Wand2, Share2, Link as LinkIcon, Copy, Mail, MessageSquare } from 'lucide-react'
+import { Heart, Repeat2, Wand2, Share2, LinkIcon, Copy, Mail, MessageSquare } from 'lucide-react'
 import { API_BASE_URL } from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
 
@@ -59,8 +59,6 @@ const RecipeCard = ({
   const [isReposted, setIsReposted] = useState(isRepostedByCurrentUser)
   const [repostCount, setRepostCount] = useState(typeof reposts === 'number' ? reposts : 0)
   const [showAllTags, setShowAllTags] = useState(false)
-
-  // NEW: share UI state
   const [shareOpen, setShareOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -68,9 +66,9 @@ const RecipeCard = ({
   const { token } = useAuth()
 
   const safeImg = imageUrl || '/placeholder.png'
+  // Updated shareUrl to match the proxied route
   const shareUrl = `${window.location.origin}/share/recipe/${id}`
 
-  // ----- Tags ordering
   const rawTags = Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',') : [])
   const lowerToOriginal = useMemo(() => {
     const m = new Map()
@@ -104,7 +102,6 @@ const RecipeCard = ({
   const prep = Number.isFinite(prepTime) ? prepTime : undefined
   const cook = Number.isFinite(cookTime) ? cookTime : undefined
 
-  // ----- Allergy display (medium/high only)
   const ingredientNamesLower = useMemo(
     () => (Array.isArray(ingredientNames) ? ingredientNames : [])
       .map(n => norm(n))
@@ -152,7 +149,6 @@ const RecipeCard = ({
 
   const hasAllergyMatch = severeIngredients.length > 0
 
-  // ----- Actions
   const handleCardClick = () => navigate(`/recipe/${id}`)
   const handleProfileClick = (e) => { e.stopPropagation(); navigate(`/profile/${author}`) }
 
@@ -202,7 +198,6 @@ const RecipeCard = ({
     return count.toString()
   }
 
-  // ----- Share helpers
   const openNativeShare = async (e) => {
     e.stopPropagation()
     if (navigator.share) {
@@ -217,14 +212,14 @@ const RecipeCard = ({
   const shareTo = (e, platform) => {
     e.stopPropagation()
     const text = `${title}`
-    const versioned = `${shareUrl}?v=${Date.now()}`; // cache-bust for crawlers
+    const versioned = `${shareUrl}?v=${Date.now()}`
     const links = {
-  twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(versioned)}`,
-  facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(versioned)}`,
-  pinterest: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(versioned)}&description=${encodeURIComponent(text)}`,
-  whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + versioned)}`,
-  email: `mailto:?subject=${encodeURIComponent('Check this recipe on Platerly')}&body=${encodeURIComponent(text + '\n' + versioned)}`
-}
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(versioned)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(versioned)}`,
+      pinterest: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(versioned)}&description=${encodeURIComponent(text)}`,
+      whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + versioned)}`,
+      email: `mailto:?subject=${encodeURIComponent('Check this recipe on Platerly')}&body=${encodeURIComponent(text + '\n' + versioned)}`
+    }
     const u = links[platform]
     if (u) window.open(u, '_blank', 'noopener,noreferrer')
     setShareOpen(false)
@@ -342,7 +337,6 @@ const RecipeCard = ({
           </div>
         )}
 
-        {/* Actions row: left = like/repost/remix, right = share */}
         <div className="flex items-center justify-between">
           <div className="flex gap-6 items-center text-sm text-platerly-subtle">
             <button
@@ -370,7 +364,6 @@ const RecipeCard = ({
             </button>
           </div>
 
-          {/* Share button + dropdown */}
           <div className="relative">
             <button
               onClick={openNativeShare}

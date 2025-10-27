@@ -1,7 +1,7 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/api/*", "/assets/*", "/static/*", "/share/*"]
+    "exclude": ["/api/*", "/assets/*", "/static/*"]
   },
   "responseOverrides": {
     "404": {
@@ -11,8 +11,8 @@
   },
   "routes": [
     {
-      "route": "/share/*",
-      "rewrite": "https://platerly-api-g9htcadmbda6h8ej.canadacentral-01.azurewebsites.net/share/*",
+      "route": "/share/recipe/{id}",
+      "rewrite": "https://platerly-api-g9htcadmbda6h8ej.canadacentral-01.azurewebsites.net/share/recipe/{id}",
       "allowedRoles": ["anonymous"]
     },
     {
