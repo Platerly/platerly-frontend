@@ -68,9 +68,6 @@ const RecipeCard = ({
   const { token } = useAuth()
 
   const safeImg = imageUrl || '/placeholder.png'
-  const recipeUrl = `${window.location.origin}/recipe/${id}`
-
-  // ✅ NEW: Share link uses backend OG endpoint
   const shareUrl = `${window.location.origin}/share/recipe/${id}`
 
   // ----- Tags ordering
@@ -210,7 +207,7 @@ const RecipeCard = ({
     e.stopPropagation()
     if (navigator.share) {
       try {
-        await navigator.share({ title, text: title, url: shareUrl })
+        await navigator.share({ title, text: title, url: `${shareUrl}?v=${Date.now()}` })
       } catch { /* user canceled */ }
     } else {
       setShareOpen((v) => !v)
@@ -220,13 +217,14 @@ const RecipeCard = ({
   const shareTo = (e, platform) => {
     e.stopPropagation()
     const text = `${title}`
+    const versioned = `${shareUrl}?v=${Date.now()}`; // cache-bust for crawlers
     const links = {
-      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`,
-      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-      pinterest: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(shareUrl)}&description=${encodeURIComponent(text)}`,
-      whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + shareUrl)}`,
-      email: `mailto:?subject=${encodeURIComponent('Check this recipe on Platerly')}&body=${encodeURIComponent(text + '\n' + shareUrl)}`
-    }
+  twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(versioned)}`,
+  facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(versioned)}`,
+  pinterest: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(versioned)}&description=${encodeURIComponent(text)}`,
+  whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + versioned)}`,
+  email: `mailto:?subject=${encodeURIComponent('Check this recipe on Platerly')}&body=${encodeURIComponent(text + '\n' + versioned)}`
+}
     const u = links[platform]
     if (u) window.open(u, '_blank', 'noopener,noreferrer')
     setShareOpen(false)

@@ -1,12 +1,23 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/api/*", "/assets/*", "/static/*"]
+    "exclude": ["/api/*", "/assets/*", "/static/*", "/share/*"]
   },
   "responseOverrides": {
     "404": {
       "rewrite": "/index.html",
       "statusCode": 200
     }
-  }
+  },
+  "routes": [
+    {
+      "route": "/share/*",
+      "rewrite": "https://platerly-api-g9htcadmbda6h8ej.canadacentral-01.azurewebsites.net/share/*",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/*",
+      "allowedRoles": ["anonymous"]
+    }
+  ]
 }
