@@ -5,13 +5,19 @@
       "/api/*",
       "/assets/*",
       "/static/*",
-      "/s/*"
+      "/s/*",
+      "/og/*"
     ]
   },
   "routes": [
     {
       "route": "/s/*",
       "serve": "/api/share/recipe/*",
+      "statusCode": 200
+    },
+    {
+      "route": "/og/recipe/*",
+      "serve": "/api/share/og/recipe/*",
       "statusCode": 200
     }
   ],
