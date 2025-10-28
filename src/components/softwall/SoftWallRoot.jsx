@@ -4,7 +4,7 @@ import { useSoftWall } from '../../hooks/useSoftWall'
 
 const IGNORE = new Set([
   '/login','/register','/forgot-password','/reset-password','/verify-email',
-  '/terms','/privacy','/guidelines','/disclaimer','/refunds','/contact'
+  '/terms','/privacy','/guidelines','/disclaimer','/refunds','/contact','/landings'
 ])
 
 export default function SoftWallRoot() {
