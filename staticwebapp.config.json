@@ -4,9 +4,17 @@
     "exclude": [
       "/api/*",
       "/assets/*",
-      "/static/*"
+      "/static/*",
+      "/s/*"
     ]
   },
+  "routes": [
+    {
+      "route": "/s/*",
+      "serve": "/api/share/recipe/*",
+      "statusCode": 200
+    }
+  ],
   "responseOverrides": {
     "404": { "rewrite": "/index.html", "statusCode": 200 }
   }
