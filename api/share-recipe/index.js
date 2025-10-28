@@ -1,35 +1,31 @@
-export default async function (context, req) {
+module.exports = async function (context, req) {
   try {
     const id = context.bindingData.id;
     const PUBLIC_BASE = (process.env.PublicBaseUrl || "https://www.platerly.com").replace(/\/+$/, "");
     const BACKEND_BASE = (process.env.BackendBaseUrl || "").replace(/\/+$/, "");
     const site = "Platerly";
 
-    // Fetch recipe details from your existing .NET API
+    // pull recipe from your .NET API
     const apiUrl = `https://${BACKEND_BASE}/api/Recipe/${id}`;
     const r = await fetch(apiUrl);
     if (!r.ok) {
-      context.log.warn(`Recipe fetch failed ${r.status} for ${apiUrl}`);
-      return { status: 404, body: "Recipe not found" };
+      context.log.warn(`Recipe fetch failed ${r.status} ${apiUrl}`);
+      return html(404, "Recipe not found");
     }
     const data = await r.json();
 
-    const title = (data?.title || "Recipe").toString();
+    const title = String(data?.title || "Recipe");
     const difficulty = data?.difficulty;
     const prep = data?.prepTimeMinutes > 0 ? `${data.prepTimeMinutes} min prep` : null;
     const cook = data?.cookTimeMinutes > 0 ? `${data.cookTimeMinutes} min cook` : null;
     const timePart = prep && cook ? `${prep}, ${cook}` : (prep || cook || null);
 
-    // Tags: take up to 3 (adjust to your API shape)
     const tagNames = (data?.tagNames || data?.tags || [])
       .filter(Boolean)
       .map(s => `#${String(s).trim()}`)
       .slice(0, 3);
 
-    // Optional allergens if your API exposes them; else remove this block
-    const allergens = (data?.allergenList || [])
-      .filter(Boolean)
-      .slice(0, 3);
+    const allergens = (data?.allergenList || []).filter(Boolean).slice(0, 3);
 
     const parts = [];
     if (difficulty !== undefined && difficulty !== null) parts.push(`Difficulty: ${difficulty}`);
@@ -43,24 +39,24 @@ export default async function (context, req) {
     const canonicalUrl = `${PUBLIC_BASE}/recipe/${id}`;
     const shareImage = `${PUBLIC_BASE}/og/recipe/${id}.png`;
 
-    const html = `<!doctype html>
+    const page = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>${escapeHtml(`${title} — ${site}`)}</title>
+<title>${E(`${title} — ${site}`)}</title>
 <link rel="canonical" href="${canonicalUrl}" />
 
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="${site}">
-<meta property="og:title" content="${escapeHtml(title)}">
-<meta property="og:description" content="${escapeHtml(desc)}">
+<meta property="og:title" content="${E(title)}">
+<meta property="og:description" content="${E(desc)}">
 <meta property="og:url" content="${canonicalUrl}">
 <meta property="og:image" content="${shareImage}">
-<meta property="og:image:alt" content="${escapeHtml(`${title} on ${site}`)}">
+<meta property="og:image:alt" content="${E(`${title} on ${site}`)}">
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="${escapeHtml(title)}">
-<meta name="twitter:description" content="${escapeHtml(desc)}">
+<meta name="twitter:title" content="${E(title)}">
+<meta name="twitter:description" content="${E(desc)}">
 <meta name="twitter:image" content="${shareImage}">
 <meta name="twitter:url" content="${canonicalUrl}">
 <meta name="twitter:domain" content="platerly.com">
@@ -76,7 +72,7 @@ export default async function (context, req) {
 <body>
   <div class="wrap">
     <div>
-      <h1>${escapeHtml(title)}</h1>
+      <h1>${E(title)}</h1>
       <p>Opening recipe… If you are not redirected, <a href="${canonicalUrl}">tap here</a>.</p>
     </div>
   </div>
@@ -89,18 +85,19 @@ export default async function (context, req) {
         "content-type": "text/html; charset=utf-8",
         "cache-control": "public, max-age=21600"
       },
-      body: html
+      body: page
     };
-  } catch (err) {
-    context.log.error(err);
-    return { status: 404, body: "An error occurred while processing the share request." };
+  } catch (e) {
+    context.log.error(e);
+    return html(404, "An error occurred while processing the share request.");
   }
-}
+};
 
-function escapeHtml(s) {
+function E(s) {
   return String(s || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function html(code, msg) {
+  return { status: code, headers: { "content-type":"text/html; charset=utf-8" }, body: E(msg) };
 }
