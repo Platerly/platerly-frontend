@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { forgotPassword } from "../utils/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -17,7 +17,7 @@ export default function ForgotPassword() {
         toast.success("If an account exists, a reset email was sent.");
         navigate("/login");
       } else {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         toast.error(data.message || "Error sending reset email.");
       }
     } catch (err) {
@@ -29,24 +29,52 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
-        <h2 className="text-xl font-bold text-center">Forgot Password</h2>
-        <input
-          type="email"
-          className="w-full p-2 rounded bg-gray-800 border border-gray-700"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+    <div className="flex items-center justify-center min-h-screen bg-platerly-dark text-platerly-text px-4">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md space-y-5 bg-platerly-card border border-platerly-light rounded-2xl p-6 shadow"
+      >
+        <div className="text-center">
+          <h2 className="text-2xl font-bold">Forgot Password</h2>
+          <p className="mt-1 text-sm text-platerly-subtle">
+            Enter your email to receive a reset link.
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="email" className="block text-sm mb-1 text-platerly-subtle">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            className="w-full p-2.5 rounded-lg bg-platerly-card border border-platerly-light text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={loading}
+          />
+        </div>
+
         <button
           type="submit"
-          className="w-full bg-green-600 hover:bg-green-700 transition rounded p-2 font-semibold"
+          className="w-full rounded-lg p-2.5 font-semibold bg-platerly-green text-platerly-dark hover:opacity-90 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
           disabled={loading}
         >
           {loading ? "Sending..." : "Send Reset Link"}
         </button>
+
+        <div className="text-center text-sm">
+          <Link
+            to="/login"
+            className="text-platerly-yellow hover:underline focus:outline-none focus:ring-2 focus:ring-platerly-green/40 rounded"
+          >
+            Back to Login
+          </Link>
+        </div>
       </form>
     </div>
   );

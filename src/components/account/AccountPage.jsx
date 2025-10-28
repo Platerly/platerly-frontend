@@ -1,29 +1,86 @@
 // src/pages/AccountPage.jsx
 import { useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext"; // assuming you have this
+import { useSearchParams, Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export default function AccountPage() {
   const [sp] = useSearchParams();
   const sub = sp.get("sub");
-  const { refreshUser } = useAuth(); // implement to re-fetch /me
+  const { refreshUser, user } = useAuth();
 
   useEffect(() => {
     if (sub === "success") {
-      // give webhook a moment; then refresh profile
       const t = setTimeout(() => refreshUser?.(), 1200);
       return () => clearTimeout(t);
     }
   }, [sub, refreshUser]);
 
+  const message =
+    sub === "success"
+      ? "Your Platerly Premium subscription is active. Enjoy the full experience!"
+      : sub === "cancel"
+      ? "Your checkout was canceled. No worries — you can retry anytime."
+      : "Manage your subscription and account settings below.";
+
   return (
-    <main className="mx-auto max-w-xl p-6">
-      <h1 className="text-2xl font-semibold mb-2">Account</h1>
-      <p className="opacity-80">
-        {sub === "success" && "Thanks for subscribing! Your Premium is active."}
-        {sub === "cancel"  && "Checkout canceled. You can retry anytime."}
-        {!sub && "Manage your subscription and account settings here."}
-      </p>
+    <main className="mx-auto max-w-xl p-6 md:p-10">
+      <h1 className="text-3xl font-bold text-platerly-text mb-4">
+        Account
+      </h1>
+
+      {/* Status Banner */}
+      {sub && (
+        <div
+          className={`mb-6 rounded-md px-4 py-3 text-sm font-medium ${
+            sub === "success"
+              ? "bg-green-600/10 text-green-600 border border-green-600/40"
+              : "bg-red-600/10 text-red-600 border border-red-600/40"
+          }`}
+        >
+          {sub === "success"
+            ? "✅ Subscription Successful"
+            : "⚠️ Checkout Canceled"}
+        </div>
+      )}
+
+      <p className="text-platerly-text/80 leading-relaxed mb-8">{message}</p>
+
+      {/* Premium Status */}
+      {user?.isPremium ? (
+        <div className="rounded-lg border border-platerly-border bg-platerly-card p-5 mb-10">
+          <h2 className="text-xl font-semibold mb-2 text-platerly-text">
+            Your Plan
+          </h2>
+          <p className="text-platerly-text/80">
+            ✅ You’re currently subscribed to{" "}
+            <span className="font-medium">Platerly Premium</span>.
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-lg border border-platerly-border bg-platerly-card p-5 mb-10">
+          <h2 className="text-xl font-semibold mb-3 text-platerly-text">
+            Unlock Premium
+          </h2>
+          <p className="text-platerly-text/80 mb-4">
+            Upgrade to access smart allergy insights, advanced chef discovery,
+            and more powerful recipe tools.
+          </p>
+          <Link
+            to="/billing"
+            className="block text-center bg-platerly-green hover:bg-platerly-green/90 transition text-white font-medium px-4 py-2 rounded-md"
+          >
+            Upgrade to Premium
+          </Link>
+        </div>
+      )}
+
+      {/* Settings shortcut */}
+      <Link
+        to="/settings"
+        className="inline-flex items-center text-platerly-green font-medium hover:underline"
+      >
+        Go to Settings →
+      </Link>
     </main>
   );
 }

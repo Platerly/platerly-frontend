@@ -1,12 +1,48 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import AllergySettingsTab from "./AllergySettingsTab";
 import BillingPanel from "../components/account/BillingPanel";
 import { API_BASE_URL } from "../utils/api";
 
-/* helper */
+/* helpers */
 const withScheme = (u) => (!u ? "" : /^https?:\/\//i.test(u) ? u : `https://${u}`);
+const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+
+const TAB_KEYS = ["profile", "allergies", "subscription"];
+
+const TabBtn = ({ id, active, onClick, children }) => (
+  <button
+    role="tab"
+    aria-selected={active}
+    aria-controls={`${id}-panel`}
+    id={`${id}-tab`}
+    onClick={onClick}
+    className={`px-3 py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-teal-500/50 ${
+      active
+        ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-neutral-900 shadow"
+        : "bg-neutral-900/60 border border-neutral-800 text-neutral-300 hover:bg-neutral-900"
+    }`}
+  >
+    {children}
+  </button>
+);
+
+const Field = ({ label, hint, children }) => (
+  <div>
+    <label className="block text-sm mb-2 text-neutral-300">{label}</label>
+    {children}
+    {hint && <div className="text-xs text-neutral-500 mt-1">{hint}</div>}
+  </div>
+);
+
+const Skeleton = () => (
+  <div className="space-y-4 animate-pulse">
+    {[...Array(5)].map((_, i) => (
+      <div key={i} className="h-10 bg-neutral-900 rounded-lg border border-neutral-800" />
+    ))}
+  </div>
+);
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -28,41 +64,42 @@ const SettingsPage = () => {
   const [profileImageUrl, setProfileImageUrl] = useState("");
 
   const fileRef = useRef(null);
+  const BIO_MAX = 500;
 
   // load current user for form defaults
   useEffect(() => {
-    let alive = true;
+    if (!user?.username) return;
+    setLoading(true);
+    setError("");
+    const ac = new AbortController();
+
     (async () => {
       try {
-        setLoading(true);
-        // safest: use the public profile for the username shown in the URL bar/sidebar
-        const username = user?.username;
-        const res = await fetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}`);
+        const res = await fetch(
+          `${API_BASE_URL}/api/user/profile/${encodeURIComponent(user.username)}`,
+          { signal: ac.signal }
+        );
         if (!res.ok) throw new Error("Failed to load profile");
         const data = await res.json();
-
         const u = data.user || {};
-        if (!alive) return;
-
         setDisplayName(u.displayName || "");
-        setBio(u.bio || "");
+        setBio((u.bio || "").slice(0, BIO_MAX));
         setWebsiteUrl(u.websiteUrl || "");
-        setYouTubeUrl(u.youTubeUrl || ""); // backend property becomes youTubeUrl in JSON
+        setYouTubeUrl(u.youTubeUrl || ""); // backend YouTubeUrl -> youTubeUrl
         setXUrl(u.xUrl || "");
         setInstagramUrl(u.instagramUrl || "");
         setProfileImageUrl(u.profileImageUrl || "");
       } catch (e) {
-        setError("Could not load your profile.");
+        if (ac.signal.aborted) return;
         console.error(e);
+        setError("Could not load your profile.");
       } finally {
-        alive = false ? undefined : setLoading(false);
+        if (!ac.signal.aborted) setLoading(false);
       }
     })();
 
-    return () => {
-      alive = false;
-    };
-  }, [user, API_BASE_URL]);
+    return () => ac.abort();
+  }, [user?.username]);
 
   const handleLogout = () => {
     logout();
@@ -76,7 +113,6 @@ const SettingsPage = () => {
     try {
       const fd = new FormData();
       fd.append("file", file);
-      // use the PUT route we exposed (also have POST back-compat)
       const res = await fetch(`${API_BASE_URL}/api/user/update-profile-image`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
@@ -101,16 +137,13 @@ const SettingsPage = () => {
     setError("");
     setOk("");
 
-    // Send only fields your API understands. Note the lower-camel JSON names:
-    // WebsiteUrl → websiteUrl, YouTubeUrl → youTubeUrl, XUrl → xUrl, InstagramUrl → instagramUrl
     const payload = {
-      displayName,
-      bio,
-      websiteUrl,
-      youTubeUrl,   // important: capital T in C# => lower-camel `youTubeUrl` over JSON
-      xUrl,
-      instagramUrl,
-      // profileImageUrl is updated via upload endpoint; no need to send here.
+      displayName: displayName.trim(),
+      bio: bio.trim().slice(0, BIO_MAX),
+      websiteUrl: websiteUrl.trim(),
+      youTubeUrl: youTubeUrl.trim(), // note JSON lower-camel
+      xUrl: xUrl.trim(),
+      instagramUrl: instagramUrl.trim(),
     };
 
     try {
@@ -135,48 +168,49 @@ const SettingsPage = () => {
     }
   };
 
+  const TabPanel = ({ id, active, children }) => (
+    <div
+      role="tabpanel"
+      id={`${id}-panel`}
+      aria-labelledby={`${id}-tab`}
+      hidden={!active}
+      className="mb-12"
+    >
+      {active && children}
+    </div>
+  );
+
+  const photo = profileImageUrl || "/placeholder-avatar.png";
+
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4 text-white">
-      <h1 className="text-3xl font-bold mb-6">Settings</h1>
+    <div className="max-w-4xl mx-auto py-8 sm:py-10 px-4 text-neutral-100">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-6">Settings</h1>
 
       {/* Tab Switcher */}
-      <div className="flex gap-4 border-b border-neutral-700 mb-8">
-        <button
-          className={`pb-2 font-medium ${
-            activeTab === "profile" ? "border-b-2 border-green-500 text-green-400" : "text-gray-400"
-          }`}
-          onClick={() => setActiveTab("profile")}
-        >
+      <div role="tablist" aria-label="Settings sections" className="flex flex-wrap gap-2 border-b border-neutral-800 pb-4 mb-8">
+        <TabBtn id="profile" active={activeTab === "profile"} onClick={() => setActiveTab("profile")}>
           Profile
-        </button>
-        <button
-          className={`pb-2 font-medium ${
-            activeTab === "allergies" ? "border-b-2 border-green-500 text-green-400" : "text-gray-400"
-          }`}
-          onClick={() => setActiveTab("allergies")}
-        >
+        </TabBtn>
+        <TabBtn id="allergies" active={activeTab === "allergies"} onClick={() => setActiveTab("allergies")}>
           Allergies
-        </button>
-        <button
-          className={`pb-2 font-medium ${
-            activeTab === "subscription" ? "border-b-2 border-green-500 text-green-400" : "text-gray-400"
-          }`}
-          onClick={() => setActiveTab("subscription")}
-        >
+        </TabBtn>
+        <TabBtn id="subscription" active={activeTab === "subscription"} onClick={() => setActiveTab("subscription")}>
           Subscription
-        </button>
+        </TabBtn>
       </div>
 
-      {/* Tab Content */}
-      <div className="mb-12">
-        {activeTab === "profile" ? (
+      {/* Profile */}
+      <TabPanel id="profile" active={activeTab === "profile"}>
+        {loading ? (
+          <Skeleton />
+        ) : (
           <form onSubmit={onSave} className="space-y-6">
             {/* Avatar */}
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4 sm:gap-6">
               <img
-                src={profileImageUrl || "/placeholder-avatar.png"}
+                src={photo}
                 alt="Profile"
-                className="w-20 h-20 rounded-full object-cover border border-neutral-700"
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border border-neutral-800"
               />
               <div>
                 <label className="block text-sm mb-2">Upload Profile Picture</label>
@@ -190,82 +224,72 @@ const SettingsPage = () => {
               </div>
             </div>
 
-            {/* Display Name */}
-            <div>
-              <label className="block text-sm mb-2">Display Name</label>
+            <Field label="Display Name">
               <input
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 required
-                className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2"
+                maxLength={80}
+                className="w-full bg-neutral-950/60 border border-neutral-900 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500/40"
               />
-            </div>
+            </Field>
 
-            {/* Bio */}
-            <div>
-              <label className="block text-sm mb-2">Bio</label>
+            <Field label="Bio" hint={`${clamp(bio?.length || 0, 0, BIO_MAX)}/${BIO_MAX}`}>
               <textarea
                 value={bio}
-                onChange={(e) => setBio(e.target.value)}
+                onChange={(e) => setBio(e.target.value.slice(0, BIO_MAX))}
                 rows={5}
-                className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2"
+                className="w-full bg-neutral-950/60 border border-neutral-900 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500/40"
                 placeholder="Tell people a little about you…"
               />
-              <div className="text-xs text-neutral-400 mt-1">{bio?.length || 0}/500</div>
-            </div>
+            </Field>
 
-            {/* Website */}
-            <div>
-              <label className="block text-sm mb-2">Website</label>
-              <input
-                value={websiteUrl}
-                onChange={(e) => setWebsiteUrl(e.target.value)}
-                placeholder="https://your-site.com"
-                className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2"
-              />
-              {websiteUrl && (
-                <a
-                  href={withScheme(websiteUrl)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs underline text-neutral-300 mt-1 inline-block"
-                >
-                  Preview: {withScheme(websiteUrl)}
-                </a>
-              )}
-            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Website">
+                <input
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  placeholder="https://your-site.com"
+                  className="w-full bg-neutral-950/60 border border-neutral-900 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500/40"
+                />
+                {websiteUrl && (
+                  <a
+                    href={withScheme(websiteUrl)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs underline text-neutral-300 mt-1 inline-block"
+                  >
+                    Preview: {withScheme(websiteUrl)}
+                  </a>
+                )}
+              </Field>
 
-            {/* YouTube */}
-            <div>
-              <label className="block text-sm mb-2">YouTube</label>
-              <input
-                value={youTubeUrl}
-                onChange={(e) => setYouTubeUrl(e.target.value)}
-                placeholder="https://youtube.com/@yourchannel"
-                className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2"
-              />
-            </div>
+              <Field label="YouTube">
+                <input
+                  value={youTubeUrl}
+                  onChange={(e) => setYouTubeUrl(e.target.value)}
+                  placeholder="https://youtube.com/@yourchannel"
+                  className="w-full bg-neutral-950/60 border border-neutral-900 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500/40"
+                />
+              </Field>
 
-            {/* X (Twitter) */}
-            <div>
-              <label className="block text-sm mb-2">X (Twitter)</label>
-              <input
-                value={xUrl}
-                onChange={(e) => setXUrl(e.target.value)}
-                placeholder="https://x.com/yourhandle"
-                className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2"
-              />
-            </div>
+              <Field label="X (Twitter)">
+                <input
+                  value={xUrl}
+                  onChange={(e) => setXUrl(e.target.value)}
+                  placeholder="https://x.com/yourhandle"
+                  className="w-full bg-neutral-950/60 border border-neutral-900 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500/40"
+                />
+              </Field>
 
-            {/* Instagram */}
-            <div>
-              <label className="block text-sm mb-2">Instagram</label>
-              <input
-                value={instagramUrl}
-                onChange={(e) => setInstagramUrl(e.target.value)}
-                placeholder="https://instagram.com/yourhandle"
-                className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2"
-              />
+              <Field label="Instagram">
+                <input
+                  value={instagramUrl}
+                  onChange={(e) => setInstagramUrl(e.target.value)}
+                  placeholder="https://instagram.com/yourhandle"
+                  className="w-full bg-neutral-950/60 border border-neutral-900 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500/40"
+                />
+              </Field>
             </div>
 
             {/* Messages */}
@@ -277,30 +301,35 @@ const SettingsPage = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-neutral-900 font-medium shadow disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
               >
                 {saving ? "Saving…" : "Save Changes"}
               </button>
             </div>
           </form>
-        ) : activeTab === "allergies" ? (
-          <AllergySettingsTab />
-        ) : (
-          <BillingPanel />
         )}
-      </div>
+      </TabPanel>
 
-      {/* Logout Button */}
-      <div className="border-t border-neutral-700 pt-6 text-right">
+      {/* Allergies */}
+      <TabPanel id="allergies" active={activeTab === "allergies"}>
+        <AllergySettingsTab />
+      </TabPanel>
+
+      {/* Subscription */}
+      <TabPanel id="subscription" active={activeTab === "subscription"}>
+        <BillingPanel />
+      </TabPanel>
+
+      {/* Logout */}
+      <div className="border-t border-neutral-800 pt-6 text-right">
         <button
           onClick={handleLogout}
-          className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition"
+          className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white transition focus:outline-none focus:ring-2 focus:ring-red-500/50"
         >
           Log Out
         </button>
       </div>
     </div>
   );
-};
-
+}
 export default SettingsPage;

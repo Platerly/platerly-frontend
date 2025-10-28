@@ -1,40 +1,111 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { API_BASE_URL } from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
+import classNames from 'classnames'
+import { Filter, Search, TrendingUp, X } from 'lucide-react'
 
+/* ---------- small utils ---------- */
+const useAuthed = (user, token) =>
+  !!(user || token || (typeof window !== 'undefined' && (localStorage.getItem('token') || sessionStorage.getItem('token'))))
+
+const Highlight = ({ text = '', query = '' }) => {
+  if (!query) return <>{text}</>
+  const parts = text.split(new RegExp(`(${query.replace(/[-/\\^$*+?.()|[\\]{}]/g, '\\$&')})`, 'gi'))
+  return (
+    <>
+      {parts.map((p, i) =>
+        p.toLowerCase() === query.toLowerCase()
+          ? <strong key={i} className="text-white">{p}</strong>
+          : <span key={i}>{p}</span>
+      )}
+    </>
+  )
+}
+
+/* ---------- bottom sheet (mobile) ---------- */
+function BottomSheet({ open, onClose, title, children }) {
+  const sheetRef = useRef(null)
+
+  // lock scroll
+  useEffect(() => {
+    if (!open) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [open])
+
+  // close on ESC
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e) => e.key === 'Escape' && onClose?.()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
+  if (!open) return null
+  return (
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div
+        ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl border border-white/10 bg-platerly-dark p-4 shadow-2xl animate-[slide-up_180ms_ease-out]"
+      >
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-base font-semibold text-white">{title}</h3>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="rounded-lg p-2 text-platerly-subtle hover:bg-white/5 hover:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        {children}
+      </div>
+      {/* keyframes (tailwind arbitrary) */}
+      <style>{`@keyframes slide-up{from{transform:translateY(16px);opacity:.8}to{transform:translateY(0);opacity:1}}`}</style>
+    </div>
+  )
+}
+
+/* ---------- main component ---------- */
 const RightColumn = () => {
-  const { user, token, loading } = useAuth()
-  const authed = !!(user || token || (typeof window !== 'undefined' && (localStorage.getItem('token') || sessionStorage.getItem('token'))))
+  const { user, token } = useAuth()
+  const authed = useAuthed(user, token)
 
-  // --- Quick search ---
+  // quick search
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState([])
   const [loadingSearch, setLoadingSearch] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
 
-  // --- Trending (sidebar) ---
+  // trending
   const [trending, setTrending] = useState([])
   const [tLoading, setTLoading] = useState(true)
   const [tError, setTError] = useState(null)
 
-  // --- Feed filters (mirror URL) ---
+  // filters via URL
   const [sp] = useSearchParams()
   const navigate = useNavigate()
-
   const difficulty = sp.get('difficulty') || 'any'
   const tags = sp.get('tags') || ''
   const requireAllTags = sp.get('requireAllTags') === 'true'
   const hideRemixes = sp.get('hideRemixes') === 'true'
   const hideMyAllergens = sp.get('hideMyAllergens') === 'true'
 
-  // ---------- Search (typeahead) ----------
+  // mobile sheet
+  const [openSheet, setOpenSheet] = useState(false)
+
+  /* ---------- typeahead ---------- */
   useEffect(() => {
     if (!query.trim()) {
       setSuggestions([])
       return
     }
-    const t = setTimeout(() => fetchSuggestions(query), 300)
+    const t = setTimeout(() => fetchSuggestions(query), 250)
     return () => clearTimeout(t)
   }, [query])
 
@@ -70,30 +141,21 @@ const RightColumn = () => {
     }
   }
 
-  const highlightMatch = (text, q) => {
-    const escaped = q.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
-    return text.replace(new RegExp(escaped, 'gi'), (m) => `<strong>${m}</strong>`)
-  }
-
-  // ---------- Filters (write to URL so Feed.jsx picks them up) ----------
+  /* ---------- filters ---------- */
   const updateParam = (key, value) => {
     const next = new URLSearchParams(sp)
-    if (value === undefined || value === null || value === '' || value === 'any') {
-      next.delete(key)
-    } else {
-      next.set(key, String(value))
-    }
-    next.delete('page') // reset paging
+    if (value === undefined || value === null || value === '' || value === 'any') next.delete(key)
+    else next.set(key, String(value))
+    next.delete('page')
     navigate({ pathname: '/feed', search: `?${next.toString()}` }, { replace: true })
   }
-
   const handleDifficulty = (e) => updateParam('difficulty', e.target.value)
   const handleTags = (e) => updateParam('tags', e.target.value)
   const handleRequireAll = (e) => updateParam('requireAllTags', e.target.checked)
   const handleHideRemixes = (e) => updateParam('hideRemixes', e.target.checked)
   const handleHideAllergens = (e) => updateParam('hideMyAllergens', e.target.checked)
 
-  // ---------- Trending fetch ----------
+  /* ---------- trending ---------- */
   useEffect(() => {
     let mounted = true
     ;(async () => {
@@ -113,173 +175,203 @@ const RightColumn = () => {
     return () => { mounted = false }
   }, [])
 
-  return (
-    <div className="bg-platerly-light w-[320px] hidden lg:block fixed right-0 top-0 px-6 py-8 h-screen overflow-y-auto border-l border-platerly-border text-platerly-text">
-      <div className="space-y-6">
-
-        {/* Quick Search */}
-        <form onSubmit={handleSearchSubmit} className="relative">
-          <input
-            type="text"
-            placeholder="Search recipes or users"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => query && setShowDropdown(true)}
-            onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-            className="w-full rounded-full bg-platerly-card text-platerly-text px-4 py-2 placeholder-platerly-subtle focus:outline-none"
-          />
-          {showDropdown && (
-            <div className="absolute top-11 left-0 right-0 bg-platerly-card border border-platerly-border rounded-lg shadow-lg z-50 max-h-72 overflow-y-auto text-sm">
-              {loadingSearch ? (
-                <p className="p-4 text-center text-gray-400">Searching...</p>
-              ) : suggestions.length === 0 ? (
-                <p className="p-4 text-center text-gray-500">No results found</p>
-              ) : (
-                <ul>
-                  {suggestions.map((item, idx) => (
-                    <li
-                      key={idx}
-                      onClick={() => handleSelect(item)}
-                      className="px-4 py-2 hover:bg-platerly-green/10 cursor-pointer transition"
-                    >
-                      {item.type === 'user' ? (
-                        <span
-                          dangerouslySetInnerHTML={{
-                            __html: `👤 @${highlightMatch(item.username, query)} — ${item.displayName}`
-                          }}
-                        />
-                      ) : (
-                        <span
-                          dangerouslySetInnerHTML={{
-                            __html: `🍽️ ${highlightMatch(item.title, query)}`
-                          }}
-                        />
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </form>
-
-        {/* Refine feed (hidden if not authed) */}
-        {authed && (
-          <div className="rounded-xl border border-platerly-border bg-platerly-card/60 backdrop-blur-sm p-4">
-            <h3 className="text-sm font-semibold text-platerly-subtle mb-3 tracking-wide">Refine feed</h3>
-
-            <div className="space-y-3 text-sm">
-              <div>
-                <label className="block text-xs text-platerly-subtle mb-1">Difficulty</label>
-                <select
-                  value={difficulty}
-                  onChange={handleDifficulty}
-                  className="w-full bg-platerly-card border border-platerly-border rounded-lg px-3 py-2 focus:outline-none"
-                >
-                  <option value="any">Any</option>
-                  <option value="easy">Easy</option>
-                  <option value="medium">Medium</option>
-                  <option value="hard">Hard</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs text-platerly-subtle mb-1">Tags (comma-separated)</label>
-                <input
-                  type="text"
-                  value={tags}
-                  onChange={handleTags}
-                  placeholder="vegan, low nickel"
-                  className="w-full bg-platerly-card border border-platerly-border rounded-lg px-3 py-2 focus:outline-none"
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input id="reqall" type="checkbox" checked={requireAllTags} onChange={handleRequireAll} />
-                <label htmlFor="reqall" className="text-sm">Require all tags</label>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input id="hideremix" type="checkbox" checked={hideRemixes} onChange={handleHideRemixes} />
-                <label htmlFor="hideremix" className="text-sm">Hide remixes</label>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input id="hideall" type="checkbox" checked={hideMyAllergens} onChange={handleHideAllergens} />
-                <label htmlFor="hideall" className="text-sm">Hide my allergens</label>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 🔥 Trending (sidebar module) */}
-        <div className="rounded-xl border border-platerly-border bg-platerly-card/60 backdrop-blur-sm p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-platerly-subtle tracking-wide">🔥 Trending</h3>
-            <button
-              onClick={() => navigate('/feed?sort=trending')}
-              className="text-xs underline opacity-80 hover:opacity-100"
-            >
-              See all
-            </button>
-          </div>
-
-          {tLoading && (
-            <ul className="space-y-3">
-              {[...Array(5)].map((_, i) => (
-                <li key={i} className="animate-pulse">
-                  <div className="flex gap-3">
-                    <div className="h-12 w-16 rounded-md bg-white/10" />
-                    <div className="flex-1">
-                      <div className="h-3 w-2/3 rounded bg-white/10 mb-2" />
-                      <div className="h-3 w-1/3 rounded bg-white/10" />
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {!tLoading && tError && (
-            <div className="text-xs text-red-300">{tError}</div>
-          )}
-
-          {!tLoading && !tError && (
-            <ul className="space-y-3">
-              {trending.map((it) => (
-                <li key={it.id}>
+  /* ---------- shared UI blocks ---------- */
+  const SearchBox = (
+    <form onSubmit={handleSearchSubmit} className="relative" role="search">
+      <div className="flex items-center gap-2 rounded-full border border-platerly-border bg-platerly-card px-3 py-2">
+        <Search className="h-4 w-4 text-platerly-subtle" />
+        <input
+          type="text"
+          placeholder="Search recipes or users"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => query && setShowDropdown(true)}
+          onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+          className="w-full bg-transparent text-sm text-platerly-text placeholder-platerly-subtle focus:outline-none"
+          aria-label="Search recipes or users"
+        />
+      </div>
+      {showDropdown && (
+        <div
+          className="absolute top-11 left-0 right-0 z-50 max-h-72 overflow-y-auto rounded-lg border border-platerly-border bg-platerly-card shadow-lg"
+          role="listbox"
+        >
+          {loadingSearch ? (
+            <p className="p-4 text-center text-platerly-subtle">Searching…</p>
+          ) : suggestions.length === 0 ? (
+            <p className="p-4 text-center text-platerly-subtle">No results</p>
+          ) : (
+            <ul>
+              {suggestions.map((item, idx) => (
+                <li key={idx}>
                   <button
-                    onClick={() => navigate(`/recipe/${it.id}`)}
-                    className="group flex w-full gap-3 text-left"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleSelect(item)}
+                    className="block w-full px-4 py-2 text-left text-sm hover:bg-platerly-green/10"
+                    role="option"
                   >
-                    <div className="relative">
-                      <img
-                        src={it.imageUrl}
-                        alt={it.title}
-                        className="h-12 w-16 rounded-md object-cover ring-1 ring-white/10"
-                        loading="lazy"
-                      />
-                      <span className="absolute -left-2 -top-2 rounded-md bg-orange-500/80 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-md">
-                        #{it.rank}
+                    {item.type === 'user' ? (
+                      <span className="text-platerly-text">
+                        👤 @<Highlight text={item.username} query={query} />{' '}
+                        <span className="text-platerly-subtle">— {item.displayName}</span>
                       </span>
-                    </div>
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-medium group-hover:underline">
-                        {it.title}
-                      </div>
-                      <div className="mt-0.5 text-xs opacity-70">
-                        by <span className="font-medium">{it.username}</span>
-                      </div>
-                    </div>
+                    ) : (
+                      <span className="text-platerly-text">
+                        🍽️ <Highlight text={item.title} query={query} />
+                      </span>
+                    )}
                   </button>
                 </li>
               ))}
             </ul>
           )}
         </div>
+      )}
+    </form>
+  )
 
+  const Filters = authed && (
+    <div className="rounded-xl border border-platerly-border bg-platerly-card/60 backdrop-blur-sm p-4">
+      <h3 className="mb-3 text-sm font-semibold tracking-wide text-platerly-subtle">Refine feed</h3>
+      <div className="space-y-3 text-sm">
+        <div>
+          <label className="mb-1 block text-xs text-platerly-subtle">Difficulty</label>
+          <select
+            value={difficulty}
+            onChange={handleDifficulty}
+            className="w-full rounded-lg border border-platerly-border bg-platerly-card px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <option value="any">Any</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs text-platerly-subtle">Tags (comma-separated)</label>
+          <input
+            type="text"
+            value={tags}
+            onChange={handleTags}
+            placeholder="vegan, low nickel"
+            className="w-full rounded-lg border border-platerly-border bg-platerly-card px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+        </div>
+
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={requireAllTags} onChange={handleRequireAll} />
+          <span>Require all tags</span>
+        </label>
+
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={hideRemixes} onChange={handleHideRemixes} />
+          <span>Hide remixes</span>
+        </label>
+
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={hideMyAllergens} onChange={handleHideAllergens} />
+          <span>Hide my allergens</span>
+        </label>
       </div>
     </div>
+  )
+
+  const Trending = (
+    <div className="rounded-xl border border-platerly-border bg-platerly-card/60 backdrop-blur-sm p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="flex items-center gap-2 text-sm font-semibold tracking-wide text-platerly-subtle">
+          <TrendingUp className="h-4 w-4" /> Trending
+        </h3>
+        <button
+          onClick={() => navigate('/feed?sort=trending')}
+          className="text-xs underline opacity-80 hover:opacity-100"
+        >
+          See all
+        </button>
+      </div>
+
+      {tLoading && (
+        <ul className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <li key={i} className="animate-pulse">
+              <div className="flex gap-3">
+                <div className="h-12 w-16 rounded-md bg-white/10" />
+                <div className="flex-1">
+                  <div className="mb-2 h-3 w-2/3 rounded bg-white/10" />
+                  <div className="h-3 w-1/3 rounded bg-white/10" />
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {!tLoading && tError && <div className="text-xs text-red-300">{tError}</div>}
+
+      {!tLoading && !tError && (
+        <ul className="space-y-3">
+          {trending.map((it) => (
+            <li key={it.id}>
+              <button onClick={() => navigate(`/recipe/${it.id}`)} className="group flex w-full gap-3 text-left">
+                <div className="relative">
+                  <img
+                    src={it.imageUrl}
+                    alt={it.title}
+                    className="h-12 w-16 rounded-md object-cover ring-1 ring-white/10"
+                    loading="lazy"
+                  />
+                  <span className="absolute -left-2 -top-2 rounded-md bg-orange-500/80 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-md">
+                    #{it.rank}
+                  </span>
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-medium group-hover:underline">{it.title}</div>
+                  <div className="mt-0.5 text-xs opacity-70">
+                    by <span className="font-medium">{it.username}</span>
+                  </div>
+                </div>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+
+  /* ---------- render ---------- */
+  return (
+    <>
+      {/* Desktop right rail */}
+      <aside className="bg-platerly-light text-platerly-text fixed right-0 top-0 hidden h-screen w-[320px] overflow-y-auto border-l border-platerly-border px-6 py-8 lg:block">
+        <div className="space-y-6">
+          {SearchBox}
+          {Filters}
+          {Trending}
+        </div>
+      </aside>
+
+      {/* Mobile floating action + bottom sheet */}
+      <div className="lg:hidden">
+        {/* FAB */}
+        <button
+          onClick={() => setOpenSheet(true)}
+          className="fixed bottom-4 right-4 inline-flex items-center gap-2 rounded-full bg-green-500 px-4 py-3 text-sm font-semibold text-white shadow-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+          aria-label="Open explore panel"
+        >
+          <Filter className="h-4 w-4" />
+          Explore
+        </button>
+
+        <BottomSheet open={openSheet} onClose={() => setOpenSheet(false)} title="Explore">
+          <div className="space-y-6">
+            {SearchBox}
+            {Filters}
+            {Trending}
+          </div>
+        </BottomSheet>
+      </div>
+    </>
   )
 }
 

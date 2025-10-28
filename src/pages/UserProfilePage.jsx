@@ -1,11 +1,21 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { API_BASE_URL } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 
 /* ───────────── helpers ───────────── */
+const escapeHTML = (s = "") =>
+  s
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+
 function autolinkBio(text = "") {
-  return text
+  // escape first to avoid XSS, then linkify + hashtagify
+  const safe = escapeHTML(text);
+  return safe
     .replace(
       /(https?:\/\/[^\s)]+)|((?<!\w)www\.[^\s)]+)/gi,
       (m) =>
@@ -115,38 +125,39 @@ const SocialLinksRow = ({ websiteUrl, youTubeUrl, xUrl, instagramUrl }) => {
 
 const UserProfilePage = () => {
   const { username } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, token } = useAuth();
 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [profile, setProfile] = useState(null);
   const [recipes, setRecipes] = useState([]);
   const [cookbooks, setCookbooks] = useState([]);
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
-  const [tab, setTab] = useState("recipes");
 
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const fileRef = useRef(null);
 
+  const tab = (searchParams.get("tab") || "recipes").toLowerCase();
+  const setTab = (t) => setSearchParams({ tab: t });
+
   const isOwnProfile = user?.username?.toLowerCase?.() === username?.toLowerCase?.();
 
+  // Fetch profile + lists
   useEffect(() => {
-    let isMounted = true;
+    const ac = new AbortController();
     setLoading(true);
+    setError("");
 
     (async () => {
       try {
         const [userRes, cookbooksRes, followersRes, followingRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}`),
-          fetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}/cookbooks`),
-          // ✅ use Follow controller with username query
-          fetch(`${API_BASE_URL}/api/Follow/followers?username=${encodeURIComponent(username)}`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }),
-          fetch(`${API_BASE_URL}/api/Follow/following?username=${encodeURIComponent(username)}`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }),
+          fetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}`, { signal: ac.signal }),
+          fetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}/cookbooks`, { signal: ac.signal }),
+          fetch(`${API_BASE_URL}/api/Follow/followers?username=${encodeURIComponent(username)}` , { signal: ac.signal, headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+          fetch(`${API_BASE_URL}/api/Follow/following?username=${encodeURIComponent(username)}` , { signal: ac.signal, headers: token ? { Authorization: `Bearer ${token}` } : {} }),
         ]);
 
         if (!userRes.ok) throw new Error("Failed to load profile");
@@ -156,26 +167,27 @@ const UserProfilePage = () => {
         const folData = followersRes.ok ? await followersRes.json() : [];
         const ingData = followingRes.ok ? await followingRes.json() : [];
 
-        if (!isMounted) return;
+        if (ac.signal.aborted) return;
         setProfile(userData.user);
         setRecipes(userData.recipes || []);
         setCookbooks(cbData || []);
         setFollowers(folData || []);
         setFollowing(ingData || []);
       } catch (e) {
+        if (ac.signal.aborted) return;
         console.error(e);
+        setError("Failed to load profile.");
       } finally {
-        isMounted && setLoading(false);
+        if (!ac.signal.aborted) setLoading(false);
       }
     })();
 
-    return () => {
-      isMounted = false;
-    };
+    return () => ac.abort();
   }, [username, token]);
 
+  // Determine if current user follows this profile
   useEffect(() => {
-    if (!token || !user || !followers.length) return;
+    if (!token || !user || !followers?.length) return setIsFollowing(false);
     setIsFollowing(
       followers.some((f) => f.username?.toLowerCase?.() === user.username?.toLowerCase?.())
     );
@@ -186,20 +198,15 @@ const UserProfilePage = () => {
 
   const handleFollowToggle = async () => {
     if (!token || !profile) return;
-    // ✅ Follow controller (POST to follow, DELETE to unfollow)
     const endpoint = `${API_BASE_URL}/api/Follow/${profile.id}`;
     const method = isFollowing ? "DELETE" : "POST";
 
     try {
-      const res = await fetch(endpoint, {
-        method,
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(endpoint, { method, headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error("Failed to toggle follow");
-
-      // optimistic count update
+      // Optimistic update
       if (isFollowing) {
-        setFollowers((prev) => prev.filter((f) => f.username !== user.username));
+        setFollowers((prev) => prev.filter((f) => f.username?.toLowerCase?.() !== user.username?.toLowerCase?.()));
       } else {
         setFollowers((prev) => [...prev, { username: user.username }]);
       }
@@ -211,7 +218,7 @@ const UserProfilePage = () => {
 
   const websiteShort = useMemo(() => {
     const w = profile?.websiteUrl;
-    return w ? w.replace(/^https?:\/\//, "").replace(/\/$/, "") : null;
+    return w ? w.replace(/^https?:\/\//, '').replace(/\/$/, '') : null;
   }, [profile]);
 
   const onBannerFile = async (file) => {
@@ -238,12 +245,18 @@ const UserProfilePage = () => {
   };
 
   if (loading) return <Skeleton />;
-  if (!profile)
+  if (error) {
     return (
-      <div className="max-w-5xl mx-auto px-4 md:px-6 py-16 text-center">
-        User not found.
+      <div className="max-w-5xl mx-auto px-4 md:px-6 py-16">
+        <div className="rounded-xl border border-red-500/40 bg-red-950/30 text-red-200 p-4">{error}</div>
       </div>
     );
+  }
+  if (!profile) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 md:px-6 py-16 text-center">User not found.</div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -251,8 +264,8 @@ const UserProfilePage = () => {
         {/* Banner */}
         <div className="relative h-44 md:h-56 rounded-b-2xl overflow-hidden bg-neutral-900/60 z-0">
           {profile.bannerImageUrl && (
-            <img src={profile.bannerImageUrl} alt="" className="w-full h-full object-cover" />
-          )}
+            <img src={profile.bannerImageUrl} alt="" loading="lazy" className="w-full h-full object-cover" />)
+          }
         </div>
 
         {/* Row 1: avatar + name (overlaps banner) */}
@@ -261,6 +274,7 @@ const UserProfilePage = () => {
             <img
               src={profile.profileImageUrl}
               alt={`${profile.username} avatar`}
+              loading="lazy"
               className="z-20 w-24 h-24 rounded-2xl border-4 border-neutral-950 object-cover shadow"
             />
           ) : (
@@ -269,9 +283,7 @@ const UserProfilePage = () => {
             </div>
           )}
           <div className="pb-2">
-            <h1 className="text-xl md:text-2xl font-semibold">
-              {profile.displayName || profile.username}
-            </h1>
+            <h1 className="text-xl md:text-2xl font-semibold">{profile.displayName || profile.username}</h1>
             <div className="text-sm text-neutral-400">@{profile.username}</div>
           </div>
         </div>
@@ -300,10 +312,7 @@ const UserProfilePage = () => {
             )}
 
             {isOwnProfile ? (
-              <Link
-                to="/settings"
-                className="px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-sm"
-              >
+              <Link to="/settings" className="px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-sm">
                 Edit Profile
               </Link>
             ) : token ? (
@@ -320,7 +329,6 @@ const UserProfilePage = () => {
             ) : null}
           </div>
 
-          {/* Social icons */}
           <SocialLinksRow
             websiteUrl={profile.websiteUrl}
             youTubeUrl={profile.youTubeUrl}
@@ -333,28 +341,15 @@ const UserProfilePage = () => {
         <div className="px-4 md:px-6 mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-neutral-300">
           {profile.location && <span>{profile.location}</span>}
           {profile.websiteUrl && (
-            <a
-              className="underline"
-              href={withScheme(profile.websiteUrl)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a className="underline" href={withScheme(profile.websiteUrl)} target="_blank" rel="noopener noreferrer">
               {websiteShort}
             </a>
           )}
 
-          {/* ✅ Link counts to dedicated pages */}
-          <Link
-            to={`/user/${profile.username}/followers`}
-            className="underline-offset-2 hover:underline"
-          >
+          <Link to={`/user/${profile.username}/followers`} className="underline-offset-2 hover:underline">
             <b>{followerCount}</b> Followers
           </Link>
-
-          <Link
-            to={`/user/${profile.username}/following`}
-            className="underline-offset-2 hover:underline"
-          >
+          <Link to={`/user/${profile.username}/following`} className="underline-offset-2 hover:underline">
             <b>{followingCount}</b> Following
           </Link>
         </div>
@@ -369,8 +364,10 @@ const UserProfilePage = () => {
 
         {/* Tabs */}
         <div className="px-4 md:px-6 mt-6 border-b border-neutral-800">
-          <nav className="flex gap-6">
+          <nav className="flex gap-6" role="tablist" aria-label="Profile content tabs">
             <button
+              role="tab"
+              aria-selected={tab === 'recipes'}
               className={`px-1 pb-3 -mb-px text-sm ${
                 tab === "recipes" ? "border-b-2 border-emerald-400 text-white" : "text-neutral-400 hover:text-white"
               }`}
@@ -379,6 +376,8 @@ const UserProfilePage = () => {
               Recipes
             </button>
             <button
+              role="tab"
+              aria-selected={tab === 'cookbooks'}
               className={`px-1 pb-3 -mb-px text-sm ${
                 tab === "cookbooks" ? "border-b-2 border-emerald-400 text-white" : "text-neutral-400 hover:text-white"
               }`}
@@ -401,7 +400,9 @@ const UserProfilePage = () => {
                     className="group rounded-2xl overflow-hidden bg-neutral-900 hover:bg-neutral-800 transition border border-neutral-800"
                   >
                     <div className="w-full aspect-[4/3] bg-neutral-900 overflow-hidden">
-                      {r.imageUrl && <img src={r.imageUrl} alt="" className="w-full h-full object-cover" />}
+                      {r.imageUrl && (
+                        <img src={r.imageUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
+                      )}
                     </div>
                     <div className="p-3">
                       <div className="font-medium line-clamp-1 group-hover:underline">{r.title}</div>
@@ -424,7 +425,9 @@ const UserProfilePage = () => {
                   className="rounded-2xl overflow-hidden bg-neutral-900 hover:bg-neutral-800 transition border border-neutral-800"
                 >
                   <div className="w-full aspect-[4/3] bg-neutral-900 overflow-hidden">
-                    {c.coverUrl && <img src={c.coverUrl} alt="" className="w-full h-full object-cover" />}
+                    {c.coverUrl && (
+                      <img src={c.coverUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
+                    )}
                   </div>
                   <div className="p-3">
                     <div className="font-medium">{c.title}</div>
@@ -440,6 +443,5 @@ const UserProfilePage = () => {
       </div>
     </div>
   );
-};
-
+}
 export default UserProfilePage;

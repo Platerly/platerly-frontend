@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
 import { useAuth } from '../context/AuthContext'
@@ -14,149 +14,203 @@ const Register = () => {
     password: '',
     confirmPassword: ''
   })
-
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
+  const [showPw, setShowPw] = useState(false)
+  const [showPw2, setShowPw2] = useState(false)
+
   const navigate = useNavigate()
+  const location = useLocation()
   const { setUser, setToken } = useAuth()
 
+  const redirectPath = useMemo(() => {
+    const qp = new URLSearchParams(location.search)
+    const p = qp.get('redirect') || '/feed'
+    return /^\//.test(p) ? p : '/feed'
+  }, [location.search])
+
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+    const { name, value } = e.target
+    setForm((s) => ({ ...s, [name]: value }))
   }
 
   const validate = () => {
-    const newErrors = {}
-    if (!form.name.trim()) newErrors.name = 'Name is required.'
-    if (!form.username.trim()) newErrors.username = 'Username is required.'
-    if (!form.email.includes('@')) newErrors.email = 'Enter a valid email.'
-    if (form.password.length < 6) newErrors.password = 'Password must be at least 6 characters.'
-    if (form.password !== form.confirmPassword) newErrors.confirmPassword = 'Passwords do not match.'
-    return newErrors
+    const e = {}
+    if (!form.name.trim()) e.name = 'Name is required.'
+    if (!form.username.trim()) e.username = 'Username is required.'
+    if (!/^[a-z0-9_\.\-]{3,20}$/i.test(form.username.trim())) e.username = '3–20 chars, letters/numbers/._-'
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email.'
+    if (form.password.length < 6) e.password = 'Min 6 characters.'
+    if (form.password !== form.confirmPassword) e.confirmPassword = 'Passwords do not match.'
+    return e
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const validationErrors = validate()
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      return
-    }
+    const v = validate()
+    setErrors(v)
+    if (Object.keys(v).length) return
 
     setLoading(true)
     try {
-      const response = await fetch(`${API_BASE_URL}/api/User/register`, {
+      const res = await fetch(`${API_BASE_URL}/api/User/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: form.username,
-          email: form.email,
-          displayName: form.name,
-          bio: form.bio,
+          username: form.username.trim(),
+          email: form.email.trim(),
+          displayName: form.name.trim(),
+          bio: form.bio.trim(),
           profileImageUrl: null,
           password: form.password
         })
       })
 
-      const data = await response.json() // <-- Only call this once
+      let data
+      try { data = await res.json() } catch (_) { data = {} }
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed.')
-      }
+      if (!res.ok) throw new Error(data.message || 'Registration failed.')
 
-      // await login(data.token, data.userId)
-      setToken(data.token)
-      setUser(data.user)
-      navigate('/feed')
+      if (data?.token) setToken(data.token)
+      if (data?.user) setUser(data.user)
+
+      navigate(redirectPath, { replace: true })
     } catch (err) {
-      setErrors({ email: err.message })
+      // Map server error to a friendly spot
+      setErrors((s) => ({ ...s, email: err.message || 'Registration failed.' }))
     } finally {
       setLoading(false)
     }
   }
 
   return (
-  <div className="min-h-screen bg-platerly-dark text-platerly-text flex items-center justify-center px-4">
-    <div className="bg-platerly-card border border-platerly-border rounded-xl shadow-xl px-8 py-10 w-full max-w-md">
-      <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6">
-        Create your <span className="text-green-500">Platerly</span> account
-      </h1>
+    <div className="min-h-[100svh] bg-platerly-dark text-platerly-text flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-md">
+        <div className="bg-platerly-card border border-platerly-border rounded-2xl shadow-xl/50 shadow-black/10 backdrop-blur-sm p-6 sm:p-8">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+              Create your <span className="text-platerly-accent">Platerly</span> account
+            </h1>
+            <p className="text-sm text-platerly-muted mt-2">It’s quick and free.</p>
+          </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <Input
-          label="Full Name"
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          placeholder="Full Name"
-          error={errors.name}
-          required
-        />
+          {/* top-level form error (if any field sets one we surface first) */}
+          {Object.keys(errors).length > 0 && (
+            <div role="alert" aria-live="assertive" className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 text-red-300 px-3 py-2 text-sm">
+              Please fix the highlighted fields.
+            </div>
+          )}
 
-        <Input
-          label="Username"
-          name="username"
-          value={form.username}
-          onChange={handleChange}
-          placeholder="User Name"
-          error={errors.username}
-          required
-        />
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <Input
+              label="Full Name"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Full Name"
+              error={errors.name}
+              required
+              autoComplete="name"
+            />
 
-        <Input
-          label="Bio"
-          name="bio"
-          value={form.bio}
-          onChange={handleChange}
-          placeholder="Tell us a little about yourself..."
-          error={errors.bio}
-        />
+            <Input
+              label="Username"
+              name="username"
+              value={form.username}
+              onChange={handleChange}
+              placeholder="username"
+              error={errors.username}
+              required
+              autoComplete="username"
+            />
 
-        <Input
-          label="Email"
-          name="email"
-          type="email"
-          value={form.email}
-          onChange={handleChange}
-          placeholder="you@example.com"
-          error={errors.email}
-          required
-        />
+            <Input
+              label="Bio"
+              name="bio"
+              value={form.bio}
+              onChange={handleChange}
+              placeholder="Tell us a little about yourself…"
+              error={errors.bio}
+            />
 
-        <Input
-          label="Password"
-          name="password"
-          type="password"
-          value={form.password}
-          onChange={handleChange}
-          placeholder="••••••••"
-          error={errors.password}
-          required
-        />
+            <Input
+              label="Email"
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="you@example.com"
+              error={errors.email}
+              required
+              autoComplete="email"
+            />
 
-        <Input
-          label="Confirm Password"
-          name="confirmPassword"
-          type="password"
-          value={form.confirmPassword}
-          onChange={handleChange}
-          placeholder="••••••••"
-          error={errors.confirmPassword}
-          required
-        />
+            {/* Password */}
+            <div className="relative">
+              <Input
+                label="Password"
+                name="password"
+                type={showPw ? 'text' : 'password'}
+                value={form.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                error={errors.password}
+                required
+                autoComplete="new-password"
+                enterKeyHint="next"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw((s) => !s)}
+                className="absolute right-3 top-9 text-xs text-platerly-muted hover:text-platerly-text"
+                aria-label={showPw ? 'Hide password' : 'Show password'}
+              >
+                {showPw ? 'Hide' : 'Show'}
+              </button>
+            </div>
 
-        <Button type="submit" size="lg" className="w-full" disabled={loading}>
-          {loading ? 'Creating Account...' : 'Create Account'}
-        </Button>
-      </form>
+            {/* Confirm Password */}
+            <div className="relative">
+              <Input
+                label="Confirm Password"
+                name="confirmPassword"
+                type={showPw2 ? 'text' : 'password'}
+                value={form.confirmPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
+                error={errors.confirmPassword}
+                required
+                autoComplete="new-password"
+                enterKeyHint="done"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw2((s) => !s)}
+                className="absolute right-3 top-9 text-xs text-platerly-muted hover:text-platerly-text"
+                aria-label={showPw2 ? 'Hide password' : 'Show password'}
+              >
+                {showPw2 ? 'Hide' : 'Show'}
+              </button>
+            </div>
 
-      <p className="text-center text-sm text-gray-400 mt-6">
-        Already have an account?{' '}
-        <Link to="/login" className="text-green-500 hover:underline">Log in</Link>
-      </p>
+            <Button type="submit" size="lg" className="w-full" disabled={loading}>
+              {loading ? 'Creating Account…' : 'Create Account'}
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-platerly-muted mt-6">
+            Already have an account?{' '}
+            <Link to="/login" className="text-platerly-accent hover:underline">Log in</Link>
+          </p>
+        </div>
+
+        <p className="text-center text-xs text-platerly-muted mt-4">By signing up, you agree to our{' '}
+          <Link to="/terms" className="underline hover:no-underline">Terms</Link> &{' '}
+          <Link to="/privacy" className="underline hover:no-underline">Privacy</Link>.
+        </p>
+      </div>
     </div>
-  </div>
-)
-
+  )
 }
 
 export default Register

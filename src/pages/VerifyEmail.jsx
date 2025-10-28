@@ -1,15 +1,25 @@
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL, fetchCurrentUser } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
 
+/**
+ * Brand + Mobile Notes
+ * - Uses a centered card on a neutral-950 canvas to match dark theme.
+ * - Accent uses emerald for "success" and rose for "error" to stay consistent.
+ * - Mobile-first layout with safe area padding and max-w for readability.
+ * - Adds CTA buttons for error state: Resend, Login, Home.
+ * - Accessible: aria-live regions, focus-visible rings, descriptive icons.
+ */
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState("verifying");
+  const [status, setStatus] = useState(/** @type {"verifying"|"success"|"error"} */("verifying"));
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
-  const timeoutRef = useRef(null);
+
+  const controllerRef = useRef(/** @type {AbortController | null} */(null));
   const isMounted = useRef(true);
   const hasVerified = useRef(false);
 
@@ -21,48 +31,56 @@ export default function VerifyEmail() {
 
     if (!token) {
       setStatus("error");
+      setMessage("Missing or invalid verification token.");
       return;
     }
 
     if (hasVerified.current) return;
     hasVerified.current = true;
 
+    controllerRef.current = new AbortController();
+
     const verify = async () => {
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate loading
+        const res = await axios.get(
+          `${API_BASE_URL}/api/User/verify-email`,
+          { params: { token }, signal: controllerRef.current?.signal }
+        );
 
-        const response = await axios.get(`${API_BASE_URL}/api/User/verify-email?token=${token}`);
+        if (!isMounted.current) return;
 
-        if (response.status === 200 && isMounted.current) {
-          toast.success("Email verified successfully!");
+        if (res.status === 200) {
+          toast.success("Email verified! 🎉");
 
-          // Try to refresh current user if logged in
+          // Refresh current user if we have or find a token
           try {
             const storedToken = authToken || localStorage.getItem("token");
-
-            // After successful verification, always refresh user via token (even if auth context is empty)
-            // Fixes issue where isEmailVerified was not syncing unless user was fully logged in
-
             if (storedToken) {
               const updatedUser = await fetchCurrentUser(storedToken);
               setUser(updatedUser);
               localStorage.setItem("user", JSON.stringify(updatedUser));
             }
-          } catch (refreshError) {
-            console.warn("⚠️ Failed to refresh user after verification:", refreshError);
+          } catch (refreshErr) {
+            console.warn("Failed to refresh user after verification:", refreshErr);
           }
 
           setStatus("success");
+          setMessage("Email verified! Redirecting to your feed…");
 
-          timeoutRef.current = setTimeout(() => {
-            if (isMounted.current) navigate("/feed");
-          }, 2500);
-        } else if (isMounted.current) {
-          setStatus("error");
+          const t = setTimeout(() => {
+            if (isMounted.current) navigate("/feed", { replace: true });
+          }, 1400);
+          return () => clearTimeout(t);
         }
-      } catch (error) {
-        console.error("❌ Verification failed:", error);
-        if (isMounted.current) setStatus("error");
+
+        setStatus("error");
+        setMessage("We couldn't verify that token. It may be expired.");
+      } catch (err) {
+        if (!isMounted.current) return;
+        if (axios.isCancel(err)) return; // aborted
+        console.error("Verification error:", err);
+        setStatus("error");
+        setMessage("Verification failed. Your link may be expired or already used.");
       }
     };
 
@@ -70,20 +88,89 @@ export default function VerifyEmail() {
 
     return () => {
       isMounted.current = false;
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      controllerRef.current?.abort();
     };
   }, [token, navigate, authToken, setUser]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-white bg-gray-900 text-center">
-      {status === "verifying" && <p className="text-lg">Verifying your email...</p>}
-      {status === "success" && <p className="text-green-400 text-lg">Email verified! Redirecting to your feed...</p>}
-      {status === "error" && (
-        <div>
-          <p className="text-red-500 text-lg">Invalid or expired token.</p>
-          <p className="mt-2">Please try again or request a new verification email.</p>
+    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex items-center justify-center px-4 py-10 sm:px-6">
+      <div className="w-full max-w-md">
+        <div className="rounded-2xl border border-neutral-800 bg-neutral-900/60 backdrop-blur p-6 sm:p-8 shadow-xl">
+          <header className="mb-6 sm:mb-8 text-center">
+            <div className="mx-auto mb-3 h-10 w-10 rounded-xl bg-emerald-500/15 ring-1 ring-emerald-500/30 flex items-center justify-center">
+              {status === "success" ? (
+                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path className="text-emerald-400" d="M9 12l2 2 4-4" />
+                  <circle className="text-emerald-400" cx="12" cy="12" r="9" strokeOpacity="0.35" />
+                </svg>
+              ) : status === "error" ? (
+                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path className="text-rose-400" d="M12 8v4m0 4h.01" />
+                  <circle className="text-rose-400" cx="12" cy="12" r="9" strokeOpacity="0.35" />
+                </svg>
+              ) : (
+                <svg className="h-6 w-6 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <circle className="opacity-20" cx="12" cy="12" r="10" />
+                  <path className="text-emerald-400" d="M4 12a8 8 0 018-8" />
+                </svg>
+              )}
+            </div>
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Verify your email</h1>
+          </header>
+
+          {/* Message area */}
+          <div className="space-y-3 text-center" aria-live="polite" role="status">
+            {status === "verifying" && (
+              <p className="text-sm/6 text-neutral-300">Verifying your email… one sec.</p>
+            )}
+            {status === "success" && (
+              <p className="text-sm/6 text-emerald-400">{message}</p>
+            )}
+            {status === "error" && (
+              <>
+                <p className="text-sm/6 text-rose-400">{message || "Invalid or expired token."}</p>
+                <p className="text-xs/6 text-neutral-400">You can request a new verification email and try again.</p>
+              </>
+            )}
+          </div>
+
+          {/* Actions for error state */}
+          {status === "error" && (
+            <div className="mt-6 sm:mt-8 grid grid-cols-1 gap-3">
+              <Link
+                to="/verify/resend"
+                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/80 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
+              >
+                Resend verification email
+              </Link>
+              <Link
+                to="/login"
+                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium bg-neutral-800 text-neutral-100 hover:bg-neutral-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
+              >
+                Back to login
+              </Link>
+              <Link
+                to="/"
+                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium border border-neutral-800 text-neutral-300 hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
+              >
+                Go to Home
+              </Link>
+            </div>
+          )}
+
+          {/* Subtle footer helper */}
+          <footer className="mt-6 sm:mt-8 text-center">
+            <p className="text-[11px] text-neutral-500">
+              Having trouble? Contact support at
+              {" "}
+              <a href="mailto:support@platerly.com" className="underline hover:text-neutral-300">
+                support@platerly.com
+              </a>
+              .
+            </p>
+          </footer>
         </div>
-      )}
+      </div>
     </div>
   );
 }

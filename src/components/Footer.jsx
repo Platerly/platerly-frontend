@@ -1,4 +1,3 @@
-// src/components/Footer.jsx
 import React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -9,17 +8,40 @@ const Footer = ({ variant = 'full', className = '' }) => {
       : 'mx-auto max-w-6xl px-4'
 
   return (
-    <footer className={`border-t border-white/10 bg-platerly-dark ${className}`}>
-      <div className={`${container} py-8 text-sm text-platerly-subtle`}>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Platerly. All rights reserved.</p>
-          <nav className="flex flex-wrap gap-x-6 gap-y-2">
-            <Link to="/terms" className="hover:text-platerly-text">Terms</Link>
-            <Link to="/privacy" className="hover:text-platerly-text">Privacy</Link>
-            <Link to="/guidelines" className="hover:text-platerly-text">Guidelines</Link>
-            <Link to="/disclaimer" className="hover:text-platerly-text">Allergy</Link>
-            <Link to="/refunds" className="hover:text-platerly-text">Refunds</Link>
-            <Link to="/contact" className="hover:text-platerly-text">Contact</Link>
+    <footer
+      className={`border-t border-white/10 bg-platerly-dark text-sm text-platerly-subtle ${className}`}
+      role="contentinfo"
+    >
+      <div className={`${container} py-8`}>
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          {/* copyright */}
+          <p className="text-center sm:text-left text-neutral-400">
+            © {new Date().getFullYear()} <span className="text-white font-medium">Platerly</span>. All rights reserved.
+          </p>
+
+          {/* navigation links */}
+          <nav
+            aria-label="Footer navigation"
+            className="flex flex-wrap justify-center sm:justify-end gap-x-6 gap-y-2"
+          >
+            <Link to="/terms" className="hover:text-white transition-colors">
+              Terms
+            </Link>
+            <Link to="/privacy" className="hover:text-white transition-colors">
+              Privacy
+            </Link>
+            <Link to="/guidelines" className="hover:text-white transition-colors">
+              Guidelines
+            </Link>
+            <Link to="/disclaimer" className="hover:text-white transition-colors">
+              Allergy
+            </Link>
+            <Link to="/refunds" className="hover:text-white transition-colors">
+              Refunds
+            </Link>
+            <Link to="/contact" className="hover:text-white transition-colors">
+              Contact
+            </Link>
           </nav>
         </div>
       </div>

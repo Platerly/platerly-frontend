@@ -4,23 +4,42 @@ import PublicPage from "./PublicPage";
 const AllergyDisclaimerPage = () => (
   <PublicPage
     title="Allergy & Medical Disclaimer"
-    subtitle="Platerly is not a medical service. Always verify ingredients."
+    subtitle="Platerly provides tools — not medical advice. Always verify ingredients."
   >
-    <p>
-      Platerly provides community‑generated recipes and allergy‑aware features.
-      We do not provide medical advice, diagnosis, or treatment. Ingredient data
-      may be incomplete or inaccurate. Always verify labels and consult a
-      qualified professional for medical or dietary advice.
-    </p>
-    <ul>
-      <li>Cross‑contact and supplier changes can occur without notice.</li>
-      <li>
-        Use our tools as guidance, not guarantees. You remain responsible for
-        your own dietary choices.
-      </li>
-    </ul>
+    <section className="space-y-4 leading-relaxed text-platerly-text">
+      <p>
+        Platerly includes community-generated recipes, ingredient data, and helpful
+        allergy-aware features. While these tools are designed to support safer
+        cooking and discovery, they are not substitutes for professional medical or
+        dietary guidance.
+      </p>
 
-    <p className="mt-8 text-sm text-platerly-subtle">Last updated: Aug 26, 2025</p>
+      <p>
+        Ingredient sources and food manufacturing practices can change unexpectedly.
+        Cross-contact, contamination, and mislabeled products may occur without
+        warning. Always verify products independently and consult a qualified
+        healthcare professional if you have medical or dietary concerns.
+      </p>
+
+      <ul className="list-disc ml-6 space-y-2">
+        <li>
+          Ingredient databases may be incomplete or inaccurate. Always confirm the
+          safety of an ingredient before consuming it.
+        </li>
+        <li>
+          Community-submitted recipes may not reflect personal allergens or medical
+          needs. Use Platerly as guidance, not a guarantee.
+        </li>
+        <li>
+          You are solely responsible for evaluating the safety of any dish or
+          product you choose to prepare or consume.
+        </li>
+      </ul>
+
+      <p className="pt-6 text-sm text-platerly-subtle">
+        Last updated: Aug 26, 2025
+      </p>
+    </section>
   </PublicPage>
 );
 

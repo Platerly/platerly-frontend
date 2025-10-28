@@ -1,21 +1,48 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-const DIFFICULTY = ["", "Easy", "Medium", "Hard"]; // "" means “any”
+const DIFFICULTY = ["", "Easy", "Medium", "Hard"]; // "" => Any
+
+const normalizeTag = (t) =>
+  t.toLowerCase().replace(/\s+/g, " ").trim();
+
+const parseTags = (raw) =>
+  raw
+    .split(",")
+    .map(normalizeTag)
+    .filter(Boolean);
+
+/* tiny debounce */
+const useDebounced = (value, ms = 250) => {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setV(value), ms);
+    return () => clearTimeout(t);
+  }, [value, ms]);
+  return v;
+};
 
 export default function ExploreFilters({ value, onChange, loading }) {
   const [difficulty, setDifficulty] = useState(value?.difficulty ?? "");
   const [tagsInput, setTagsInput] = useState((value?.tags || []).join(", "));
+  const [tags, setTags] = useState((value?.tags || []).map(normalizeTag));
   const [requireAllTags, setRequireAllTags] = useState(value?.requireAllTags ?? false);
   const [hideMyAllergens, setHideMyAllergens] = useState(value?.hideMyAllergens ?? false);
   const [hideRemixes, setHideRemixes] = useState(value?.hideRemixes ?? false);
 
-  // Keep parent in sync
-  useEffect(() => {
-    const tags = tagsInput
-      .split(",")
-      .map(t => t.trim())
-      .filter(Boolean);
+  const disabled = !!loading;
+  const inputRef = useRef(null);
 
+  // keep tags in sync if user types comma-separated
+  const debouncedInput = useDebounced(tagsInput, 250);
+  useEffect(() => {
+    const parsed = parseTags(debouncedInput);
+    // only update if different length or membership
+    if (parsed.join("|") !== tags.join("|")) setTags(parsed);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedInput]);
+
+  // push to parent
+  useEffect(() => {
     onChange?.({
       difficulty,
       tags,
@@ -25,66 +52,172 @@ export default function ExploreFilters({ value, onChange, loading }) {
       page: 1, // reset page on filter change
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [difficulty, tagsInput, requireAllTags, hideMyAllergens, hideRemixes]);
+  }, [difficulty, tags.join("|"), requireAllTags, hideMyAllergens, hideRemixes]);
 
-  const disabled = !!loading;
+  const addTag = (raw) => {
+    const t = normalizeTag(raw);
+    if (!t) return;
+    if (tags.includes(t)) return;
+    setTags((prev) => [...prev, t]);
+    setTagsInput((s) => (s ? `${s}, ${raw}` : raw));
+  };
+
+  const removeTag = (t) => {
+    setTags((prev) => prev.filter((x) => x !== t));
+    // rebuild input from current tags minus removed one
+    const next = tags.filter((x) => x !== t).join(", ");
+    setTagsInput(next);
+  };
+
+  const onTagsKeyDown = (e) => {
+    if (disabled) return;
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      const v = e.currentTarget.value;
+      // pick last token user is typing
+      const last = v.split(",").pop();
+      addTag(last || v);
+      // keep previous tokens; clear the trailing segment user just committed
+      const tokens = v.split(",").slice(0, -1).map((s) => s.trim()).filter(Boolean);
+      setTagsInput(tokens.join(", "));
+    }
+  };
+
+  const resetFilters = () => {
+    setDifficulty("");
+    setTags([]);
+    setTagsInput("");
+    setRequireAllTags(false);
+    setHideMyAllergens(false);
+    setHideRemixes(false);
+  };
+
+  const chipClasses = "inline-flex items-center gap-1 rounded-full border border-platerly-border bg-platerly-card/60 px-2 py-0.5 text-xs";
+
+  const hint = useMemo(() => {
+    if (tags.length === 0) return "Tip: press Enter to add a tag";
+    return requireAllTags ? "Showing recipes with all selected tags" : "Showing recipes with any of the selected tags";
+  }, [tags.length, requireAllTags]);
 
   return (
-    <div className="w-full flex flex-wrap gap-3 items-end border-b pb-3 mb-4">
-      <div className="flex flex-col">
-        <label className="text-sm text-gray-500 mb-1">Difficulty</label>
-        <select
-          className="border rounded px-2 py-1"
-          value={difficulty}
-          disabled={disabled}
-          onChange={(e) => setDifficulty(e.target.value)}
-        >
-          {DIFFICULTY.map(d => (
-            <option key={d || "any"} value={d}>{d || "Any"}</option>
-          ))}
-        </select>
+    <section
+      className="w-full border-b border-platerly-border pb-3 mb-4"
+      aria-label="Explore filters"
+    >
+      <div className="w-full flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+        {/* Difficulty */}
+        <div className="flex flex-col min-w-[160px]">
+          <label className="text-xs font-medium text-platerly-text/70 mb-1">
+            Difficulty
+          </label>
+          <select
+            className="border border-platerly-border bg-platerly-card text-platerly-text rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-platerly-green/60 disabled:opacity-50"
+            value={difficulty}
+            disabled={disabled}
+            onChange={(e) => setDifficulty(e.target.value)}
+          >
+            {DIFFICULTY.map((d) => (
+              <option key={d || "any"} value={d}>{d || "Any"}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Tags input */}
+        <div className="flex-1 min-w-[220px] flex flex-col">
+          <label className="text-xs font-medium text-platerly-text/70 mb-1">
+            Tags
+            <span className="ml-2 text-[11px] text-platerly-text/50">(comma or Enter to add)</span>
+          </label>
+          <input
+            ref={inputRef}
+            className="border border-platerly-border bg-platerly-card text-platerly-text rounded-md px-3 py-2 text-sm placeholder:text-platerly-text/40 focus:outline-none focus:ring-2 focus:ring-platerly-green/60 disabled:opacity-50"
+            placeholder="vegan, breakfast, low nickel"
+            value={tagsInput}
+            disabled={disabled}
+            onChange={(e) => setTagsInput(e.target.value)}
+            onKeyDown={onTagsKeyDown}
+            aria-describedby="tags-hint"
+          />
+          {/* Chips row */}
+          {tags.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {tags.map((t) => (
+                <span key={t} className={chipClasses}>
+                  <span className="truncate max-w-[160px]">{t}</span>
+                  <button
+                    type="button"
+                    className="ml-1 rounded-full px-1 text-platerly-text/70 hover:text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/60"
+                    onClick={() => removeTag(t)}
+                    aria-label={`Remove tag ${t}`}
+                    disabled={disabled}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+              <button
+                type="button"
+                onClick={() => { setTags([]); setTagsInput(""); }}
+                className="text-xs text-platerly-text/60 hover:text-platerly-text underline-offset-2 hover:underline"
+                disabled={disabled}
+              >
+                Clear
+              </button>
+            </div>
+          )}
+          <p id="tags-hint" className="mt-1 text-[11px] text-platerly-text/50">
+            {hint}
+          </p>
+        </div>
+
+        {/* Toggles */}
+        <div className="flex flex-wrap items-center gap-4">
+          <label className="inline-flex items-center gap-2 text-sm text-platerly-text">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-platerly-border bg-platerly-card text-platerly-green focus:ring-platerly-green/60"
+              checked={requireAllTags}
+              disabled={disabled}
+              onChange={(e) => setRequireAllTags(e.target.checked)}
+            />
+            Require all tags
+          </label>
+
+          <label className="inline-flex items-center gap-2 text-sm text-platerly-text">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-platerly-border bg-platerly-card text-platerly-green focus:ring-platerly-green/60"
+              checked={hideRemixes}
+              disabled={disabled}
+              onChange={(e) => setHideRemixes(e.target.checked)}
+            />
+            Hide remixes
+          </label>
+
+          <label className="inline-flex items-center gap-2 text-sm text-platerly-text">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-platerly-border bg-platerly-card text-platerly-green focus:ring-platerly-green/60"
+              checked={hideMyAllergens}
+              disabled={disabled}
+              onChange={(e) => setHideMyAllergens(e.target.checked)}
+            />
+            Hide my allergens
+          </label>
+        </div>
+
+        {/* Reset */}
+        <div className="sm:ml-auto">
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="text-sm text-platerly-green hover:underline underline-offset-2 disabled:opacity-50"
+            disabled={disabled}
+          >
+            Reset filters
+          </button>
+        </div>
       </div>
-
-      <div className="flex-1 min-w-[220px] flex flex-col">
-        <label className="text-sm text-gray-500 mb-1">Tags (comma-separated)</label>
-        <input
-          className="border rounded px-2 py-1"
-          placeholder="vegan, breakfast, low nickel"
-          value={tagsInput}
-          disabled={disabled}
-          onChange={(e) => setTagsInput(e.target.value)}
-        />
-      </div>
-
-      <label className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={requireAllTags}
-          disabled={disabled}
-          onChange={(e) => setRequireAllTags(e.target.checked)}
-        />
-        <span className="text-sm">Require all tags</span>
-      </label>
-
-      <label className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={hideRemixes}
-          disabled={disabled}
-          onChange={(e) => setHideRemixes(e.target.checked)}
-        />
-        <span className="text-sm">Hide remixes</span>
-      </label>
-
-      <label className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={hideMyAllergens}
-          disabled={disabled}
-          onChange={(e) => setHideMyAllergens(e.target.checked)}
-        />
-        <span className="text-sm">Hide my allergens</span>
-      </label>
-    </div>
+    </section>
   );
 }

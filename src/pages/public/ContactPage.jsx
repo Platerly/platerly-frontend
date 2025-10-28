@@ -3,11 +3,24 @@ import PublicPage from "./PublicPage";
 
 const ContactPage = () => (
   <PublicPage title="Contact" subtitle="We’d love to hear from you.">
-    <p>
-      For support, press, or legal requests, email
-      {" "}
-      <a href="mailto:support@platerly.com">support@platerly.com</a>.
-    </p>
+    <section className="space-y-6 leading-relaxed text-platerly-text">
+      <p>
+        For support, partnership inquiries, or legal questions, you can reach our team at:
+      </p>
+
+      <p className="text-lg font-medium">
+        <a
+          href="mailto:support@platerly.com"
+          className="text-platerly-green hover:underline underline-offset-2 break-all"
+        >
+          support@platerly.com
+        </a>
+      </p>
+
+      <p className="text-sm text-platerly-subtle">
+        We aim to respond within 1–2 business days.
+      </p>
+    </section>
   </PublicPage>
 );
 

@@ -41,7 +41,7 @@ export default function EditRecipePage() {
   const [selectedGroups, setSelectedGroups] = useState({ course: '', diet: '', style: '', health: '' })
   const [selectedSensitivities, setSelectedSensitivities] = useState([])
 
-  // NEW: extra tags (chips + autocomplete)
+  // Extra tags (chips + autocomplete)
   const [tagQuery, setTagQuery] = useState('')
   const [tagSuggestions, setTagSuggestions] = useState([]) // [{id,name,usageCount}]
   const [tagLoading, setTagLoading] = useState(false)
@@ -263,8 +263,8 @@ export default function EditRecipePage() {
     }
   }
 
-  if (loading) return <div className="p-6 text-gray-300">Loading…</div>
-  if (error) return <div className="p-6 text-red-400">{error}</div>
+  if (loading) return <div className="p-6 text-platerly-subtle">Loading…</div>
+  if (error) return <div className="p-6 text-[15px] text-platerly-yellow">{error}</div>
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 text-platerly-text">
@@ -272,10 +272,10 @@ export default function EditRecipePage() {
 
       {/* Image box with inline preview */}
       <div className="mb-6">
-        <label className="block text-sm mb-1">Image</label>
+        <label className="block text-sm mb-1 text-platerly-subtle">Image</label>
 
         <div
-          className="relative group w-full h-48 sm:h-56 rounded-lg border border-neutral-700 overflow-hidden bg-neutral-900 cursor-pointer"
+          className="relative group w-full h-48 sm:h-56 rounded-lg border border-platerly-light overflow-hidden bg-platerly-card cursor-pointer"
           onClick={() => inputRef.current && inputRef.current.click()}
           role="button"
           tabIndex={0}
@@ -299,15 +299,16 @@ export default function EditRecipePage() {
                   onClick={(e) => { e.stopPropagation(); clearPickedFile() }}
                   className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white"
                   title="Clear selected image"
+                  aria-label="Clear selected image"
                 >
                   <X className="w-4 h-4" />
                 </button>
               )}
             </>
           ) : (
-            <div className="flex h-full items-center justify-center text-neutral-400">
+            <div className="flex h-full items-center justify-center text-platerly-subtle">
               <Upload className="w-5 h-5 mr-2" />
-              Click to choose an image
+              Tap to choose an image
             </div>
           )}
         </div>
@@ -317,23 +318,40 @@ export default function EditRecipePage() {
 
       <form onSubmit={onSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm mb-1">Title</label>
-          <input name="title" value={form.title} onChange={onChange} className="w-full bg-neutral-900 border border-neutral-700 rounded-md px-3 py-2 text-white" />
+          <label className="block text-sm mb-1 text-platerly-subtle">Title</label>
+          <input
+            name="title"
+            value={form.title}
+            onChange={onChange}
+            className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+          />
         </div>
 
         <div>
-          <label className="block text-sm mb-1">Description</label>
-          <textarea rows={3} name="description" value={form.description} onChange={onChange} className="w-full bg-neutral-900 border border-neutral-700 rounded-md px-3 py-2 text-white" />
+          <label className="block text-sm mb-1 text-platerly-subtle">Description</label>
+          <textarea
+            rows={3}
+            name="description"
+            value={form.description}
+            onChange={onChange}
+            className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+          />
         </div>
 
         <div>
-          <label className="block text-sm mb-1">Instructions</label>
-          <textarea rows={6} name="instructions" value={form.instructions} onChange={onChange} className="w-full bg-neutral-900 border border-neutral-700 rounded-md px-3 py-2 text-white" />
+          <label className="block text-sm mb-1 text-platerly-subtle">Instructions</label>
+          <textarea
+            rows={6}
+            name="instructions"
+            value={form.instructions}
+            onChange={onChange}
+            className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+          />
         </div>
 
         {/* Ingredients editor */}
         <div>
-          <label className="block text-sm mb-2">Ingredients</label>
+          <label className="block text-sm mb-2 text-platerly-subtle">Ingredients</label>
           {ingredients.map((ing, idx) => (
             <div key={idx} className="flex gap-2 mb-2">
               <input
@@ -341,43 +359,71 @@ export default function EditRecipePage() {
                 placeholder="Ingredient name"
                 value={ing.name}
                 onChange={(e) => changeIngredient(idx, 'name', e.target.value)}
-                className="flex-1 bg-neutral-900 border border-neutral-700 rounded-md px-3 py-2 text-white"
+                className="flex-1 bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
               />
               <input
                 type="text"
                 placeholder="Quantity"
                 value={ing.quantity}
                 onChange={(e) => changeIngredient(idx, 'quantity', e.target.value)}
-                className="w-40 bg-neutral-900 border border-neutral-700 rounded-md px-3 py-2 text-white"
+                className="w-40 bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
               />
               <button
                 type="button"
                 onClick={() => removeIngredient(idx)}
                 disabled={ingredients.length === 1}
-                className={`text-red-400 hover:text-red-500 ${ingredients.length === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`px-3 rounded-md border text-sm transition-colors ${
+                  ingredients.length === 1
+                    ? 'opacity-50 cursor-not-allowed border-platerly-light text-platerly-subtle'
+                    : 'border-platerly-light text-platerly-text hover:bg-platerly-light/40'
+                }`}
                 title="Remove ingredient"
+                aria-label="Remove ingredient"
               >
                 ✕
               </button>
             </div>
           ))}
-          <button type="button" onClick={addIngredient} className="mt-1 px-3 py-1 rounded-full text-sm bg-green-700 text-white hover:bg-green-800">
+          <button
+            type="button"
+            onClick={addIngredient}
+            className="mt-1 px-3 py-2 rounded-full text-sm bg-platerly-green text-platerly-dark hover:opacity-90 active:opacity-80"
+          >
             + Add Ingredient
           </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm mb-1">Region</label>
-            <input name="region" value={form.region} onChange={onChange} className="w-full bg-neutral-900 border border-neutral-700 rounded-md px-3 py-2 text-white" />
+            <label className="block text-sm mb-1 text-platerly-subtle">Region</label>
+            <input
+              name="region"
+              value={form.region}
+              onChange={onChange}
+              className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            />
           </div>
           <div>
-            <label className="block text-sm mb-1">Prep (min)</label>
-            <input type="number" min="0" name="prepTimeMinutes" value={form.prepTimeMinutes} onChange={onChange} className="w-full bg-neutral-900 border border-neutral-700 rounded-md px-3 py-2 text-white" />
+            <label className="block text-sm mb-1 text-platerly-subtle">Prep (min)</label>
+            <input
+              type="number"
+              min="0"
+              name="prepTimeMinutes"
+              value={form.prepTimeMinutes}
+              onChange={onChange}
+              className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            />
           </div>
           <div>
-            <label className="block text-sm mb-1">Cook (min)</label>
-            <input type="number" min="0" name="cookTimeMinutes" value={form.cookTimeMinutes} onChange={onChange} className="w-full bg-neutral-900 border border-neutral-700 rounded-md px-3 py-2 text-white" />
+            <label className="block text-sm mb-1 text-platerly-subtle">Cook (min)</label>
+            <input
+              type="number"
+              min="0"
+              name="cookTimeMinutes"
+              value={form.cookTimeMinutes}
+              onChange={onChange}
+              className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            />
           </div>
         </div>
 
@@ -385,11 +431,12 @@ export default function EditRecipePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {TAG_GROUPS.map(group => (
             <div key={group.key}>
-              <label className="block text-sm mb-1">{group.label}</label>
+              <label className="block text-sm mb-1 text-platerly-subtle">{group.label}</label>
               <select
                 value={selectedGroups[group.key]}
                 onChange={(e) => handleGroupChange(group.key, e.target.value)}
-                className="w-full bg-neutral-900 border border-neutral-700 rounded-md px-3 py-2 text-white"
+                className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+                aria-label={group.label}
               >
                 <option value="">{group.placeholder}</option>
                 {group.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -400,61 +447,83 @@ export default function EditRecipePage() {
 
         {/* Sensitivity (multi) */}
         <div>
-          <label className="block text-sm mb-1">Sensitivity</label>
+          <label className="block text-sm mb-1 text-platerly-subtle">Sensitivity</label>
           <div className="flex flex-wrap gap-2">
-            {SENSITIVITY_OPTIONS.map(opt => (
-              <label key={opt} className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${
-                selectedSensitivities.includes(opt) ? 'border-emerald-500 bg-emerald-900/30' : 'border-neutral-700 bg-neutral-900'
-              }`}>
-                <input type="checkbox" checked={selectedSensitivities.includes(opt)} onChange={() => toggleSensitivity(opt)} className="accent-emerald-600" />
-                <span className="text-sm text-white">{opt}</span>
-              </label>
-            ))}
+            {SENSITIVITY_OPTIONS.map(opt => {
+              const checked = selectedSensitivities.includes(opt)
+              return (
+                <label
+                  key={opt}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${
+                    checked
+                      ? 'border-platerly-green bg-platerly-green/10'
+                      : 'border-platerly-light bg-platerly-card'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleSensitivity(opt)}
+                    className="w-4 h-4 rounded accent-current"
+                  />
+                  <span className="text-sm">{opt}</span>
+                </label>
+              )
+            })}
           </div>
         </div>
 
-        {/* NEW: Extra tags with autocomplete + chips */}
+        {/* Extra tags with autocomplete + chips */}
         <div>
-          <label className="block text-sm mb-1">Extra Tags (optional)</label>
+          <label className="block text-sm mb-1 text-platerly-subtle">Extra Tags (optional)</label>
 
-          {/* chips */}
           {extraTags.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-2">
               {extraTags.map(tag => (
-                <span key={tag} className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-neutral-700 bg-neutral-900 text-white text-sm">
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-platerly-light bg-platerly-card text-platerly-text text-sm"
+                >
                   {tag}
-                  <button type="button" onClick={() => removeExtraTag(tag)} className="text-neutral-400 hover:text-red-400" aria-label={`Remove ${tag}`}>×</button>
+                  <button
+                    type="button"
+                    onClick={() => removeExtraTag(tag)}
+                    className="text-platerly-subtle hover:text-platerly-text"
+                    aria-label={`Remove ${tag}`}
+                  >
+                    ×
+                  </button>
                 </span>
               ))}
             </div>
           )}
 
-          {/* input */}
           <input
             type="text"
             value={tagQuery}
             onChange={(e) => setTagQuery(e.target.value)}
             onKeyDown={handleExtraTagKeyDown}
             placeholder="Type to search tags… press Enter to add"
-            className="w-full rounded-lg bg-neutral-900 border border-neutral-700 px-3 py-2 text-sm text-white"
+            className="w-full rounded-lg bg-platerly-card border border-platerly-light px-3 py-2 text-sm text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
           />
 
-          {/* suggestions */}
-          {tagLoading && <div className="text-xs text-neutral-400 mt-1">Searching…</div>}
+          {tagLoading && <div className="text-xs text-platerly-subtle mt-1">Searching…</div>}
           {!tagLoading && !!tagSuggestions.length && (
-            <ul className="mt-2 max-h-56 overflow-auto rounded-lg border border-neutral-800 bg-neutral-900/80 backdrop-blur">
+            <ul className="mt-2 max-h-56 overflow-auto rounded-lg border border-platerly-light bg-platerly-card/95 backdrop-blur">
               {tagSuggestions.map(s => {
                 const disabled = lowerExtraSet.has(s.name.toLowerCase())
                 return (
-                  <li key={s.id} className="border-b border-neutral-800 last:border-none">
+                  <li key={s.id} className="border-b border-platerly-light last:border-none">
                     <button
                       type="button"
                       disabled={disabled}
                       onClick={() => addExtraTag(s.name)}
                       title={`${s.usageCount ?? 0} uses`}
-                      className={`w-full text-left px-3 py-2 text-sm hover:bg-neutral-800 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-platerly-light/30 ${
+                        disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                      }`}
                     >
-                      {s.name} <span className="text-neutral-400">({s.usageCount ?? 0})</span>
+                      {s.name} <span className="text-platerly-subtle">({s.usageCount ?? 0})</span>
                     </button>
                   </li>
                 )
@@ -466,20 +535,52 @@ export default function EditRecipePage() {
         {/* Difficulty */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm mb-1">Difficulty</label>
-            <select name="difficulty" value={form.difficulty} onChange={onChange} className="w-full bg-neutral-900 border border-neutral-700 rounded-md px-3 py-2 text-white">
+            <label className="block text-sm mb-1 text-platerly-subtle">Difficulty</label>
+            <select
+              name="difficulty"
+              value={form.difficulty}
+              onChange={onChange}
+              className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            >
               {DIFFICULTY_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex justify-end gap-2">
-          <button type="button" onClick={() => navigate(-1)} className="px-4 py-2 rounded-md border border-neutral-600 text-neutral-200 hover:bg-neutral-800">
+        {/* Desktop actions */}
+        <div className="hidden md:flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 rounded-md border border-platerly-light text-platerly-text hover:bg-platerly-light/40 focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+          >
             Cancel
           </button>
-          <button type="submit" disabled={saving} className="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-60">
+          <button
+            type="submit"
+            disabled={saving}
+            className="px-4 py-2 rounded-md bg-platerly-green text-platerly-dark hover:opacity-90 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+          >
             {saving ? 'Saving…' : 'Save Changes'}
+          </button>
+        </div>
+
+        {/* Mobile sticky action bar (optional) */}
+        <div className="md:hidden h-16" />
+        <div className="md:hidden fixed bottom-0 inset-x-0 border-t border-platerly-light bg-platerly-dark/95 backdrop-blur px-4 py-3 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 rounded-md border border-platerly-light text-platerly-text"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="px-4 py-2 rounded-md bg-platerly-green text-platerly-dark disabled:opacity-60"
+          >
+            {saving ? 'Saving…' : 'Save'}
           </button>
         </div>
       </form>

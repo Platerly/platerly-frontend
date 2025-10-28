@@ -1,22 +1,34 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
 import { API_BASE_URL } from '../utils/api'
-import { useAuth } from '../context/AuthContext' // ✅ Import context
+import { useAuth } from '../context/AuthContext'
+
+// Small helper to read ?redirect=/path safely
+const useRedirectPath = () => {
+  const location = useLocation()
+  return useMemo(() => {
+    const qp = new URLSearchParams(location.search)
+    const p = qp.get('redirect') || '/feed'
+    // prevent open-redirects: only allow same-site relative paths
+    return /^\//.test(p) ? p : '/feed'
+  }, [location.search])
+}
 
 const Login = () => {
-  const { setUser, setToken } = useAuth() // ✅ Access AuthContext
+  const { setUser, setToken } = useAuth()
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPw, setShowPw] = useState(false)
 
   const navigate = useNavigate()
-  const location = useLocation()
-  const redirectPath = new URLSearchParams(location.search).get('redirect') || '/feed'
+  const redirectPath = useRedirectPath()
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+    const { name, value } = e.target
+    setForm((s) => ({ ...s, [name]: value }))
   }
 
   const handleSubmit = async (e) => {
@@ -25,87 +37,125 @@ const Login = () => {
     setLoading(true)
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/User/login`, {
+      const res = await fetch(`${API_BASE_URL}/api/User/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: form.email,
-          password: form.password
-        })
+        body: JSON.stringify({ email: form.email, password: form.password }),
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Invalid login credentials')
+      // if API returns non-JSON on error, guard with try
+      let data
+      try {
+        data = await res.json()
+      } catch (_) {
+        data = {}
       }
 
-      
+      if (!res.ok) {
+        throw new Error(data.message || 'Invalid email or password')
+      }
 
-      // ✅ Store token locally
-      //localStorage.setItem('token', data.token)
-      setToken(data.token) // ← assumes backend returns `token`
+      // Expecting { token, user }
+      if (data?.token) setToken(data.token)
+      if (data?.user) setUser(data.user)
 
-
-      // ✅ Store user globally
-      setUser(data.user) // ← assumes backend returns `user` object
-
-      // ✅ Redirect
-      navigate(redirectPath)
+      navigate(redirectPath, { replace: true })
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-platerly-dark text-platerly-text flex items-center justify-center px-4">
-      <div className="bg-platerly-card border border-platerly-border rounded-xl shadow-xl px-8 py-10 w-full max-w-md">
-        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6">
-          Log in to <span className="text-green-500">Platerly</span>
-        </h1>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Input
-            label="Email"
-            name="email"
-            type="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="you@example.com"
-            required
-            error={error}
-          />
-
-          <Input
-            label="Password"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            placeholder="••••••••"
-            required
-            error={error}
-          />
-
-          <div className="flex justify-end text-sm">
-            
-            <Link to="/forgot-password" className="text-green-500 hover:underline">
-              Forgot password?
-            </Link>
+    <div className="min-h-[100svh] bg-platerly-dark text-platerly-text flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-md">
+        {/* Card */}
+        <div className="bg-platerly-card border border-platerly-border rounded-2xl shadow-xl/50 shadow-black/10 backdrop-blur-sm p-6 sm:p-8">
+          {/* Header */}
+          <div className="text-center mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+              Log in to <span className="text-platerly-accent">Platerly</span>
+            </h1>
+            <p className="text-sm text-platerly-muted mt-2">
+              Welcome back! Please enter your details.
+            </p>
           </div>
 
-          <Button type="submit" size="lg" className="w-full" disabled={loading}>
-            {loading ? 'Logging in...' : 'Log In'}
-          </Button>
-        </form>
+          {/* Error */}
+          {error && (
+            <div
+              role="alert"
+              aria-live="assertive"
+              className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 text-red-300 px-3 py-2 text-sm"
+            >
+              {error}
+            </div>
+          )}
 
-        <p className="text-center text-sm text-gray-400 mt-6">
-          Don’t have an account?{' '}
-          <Link to="/register" className="text-green-500 hover:underline">
-            Join Platerly
-          </Link>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <Input
+              label="Email"
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="you@example.com"
+              required
+              autoComplete="username"
+            />
+
+            <div className="space-y-2">
+              <div className="relative">
+                <Input
+                  label="Password"
+                  name="password"
+                  type={showPw ? 'text' : 'password'}
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="current-password"
+                  enterKeyHint="done"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw((s) => !s)}
+                  className="absolute right-3 top-9 text-xs text-platerly-muted hover:text-platerly-text"
+                  aria-label={showPw ? 'Hide password' : 'Show password'}
+                >
+                  {showPw ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2 select-none">
+                  {/* Optional remember me for mobile ease; safe to wire later */}
+                  <input id="remember" type="checkbox" className="h-4 w-4 rounded border-platerly-border bg-transparent" />
+                  <label htmlFor="remember" className="text-platerly-muted">Remember me</label>
+                </div>
+                <Link to="/forgot-password" className="text-platerly-accent hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+            </div>
+
+            <Button type="submit" size="lg" className="w-full" disabled={loading}>
+              {loading ? 'Logging in…' : 'Log In'}
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-platerly-muted mt-6">
+            Don’t have an account?{' '}
+            <Link to="/register" className="text-platerly-accent hover:underline">
+              Join Platerly
+            </Link>
+          </p>
+        </div>
+
+        {/* Footer tiny text */}
+        <p className="text-center text-xs text-platerly-muted mt-4">By continuing, you agree to our{' '}
+          <Link to="/terms" className="underline hover:no-underline">Terms</Link> &{' '}
+          <Link to="/privacy" className="underline hover:no-underline">Privacy</Link>.
         </p>
       </div>
     </div>

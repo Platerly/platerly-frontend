@@ -7,32 +7,42 @@ import { useAuth } from "../context/AuthContext";
 const UserRow = ({ u, onFollowToggle, busy }) => {
   const display = u.displayName || u.username;
   return (
-    <div className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-neutral-800 bg-neutral-900 hover:bg-neutral-800">
-      <Link to={`/user/${u.username}`} className="flex items-center gap-3 min-w-0">
+    <div className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-platerly-light bg-platerly-card md:hover:bg-platerly-light/30 transition">
+      <Link
+        to={`/profile/${u.username}`}
+        className="flex items-center gap-3 min-w-0 focus:outline-none focus:ring-2 focus:ring-platerly-green/40 rounded-xl"
+      >
         {u.profileImageUrl ? (
-          <img src={u.profileImageUrl} alt="" className="w-12 h-12 rounded-xl object-cover" />
+          <img
+            src={u.profileImageUrl}
+            alt={`${display} avatar`}
+            className="w-12 h-12 rounded-xl object-cover ring-2 ring-platerly-light"
+            loading="lazy"
+          />
         ) : (
-          <div className="w-12 h-12 rounded-xl bg-neutral-800 flex items-center justify-center font-semibold">
+          <div className="w-12 h-12 rounded-xl bg-platerly-light/50 flex items-center justify-center font-semibold text-platerly-text">
             {u.username?.[0]?.toUpperCase() ?? "U"}
           </div>
         )}
         <div className="min-w-0">
-          <div className="font-medium truncate">{display}</div>
-          <div className="text-xs text-neutral-400 truncate">@{u.username}</div>
-          {u.bio ? <div className="text-xs text-neutral-500 line-clamp-1 mt-0.5">{u.bio}</div> : null}
+          <div className="font-medium truncate text-platerly-text">{display}</div>
+          <div className="text-xs text-platerly-subtle truncate">@{u.username}</div>
+          {u.bio ? (
+            <div className="text-xs text-platerly-subtle line-clamp-1 mt-0.5">{u.bio}</div>
+          ) : null}
         </div>
       </Link>
 
-      {/* show Follow/Unfollow if the API included `isFollowing` or we infer from row */}
+      {/* show Follow/Unfollow if API included `isFollowing` */}
       {typeof u.isFollowing === "boolean" && onFollowToggle ? (
         <button
           disabled={busy}
           onClick={() => onFollowToggle(u)}
-          className={`px-3 py-1.5 rounded-xl text-sm border transition ${
+          className={`px-3 py-1.5 rounded-xl text-sm border transition focus:outline-none focus:ring-2 focus:ring-platerly-green/40 ${
             u.isFollowing
-              ? "bg-neutral-800 border-red-500 text-red-400 hover:bg-red-900/40"
-              : "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700"
-          }`}
+              ? "bg-transparent border-platerly-light text-platerly-subtle md:hover:bg-platerly-light/30"
+              : "bg-platerly-green text-platerly-dark border-transparent md:hover:opacity-90"
+          } ${busy ? "opacity-60 cursor-not-allowed" : ""}`}
         >
           {busy ? "…" : u.isFollowing ? "Unfollow" : "Follow"}
         </button>
@@ -44,14 +54,17 @@ const UserRow = ({ u, onFollowToggle, busy }) => {
 const Skeleton = () => (
   <div className="space-y-2">
     {Array.from({ length: 8 }).map((_, i) => (
-      <div key={i} className="h-16 rounded-2xl bg-neutral-900/70 border border-neutral-900 animate-pulse" />
+      <div
+        key={i}
+        className="h-16 rounded-2xl bg-platerly-light/40 border border-platerly-light animate-pulse"
+      />
     ))}
   </div>
 );
 
 const FollowListPage = ({ type }) => {
   const { username } = useParams();
-  const { token, user: me } = useAuth();
+  const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState([]);
   const [headerUser, setHeaderUser] = useState(null);
@@ -69,7 +82,6 @@ const FollowListPage = ({ type }) => {
 
   // try username param first; if server doesn’t support it, fall back to userId
   const fetchList = async (uname) => {
-    // first, fetch header user (for display + potential fallback id)
     const u = await resolveUserByUsername(uname);
     setHeaderUser(u);
 
@@ -105,14 +117,12 @@ const FollowListPage = ({ type }) => {
     fetchList(username)
       .then((list) => {
         if (!alive) return;
-        // normalize shape a bit: expect { id, username, displayName, profileImageUrl, bio, isFollowing? }
         const normalized = (list || []).map((u) => ({
           id: u.id ?? u.userId ?? null,
           username: u.username,
           displayName: u.displayName,
           profileImageUrl: u.profileImageUrl,
           bio: u.bio,
-          // if backend didn’t include following state, infer false for safety
           isFollowing: typeof u.isFollowing === "boolean" ? u.isFollowing : false,
         }));
         setRows(normalized);
@@ -136,13 +146,17 @@ const FollowListPage = ({ type }) => {
     const url = `${API_BASE_URL}/api/Follow/${targetId}`;
 
     // optimistic update
-    setRows((prev) => prev.map((r) => (r.id === targetId ? { ...r, isFollowing: !row.isFollowing } : r)));
+    setRows((prev) =>
+      prev.map((r) => (r.id === targetId ? { ...r, isFollowing: !row.isFollowing } : r))
+    );
     try {
       const res = await fetch(url, { method, headers: authHeader });
       if (!res.ok) throw new Error("toggle failed");
     } catch {
       // revert on failure
-      setRows((prev) => prev.map((r) => (r.id === targetId ? { ...r, isFollowing: row.isFollowing } : r)));
+      setRows((prev) =>
+        prev.map((r) => (r.id === targetId ? { ...r, isFollowing: row.isFollowing } : r))
+      );
     } finally {
       setBusyId(null);
     }
@@ -159,26 +173,39 @@ const FollowListPage = ({ type }) => {
   }, [title]);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 md:px-6 py-6">
+    <div className="max-w-2xl mx-auto px-4 md:px-6 py-6 text-platerly-text">
       <div className="mb-5">
-        <Link to={`/profile/${username}`} className="text-sm text-neutral-400 hover:underline">
+        <Link
+          to={`/profile/${username}`}
+          className="text-sm text-platerly-subtle hover:underline focus:outline-none focus:ring-2 focus:ring-platerly-green/40 rounded"
+        >
           ← Back to profile
         </Link>
       </div>
 
       <h1 className="text-xl font-semibold capitalize">
-        {type} <span className="text-neutral-400">· @{headerUser?.username || username}</span>
+        {type}{" "}
+        <span className="text-platerly-subtle">· @{headerUser?.username || username}</span>
       </h1>
 
-      <div className="mt-4">{loading ? <Skeleton /> : rows.length ? (
-        <div className="space-y-2">
-          {rows.map((u) => (
-            <UserRow key={u.id || u.username} u={u} onFollowToggle={onToggleFollow} busy={busyId === u.id} />
-          ))}
-        </div>
-      ) : (
-        <div className="py-16 text-center text-neutral-400">No users yet.</div>
-      )}</div>
+      <div className="mt-4">
+        {loading ? (
+          <Skeleton />
+        ) : rows.length ? (
+          <div className="space-y-2">
+            {rows.map((u) => (
+              <UserRow
+                key={u.id || u.username}
+                u={u}
+                onFollowToggle={onToggleFollow}
+                busy={busyId === u.id}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="py-16 text-center text-platerly-subtle">No users yet.</div>
+        )}
+      </div>
     </div>
   );
 };

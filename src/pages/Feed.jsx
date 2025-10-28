@@ -4,6 +4,15 @@ import RecipeCard from '../components/ui/RecipeCard'
 import { API_BASE_URL } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
 
+const SkeletonPost = () => (
+  <div className="rounded-xl bg-platerly-card border border-platerly-light p-4 animate-pulse">
+    <div className="w-full h-40 rounded-lg bg-platerly-light/40 mb-4" />
+    <div className="h-4 w-2/3 bg-platerly-light/60 rounded mb-2" />
+    <div className="h-3 w-1/2 bg-platerly-light/40 rounded mb-2" />
+    <div className="h-3 w-3/4 bg-platerly-light/30 rounded" />
+  </div>
+)
+
 const Feed = () => {
   const [recipes, setRecipes] = useState([])
   const [userAllergies, setUserAllergies] = useState([])
@@ -37,7 +46,6 @@ const Feed = () => {
       )
     )
   }, [tagsQs])
-
 
   const updateParams = (updates) => {
     const next = new URLSearchParams(sp)
@@ -196,28 +204,26 @@ const Feed = () => {
 
   return (
     <div className="flex flex-col bg-platerly-dark text-platerly-text min-h-screen">
-      <div className="sticky top-0 z-20 bg-platerly-dark py-4 border-b border-platerly-border">
-        <div className="flex justify-center gap-4">
+      {/* Sticky tabs */}
+      <div className="sticky top-0 z-20 bg-platerly-dark/95 backdrop-blur py-3 border-b border-platerly-light">
+        <div className="max-w-4xl mx-auto px-4 flex justify-center gap-3 sm:gap-4">
           <button
             onClick={goExplore}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition ${
-              tab === 'explore'
-                ? 'bg-platerly-green text-white shadow'
-                : 'bg-platerly-card text-platerly-subtle hover:bg-platerly-green/20'
-            }`}
+            className={`px-4 sm:px-5 py-2 rounded-full text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-platerly-green/40
+              ${tab === 'explore'
+                ? 'bg-platerly-green text-platerly-dark shadow'
+                : 'bg-platerly-card text-platerly-subtle md:hover:bg-platerly-green/20'}`}
           >
             Explore
           </button>
 
-          {/* ✅ Show Following only if user is signed in */}
           {authed && (
             <button
               onClick={goFollowing}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition ${
-                tab === 'following'
-                  ? 'bg-platerly-green text-white shadow'
-                  : 'bg-platerly-card text-platerly-subtle hover:bg-platerly-green/20'
-              }`}
+              className={`px-4 sm:px-5 py-2 rounded-full text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-platerly-green/40
+                ${tab === 'following'
+                  ? 'bg-platerly-green text-platerly-dark shadow'
+                  : 'bg-platerly-card text-platerly-subtle md:hover:bg-platerly-green/20'}`}
             >
               Following
             </button>
@@ -225,11 +231,30 @@ const Feed = () => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-6 px-6 py-8">
-        {loading && <p className="text-platerly-subtle text-center">Loading…</p>}
-        {!loading && error && <p className="text-red-400 text-center">{error}</p>}
+      {/* Feed content */}
+      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6">
+        {loading && (
+          <div className="grid grid-cols-1 gap-6">
+            {Array.from({ length: 4 }).map((_, i) => <SkeletonPost key={i} />)}
+          </div>
+        )}
+
+        {!loading && error && (
+          <div className="rounded-xl border border-platerly-light bg-platerly-card p-6 text-center">
+            <p className="text-platerly-subtle">{error}</p>
+            <button
+              onClick={fetchFeed}
+              className="mt-4 inline-flex items-center rounded-md bg-platerly-green text-platerly-dark px-4 py-2 hover:opacity-90"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
         {!loading && !error && renderList.length === 0 && (
-          <p className="text-platerly-subtle text-center">No recipes found.</p>
+          <div className="rounded-xl border border-platerly-light bg-platerly-card p-6 text-center">
+            <p className="text-platerly-subtle">No recipes found.</p>
+          </div>
         )}
 
         {!loading && !error && renderList.map((recipe) => (

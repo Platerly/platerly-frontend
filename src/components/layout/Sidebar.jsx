@@ -1,11 +1,147 @@
 import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { Home, PlusCircle, Book, Settings, User } from 'lucide-react'
+import { Link, NavLink, useLocation } from 'react-router-dom'
+import { Home, PlusCircle, Book, Settings, User, Users } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+
+/* Utility: join class names */
+const cx = (...args) => args.filter(Boolean).join(' ')
+
+/* Reusable nav item */
+const NavItem = ({ to, icon: Icon, children, end = false, isActiveMatch }) => {
+  const location = useLocation(); // <-- get pathname here
+
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) => {
+        const active =
+          typeof isActiveMatch === 'function'
+            ? isActiveMatch(location) // pass real location object
+            : isActive;
+
+        return cx(
+          'flex items-center gap-4 text-base px-4 py-2 rounded-md transition outline-none',
+          'hover:bg-platerly-card',
+          'focus-visible:ring-2 focus-visible:ring-platerly-green/60 focus-visible:ring-offset-0',
+          active ? 'bg-platerly-green text-white' : 'text-platerly-text'
+        );
+      }}
+      aria-label={typeof children === 'string' ? children : undefined}
+    >
+      <Icon className="w-6 h-6 shrink-0" />
+      <span className="truncate">{children}</span>
+    </NavLink>
+  );
+};
+
+
+/* Mobile bottom tab (shown on < md) */
+const MobileTabBar = ({ authed, user }) => {
+  const location = useLocation()
+  const isActive = (path, startsWith = false) =>
+    startsWith ? location.pathname.startsWith(path) : location.pathname === path
+
+  if (!authed) {
+    return (
+      <div className="fixed bottom-0 inset-x-0 z-40 bg-platerly-light/95 border-t border-platerly-border backdrop-blur supports-[backdrop-filter]:bg-platerly-light/80">
+        <div className="safe-area-inset-b h-14 flex items-stretch justify-between px-4">
+          <Link
+            to="/register"
+            className="w-full mx-auto my-2 inline-flex items-center justify-center rounded-lg bg-platerly-green text-white font-medium px-4 py-2"
+            aria-label="Join Platerly"
+          >
+            Join Platerly
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <nav
+      className="fixed bottom-0 inset-x-0 z-40 h-[64px] bg-platerly-light/95 border-t border-platerly-border backdrop-blur supports-[backdrop-filter]:bg-platerly-light/80 md:hidden"
+      role="navigation"
+      aria-label="Primary mobile"
+    >
+      <ul className="safe-area-inset-b h-full grid grid-cols-5">
+        <li className="flex">
+          <Link
+            to="/feed"
+            className={cx(
+              'flex-1 flex flex-col items-center justify-center text-xs',
+              isActive('/feed') ? 'text-platerly-green' : 'text-platerly-text'
+            )}
+            aria-label="Feed"
+          >
+            <Home className="w-5 h-5" />
+            <span className="mt-0.5">Feed</span>
+          </Link>
+        </li>
+
+        <li className="flex">
+          <Link
+            to="/explore-chefs"
+            className={cx(
+              'flex-1 flex flex-col items-center justify-center text-xs',
+              isActive('/explore-chefs') ? 'text-platerly-green' : 'text-platerly-text'
+            )}
+            aria-label="Explore Chefs"
+          >
+            <Users className="w-5 h-5" />
+            <span className="mt-0.5">Chefs</span>
+          </Link>
+        </li>
+
+        <li className="flex">
+          <Link
+            to="/create"
+            className={cx(
+              'flex-1 flex flex-col items-center justify-center text-xs',
+              isActive('/create') ? 'text-platerly-green' : 'text-platerly-text'
+            )}
+            aria-label="Create Recipe"
+          >
+            <PlusCircle className="w-5 h-5" />
+            <span className="mt-0.5">Create</span>
+          </Link>
+        </li>
+
+        <li className="flex">
+          <Link
+            to="/cookbooks"
+            className={cx(
+              'flex-1 flex flex-col items-center justify-center text-xs',
+              isActive('/cookbooks') ? 'text-platerly-green' : 'text-platerly-text'
+            )}
+            aria-label="My Cookbooks"
+          >
+            <Book className="w-5 h-5" />
+            <span className="mt-0.5">Books</span>
+          </Link>
+        </li>
+
+        <li className="flex">
+          <Link
+            to="/settings"
+            className={cx(
+              'flex-1 flex flex-col items-center justify-center text-xs',
+              location.pathname.startsWith('/settings') ? 'text-platerly-green' : 'text-platerly-text'
+            )}
+            aria-label="Settings"
+          >
+            <Settings className="w-5 h-5" />
+            <span className="mt-0.5">Settings</span>
+          </Link>
+        </li>
+      </ul>
+    </nav>
+  )
+}
 
 const Sidebar = () => {
   const location = useLocation()
-  const { user, token, loading } = useAuth()
+  const { user, token } = useAuth()
 
   // Treat as authed if context has a session OR token exists in storage (handles cold starts)
   const storedToken =
@@ -13,122 +149,87 @@ const Sidebar = () => {
     (localStorage.getItem('token') || sessionStorage.getItem('token'))
   const authed = !!(user || token || storedToken)
 
-  const isActive = (path) => location.pathname === path
   const homeTarget = authed ? '/feed' : '/login'
 
   return (
-    <div className="bg-platerly-light text-platerly-text w-[260px] h-screen fixed top-0 left-0 p-6 flex flex-col justify-between border-r border-platerly-border">
-      <div>
-        {/* Smart, clickable logo */}
-        <Link
-          to={homeTarget}
-          aria-label="Platerly Home"
-          title={`Go to ${authed ? '/feed' : '/login'}`}
-          className="text-3xl font-bold text-platerly-green mb-10 block"
-        >
-          Platerly
-        </Link>
-
-        {authed ? (
-          <nav className="flex flex-col space-y-4">
-            <Link
-              to="/feed"
-              className={`flex items-center gap-4 text-lg px-4 py-2 rounded-md transition ${
-                isActive('/feed')
-                  ? 'bg-platerly-green text-white'
-                  : 'hover:bg-platerly-card hover:text-white'
-              }`}
-            >
-              <Home className="w-6 h-6" />
-              Feed
-            </Link>
-
-            <Link
-              to="/explore-chefs"
-              className={`flex items-center gap-4 text-lg px-4 py-2 rounded-md transition ${
-                isActive('/explore-chefs')
-                  ? 'bg-platerly-green text-white'
-                  : 'hover:bg-platerly-card hover:text-white'
-              }`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 1.2.3 2.33.84 3.33-.53.19-.84.7-.84 1.22v2c0 .55.45 1 1 1h2v3c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-3h2c.55 0 1-.45 1-1v-2c0-.52-.31-1.03-.84-1.22A6.964 6.964 0 0 0 19 9c0-3.87-3.13-7-7-7z" />
-              </svg>
-              Explore Chefs
-            </Link>
-
-            <Link
-              to="/create"
-              className={`flex items-center gap-4 text-lg px-4 py-2 rounded-md transition ${
-                isActive('/create')
-                  ? 'bg-platerly-green text-white'
-                  : 'hover:bg-platerly-card hover:text-white'
-              }`}
-            >
-              <PlusCircle className="w-6 h-6" />
-              Create Recipe
-            </Link>
-
-            <Link
-              to="/cookbooks"
-              className={`flex items-center gap-4 text-lg px-4 py-2 rounded-md transition ${
-                isActive('/cookbooks')
-                  ? 'bg-platerly-green text-white'
-                  : 'hover:bg-platerly-card hover:text-white'
-              }`}
-            >
-              <Book className="w-6 h-6" />
-              My Cookbooks
-            </Link>
-
-            {/* New: Profile link */}
-            {user && (
-              <Link
-                to={`/profile/${user.username}`}
-                className={`flex items-center gap-4 text-lg px-4 py-2 rounded-md transition ${
-                  location.pathname.startsWith(`/profile/${user.username}`)
-                    ? 'bg-platerly-green text-white'
-                    : 'hover:bg-platerly-card hover:text-white'
-                }`}
-              >
-                {user.profileImageUrl ? (
-                  <img
-                    src={user.profileImageUrl}
-                    alt={user.username}
-                    className="w-6 h-6 rounded-full object-cover"
-                  />
-                ) : (
-                  <User className="w-6 h-6" />
-                )}
-                Profile
-              </Link>
-            )}
-
-            <Link
-              to="/settings"
-              className={`flex items-center gap-4 text-lg px-4 py-2 rounded-md transition ${
-                location.pathname.startsWith('/settings')
-                  ? 'bg-platerly-green text-white'
-                  : 'hover:bg-platerly-card hover:text-white'
-              }`}
-            >
-              <Settings className="w-6 h-6" />
-              Settings
-            </Link>
-          </nav>
-        ) : (
-          <div className="mt-10">
-            <p className="mb-4 text-gray-300 text-sm">Join Platerly to create and save recipes</p>
-            <Link
-              to="/register"
-              className="block text-center bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition"
-            >
-              Join Platerly
-            </Link>
-          </div>
+    <>
+      {/* Desktop / Tablet left sidebar */}
+      <aside
+        className={cx(
+          'hidden md:flex',
+          'bg-platerly-light text-platerly-text',
+          'w-[260px] h-screen fixed top-0 left-0',
+          'p-6 flex-col justify-between border-r border-platerly-border'
         )}
-      </div>
-    </div>
+        aria-label="Primary"
+      >
+        <div>
+          {/* Logo */}
+          <Link
+            to={homeTarget}
+            aria-label="Platerly Home"
+            title={`Go to ${authed ? '/feed' : '/login'}`}
+            className="text-3xl font-bold text-platerly-green mb-10 block tracking-tight"
+          >
+            Platerly
+          </Link>
+
+          {authed ? (
+            <nav className="flex flex-col space-y-2" role="navigation" aria-label="Main">
+              <NavItem to="/feed" icon={Home} end>Feed</NavItem>
+
+              <NavItem to="/explore-chefs" icon={Users} end>
+                Explore Chefs
+              </NavItem>
+
+              <NavItem to="/create" icon={PlusCircle} end>
+                Create Recipe
+              </NavItem>
+
+              <NavItem to="/cookbooks" icon={Book} end>
+                My Cookbooks
+              </NavItem>
+
+              {user && (
+                <NavItem
+                  to={`/profile/${user.username}`}
+                  icon={User}
+                  isActiveMatch={(loc) => loc.pathname.startsWith(`/profile/${user.username}`)}
+                >
+                  Profile
+                </NavItem>
+              )}
+
+              <NavItem
+                to="/settings"
+                icon={Settings}
+                isActiveMatch={(loc) => loc.pathname.startsWith('/settings')}
+              >
+                Settings
+              </NavItem>
+            </nav>
+          ) : (
+            <div className="mt-10">
+              <p className="mb-4 text-sm text-platerly-text/70">Join Platerly to create and save recipes</p>
+              <Link
+                to="/register"
+                className="block text-center bg-platerly-green hover:bg-platerly-green/90 text-white font-semibold py-2 px-4 rounded-md transition"
+              >
+                Join Platerly
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Optional footer / version spot */}
+        <div className="text-xs text-platerly-text/60">
+          <span>&copy; {new Date().getFullYear()} Platerly</span>
+        </div>
+      </aside>
+
+      {/* Mobile bottom tabs */}
+      <MobileTabBar authed={authed} user={user} />
+    </>
   )
 }
 
