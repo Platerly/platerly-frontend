@@ -1,13 +1,22 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/assets/*", "/static/*"]
+    "exclude": [
+      "/api/Share/*", 
+      "/og/*",
+      "/api/*",
+      "/assets/*",
+      "/static/*"
+    ]
   },
   "responseOverrides": {
     "404": { "rewrite": "/index.html", "statusCode": 200 }
   },
   "routes": [
-    { "route": "/s/:id", "rewrite": "/api/share/recipe/:id", "allowedRoles": ["anonymous"] },
-    { "route": "/og/recipe/:id.png", "rewrite": "/api/share/og/recipe/:id", "allowedRoles": ["anonymous"] }
+    {
+      "route": "/s/:id",
+      "rewrite": "/api/Share/recipe/:id",
+      "allowedRoles": ["anonymous"]
+    }
   ]
 }
