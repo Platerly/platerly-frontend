@@ -13,18 +13,8 @@
       "allowedRoles": ["anonymous"]
     },
     {
-      "route": "/s/:id",
-      "rewrite": "/api/share/recipe/:id",
-      "allowedRoles": ["anonymous"]
-    },
-    {
       "route": "/og/recipe/:id.png",
       "rewrite": "/api/Share/og/recipe/:id.png",
-      "allowedRoles": ["anonymous"]
-    },
-    {
-      "route": "/og/recipe/:id.png",
-      "rewrite": "/api/share/og/recipe/:id.png",
       "allowedRoles": ["anonymous"]
     },
     {
@@ -32,15 +22,7 @@
       "allowedRoles": ["anonymous"]
     },
     {
-      "route": "/api/share/recipe/*",
-      "allowedRoles": ["anonymous"]
-    },
-    {
       "route": "/api/Share/og/recipe/*",
-      "allowedRoles": ["anonymous"]
-    },
-    {
-      "route": "/api/share/og/recipe/*",
       "allowedRoles": ["anonymous"]
     }
   ]
