@@ -10,13 +10,25 @@
     ]
   },
   "responseOverrides": {
-    "404": { "rewrite": "/index.html", "statusCode": 200 }
+    "404": {
+      "rewrite": "/index.html",
+      "statusCode": 200
+    }
   },
   "routes": [
     {
       "route": "/s/:id",
       "rewrite": "/api/Share/recipe/:id",
-      "allowedRoles": ["anonymous"]
+      "allowedRoles": [
+        "anonymous"
+      ]
+    },
+    {
+      "route": "/og/recipe/:id.png",
+      "rewrite": "/api/Share/og/recipe/:id",
+      "allowedRoles": [
+        "anonymous"
+      ]
     }
   ]
 }
