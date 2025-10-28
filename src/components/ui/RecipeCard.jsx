@@ -67,7 +67,8 @@ const RecipeCard = ({
 
   const safeImg = imageUrl || '/placeholder.png'
   // Updated shareUrl to use the SWA proxied route explicitly
-  const shareUrl = `${window.location.origin}/s/${id}`
+  const shareUrl = `${window.location.origin}/api/share/recipe/${id}`;
+
 
 
   const rawTags = Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',') : [])
