@@ -4,9 +4,19 @@ import { API_BASE_URL } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
 import { Upload, X } from 'lucide-react'
 
+/* ───────────────── Difficulty helpers ───────────────── */
 const DIFFICULTY_OPTIONS = ['Easy', 'Medium', 'Hard']
+const toDifficultyLabel = (v) => {
+  if (typeof v === 'number') return DIFFICULTY_OPTIONS[v] ?? 'Medium'
+  const idx = DIFFICULTY_OPTIONS.findIndex(d => d.toLowerCase() === String(v || '').toLowerCase())
+  return idx >= 0 ? DIFFICULTY_OPTIONS[idx] : 'Medium'
+}
+const toDifficultyIndex = (label) => {
+  const idx = DIFFICULTY_OPTIONS.findIndex(d => d.toLowerCase() === String(label || '').toLowerCase())
+  return idx >= 0 ? idx : 1 // Medium
+}
 
-// --- Same taxonomy as Create/Remix ---
+/* ───────────────── Tags taxonomy ───────────────── */
 const TAG_GROUPS = [
   { key: 'course', label: 'Course', placeholder: 'Select course…',
     options: ['Breakfast','Lunch','Dinner','Snack','Dessert'] },
@@ -27,6 +37,7 @@ export default function EditRecipePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -34,7 +45,7 @@ export default function EditRecipePage() {
     region: '',
     prepTimeMinutes: '',
     cookTimeMinutes: '',
-    difficulty: 'Medium',
+    difficulty: 'Medium', // keep label in state
   })
 
   // Tag groups + sensitivities
@@ -46,11 +57,7 @@ export default function EditRecipePage() {
   const [tagSuggestions, setTagSuggestions] = useState([]) // [{id,name,usageCount}]
   const [tagLoading, setTagLoading] = useState(false)
   const [extraTags, setExtraTags] = useState([])
-
-  const lowerExtraSet = useMemo(
-    () => new Set(extraTags.map(t => t.toLowerCase())),
-    [extraTags]
-  )
+  const lowerExtraSet = useMemo(() => new Set(extraTags.map(t => t.toLowerCase())), [extraTags])
 
   // Ingredients
   const [ingredients, setIngredients] = useState([{ name: '', quantity: '' }])
@@ -72,7 +79,7 @@ export default function EditRecipePage() {
     return true
   }
 
-  // Load recipe
+  /* ───────────────── Load recipe ───────────────── */
   useEffect(() => {
     let isMounted = true
     ;(async () => {
@@ -82,7 +89,8 @@ export default function EditRecipePage() {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) throw new Error('Failed to load recipe')
-        const { recipe } = await res.json()
+        const payload = await res.json()
+        const recipe = payload?.recipe ?? payload
         if (!isMounted) return
 
         setForm({
@@ -92,15 +100,19 @@ export default function EditRecipePage() {
           region: recipe.region ?? '',
           prepTimeMinutes: recipe.prepTimeMinutes ?? '',
           cookTimeMinutes: recipe.cookTimeMinutes ?? '',
-          difficulty: recipe.difficulty ?? recipe.difficultyLevel ?? 'Medium',
+          difficulty: toDifficultyLabel(recipe.difficulty ?? recipe.difficultyLevel),
         })
         setCurrentImageUrl(recipe.imageUrl || '')
 
         const ing = (recipe.ingredients || []).map(i => ({ name: i.name || '', quantity: i.quantity || '' }))
         setIngredients(ing.length ? ing : [{ name: '', quantity: '' }])
 
-        // hydrate tags
-        const raw = String(recipe.tags || '').split(',').map(t => t.trim()).filter(Boolean)
+        // Hydrate tags (array or CSV)
+        const rawList = Array.isArray(recipe.tags)
+          ? recipe.tags.map(String)
+          : String(recipe.tags || '').split(',').map(t => t.trim())
+        const raw = rawList.filter(Boolean)
+
         const sensitivitiesLower = new Set(SENSITIVITY_OPTIONS.map(s => s.toLowerCase()))
         const leftovers = []
         const seen = new Set()
@@ -115,10 +127,7 @@ export default function EditRecipePage() {
           if (setGroupIfMatch('style', lower, t)) continue
           if (setGroupIfMatch('health', lower, t)) continue
 
-          if (sensitivitiesLower.has(lower)) {
-            setSelectedSensitivities(prev => (prev.includes(t) ? prev : [...prev, t]))
-            continue
-          }
+          if (sensitivitiesLower.has(lower)) { setSelectedSensitivities(prev => (prev.includes(t) ? prev : [...prev, t])); continue }
           leftovers.push(t)
         }
         setExtraTags(leftovers)
@@ -132,7 +141,7 @@ export default function EditRecipePage() {
     return () => { isMounted = false }
   }, [id, token])
 
-  // Tag autocomplete (debounced)
+  /* ───────────────── Tag autocomplete (debounced) ───────────────── */
   useEffect(() => {
     const q = tagQuery.trim()
     if (!q) { setTagSuggestions([]); return }
@@ -153,13 +162,13 @@ export default function EditRecipePage() {
     return () => { ctrl.abort(); clearTimeout(t) }
   }, [tagQuery])
 
+  /* ───────────────── Handlers ───────────────── */
   const addExtraTag = (name) => {
     const trimmed = (name || '').trim()
     if (!trimmed) return
     if (lowerExtraSet.has(trimmed.toLowerCase())) return
     setExtraTags(prev => [...prev, trimmed])
-    setTagQuery('')
-    setTagSuggestions([])
+    setTagQuery(''); setTagSuggestions([])
   }
   const removeExtraTag = (name) => setExtraTags(prev => prev.filter(t => t.toLowerCase() !== name.toLowerCase()))
   const handleExtraTagKeyDown = (e) => {
@@ -171,8 +180,7 @@ export default function EditRecipePage() {
     const f = e.target.files && e.target.files[0]
     if (!f) return
     if (previewUrl) URL.revokeObjectURL(previewUrl)
-    setFile(f)
-    setPreviewUrl(URL.createObjectURL(f))
+    setFile(f); setPreviewUrl(URL.createObjectURL(f))
   }
   const clearPickedFile = () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl)
@@ -182,63 +190,42 @@ export default function EditRecipePage() {
   const onChange = (e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
   const handleGroupChange = (key, value) => setSelectedGroups(prev => ({ ...prev, [key]: value }))
   const toggleSensitivity = (value) => {
-    setSelectedSensitivities(prev =>
-      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
-    )
+    setSelectedSensitivities(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value])
   }
 
   // Ingredient helpers
-  const changeIngredient = (index, field, value) => {
-    const updated = [...ingredients]; updated[index][field] = value; setIngredients(updated)
-  }
+  const changeIngredient = (index, field, value) => { const updated = [...ingredients]; updated[index][field] = value; setIngredients(updated) }
   const addIngredient = () => setIngredients(prev => [...prev, { name: '', quantity: '' }])
-  const removeIngredient = (index) => {
-    if (ingredients.length === 1) return
-    const updated = [...ingredients]; updated.splice(index, 1); setIngredients(updated)
-  }
+  const removeIngredient = (index) => { if (ingredients.length === 1) return; const updated = [...ingredients]; updated.splice(index, 1); setIngredients(updated) }
 
+  /* ───────────────── Submit ───────────────── */
   const onSubmit = async (e) => {
     e.preventDefault()
-    setSaving(true)
-    setError('')
-
+    setSaving(true); setError('')
     try {
       // Merge tags into array (case-insensitive de-dup)
       const tagMap = new Map()
-      ;[
-        ...Object.values(selectedGroups).filter(Boolean),
-        ...selectedSensitivities,
-        ...extraTags
-      ].forEach(t => {
-        const k = t.toLowerCase()
-        if (!tagMap.has(k)) tagMap.set(k, t)
-      })
+      ;[...Object.values(selectedGroups).filter(Boolean), ...selectedSensitivities, ...extraTags]
+        .forEach(t => { const k = t.toLowerCase(); if (!tagMap.has(k)) tagMap.set(k, t) })
       const tags = Array.from(tagMap.values())
 
-      // 1) Multipart PUT for scalars/tags/optional image
+      // 1) multipart for scalars/tags/optional image
       const fd = new FormData()
       if (form.title) fd.append('Title', form.title)
       if (form.description) fd.append('Description', form.description)
       if (form.instructions) fd.append('Instructions', form.instructions)
       if (form.region) fd.append('Region', form.region)
-      // IMPORTANT: send tags as repeated keys for List<string> binding
       tags.forEach(t => fd.append('Tags', t))
       if (form.prepTimeMinutes !== '') fd.append('PrepTimeMinutes', String(form.prepTimeMinutes))
       if (form.cookTimeMinutes !== '') fd.append('CookTimeMinutes', String(form.cookTimeMinutes))
-      if (form.difficulty) fd.append('Difficulty', form.difficulty)
+      // send numeric level expected by backend
+      fd.append('DifficultyLevel', String(toDifficultyIndex(form.difficulty)))
       if (file) fd.append('Image', file, file.name)
 
-      const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd,
-      })
-      if (!res.ok) {
-        const text = await res.text().catch(() => '')
-        throw new Error(text || 'Failed to save changes')
-      }
+      const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: fd })
+      if (!res.ok) { const text = await res.text().catch(() => ''); throw new Error(text || 'Failed to save changes') }
 
-      // 2) JSON PUT for full ingredient replacement
+      // 2) ingredients replacement
       const ingPayload = {
         ingredients: ingredients
           .filter(i => (i.name || '').trim().length > 0)
@@ -249,55 +236,45 @@ export default function EditRecipePage() {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(ingPayload)
       })
-      if (!res2.ok) {
-        const text = await res2.text().catch(() => '')
-        throw new Error(text || 'Saved main details, but updating ingredients failed')
-      }
+      if (!res2.ok) { const text = await res2.text().catch(() => ''); throw new Error(text || 'Saved main details, but updating ingredients failed') }
 
       navigate(`/recipe/${id}`)
     } catch (e) {
-      console.error(e)
-      setError(e.message || 'Save failed')
-    } finally {
-      setSaving(false)
-    }
+      console.error(e); setError(e.message || 'Save failed')
+    } finally { setSaving(false) }
   }
 
+  /* ───────────────── UI ───────────────── */
   if (loading) return <div className="p-6 text-platerly-subtle">Loading…</div>
-  if (error) return <div className="p-6 text-[15px] text-platerly-yellow">{error}</div>
+  if (error)   return <div className="p-6 text-[15px] text-platerly-yellow">{error}</div>
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 text-platerly-text">
       <h1 className="text-2xl font-semibold mb-6">Edit Recipe</h1>
 
-      {/* Image box with inline preview */}
+      {/* Image picker */}
       <div className="mb-6">
         <label className="block text-sm mb-1 text-platerly-subtle">Image</label>
-
         <div
           className="relative group w-full h-48 sm:h-56 rounded-lg border border-platerly-light overflow-hidden bg-platerly-card cursor-pointer"
           onClick={() => inputRef.current && inputRef.current.click()}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && inputRef.current && inputRef.current.click()}
-          title="Click to choose an image"
+          title="Tap to choose an image"
         >
           {(previewUrl || currentImageUrl) ? (
             <>
-              <img
-                src={previewUrl || currentImageUrl}
-                alt="Selected preview"
-                className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
-              />
-              <div className="absolute inset-x-0 bottom-0 bg-black/50 text-[12px] text-white flex items-center justify-between px-3 py-1.5">
+              <img src={previewUrl || currentImageUrl} alt="Selected preview" className="w-full h-full object-cover" />
+              <div className="absolute inset-x-0 bottom-0 bg-black/55 text-[12px] text-white flex items-center justify-between px-3 py-2">
                 <span className="truncate pr-2">{file?.name ?? 'Current image'}</span>
-                <span className="underline opacity-80">Change</span>
+                <span className="underline opacity-90">Change</span>
               </div>
               {file && (
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); clearPickedFile() }}
-                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white"
+                  className="absolute top-2 right-2 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white"
                   title="Clear selected image"
                   aria-label="Clear selected image"
                 >
@@ -312,21 +289,22 @@ export default function EditRecipePage() {
             </div>
           )}
         </div>
-
         <input ref={inputRef} type="file" accept="image/*" onChange={onPickFile} className="hidden" />
       </div>
 
       <form onSubmit={onSubmit} className="space-y-6">
+        {/* Title */}
         <div>
           <label className="block text-sm mb-1 text-platerly-subtle">Title</label>
           <input
             name="title"
             value={form.title}
             onChange={onChange}
-            className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            className="w-full h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
           />
         </div>
 
+        {/* Description */}
         <div>
           <label className="block text-sm mb-1 text-platerly-subtle">Description</label>
           <textarea
@@ -334,10 +312,11 @@ export default function EditRecipePage() {
             name="description"
             value={form.description}
             onChange={onChange}
-            className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            className="w-full min-h-[88px] bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
           />
         </div>
 
+        {/* Instructions */}
         <div>
           <label className="block text-sm mb-1 text-platerly-subtle">Instructions</label>
           <textarea
@@ -345,54 +324,61 @@ export default function EditRecipePage() {
             name="instructions"
             value={form.instructions}
             onChange={onChange}
-            className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            className="w-full min-h-[140px] bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
           />
         </div>
 
-        {/* Ingredients editor */}
+        {/* Ingredients editor — responsive grid */}
         <div>
           <label className="block text-sm mb-2 text-platerly-subtle">Ingredients</label>
-          {ingredients.map((ing, idx) => (
-            <div key={idx} className="flex gap-2 mb-2">
-              <input
-                type="text"
-                placeholder="Ingredient name"
-                value={ing.name}
-                onChange={(e) => changeIngredient(idx, 'name', e.target.value)}
-                className="flex-1 bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
-              />
-              <input
-                type="text"
-                placeholder="Quantity"
-                value={ing.quantity}
-                onChange={(e) => changeIngredient(idx, 'quantity', e.target.value)}
-                className="w-40 bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
-              />
-              <button
-                type="button"
-                onClick={() => removeIngredient(idx)}
-                disabled={ingredients.length === 1}
-                className={`px-3 rounded-md border text-sm transition-colors ${
-                  ingredients.length === 1
-                    ? 'opacity-50 cursor-not-allowed border-platerly-light text-platerly-subtle'
-                    : 'border-platerly-light text-platerly-text hover:bg-platerly-light/40'
-                }`}
-                title="Remove ingredient"
-                aria-label="Remove ingredient"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
+          <div className="space-y-2">
+            {ingredients.map((ing, idx) => (
+              <div key={idx} className="grid grid-cols-12 gap-2">
+                {/* Name */}
+                <input
+                  type="text"
+                  placeholder="Ingredient name"
+                  value={ing.name}
+                  onChange={(e) => changeIngredient(idx, 'name', e.target.value)}
+                  className="col-span-12 sm:col-span-7 h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+                />
+                {/* Quantity */}
+                <input
+                  type="text"
+                  placeholder="Quantity"
+                  value={ing.quantity}
+                  onChange={(e) => changeIngredient(idx, 'quantity', e.target.value)}
+                  className="col-span-9 sm:col-span-3 h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+                />
+                {/* Remove */}
+                <button
+                  type="button"
+                  onClick={() => removeIngredient(idx)}
+                  disabled={ingredients.length === 1}
+                  className={`col-span-3 sm:col-span-2 h-11 rounded-md border text-sm transition-colors ${
+                    ingredients.length === 1
+                      ? 'opacity-50 cursor-not-allowed border-platerly-light text-platerly-subtle'
+                      : 'border-platerly-light text-platerly-text hover:bg-platerly-light/40'
+                  }`}
+                  title="Remove ingredient"
+                  aria-label="Remove ingredient"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+
           <button
             type="button"
             onClick={addIngredient}
-            className="mt-1 px-3 py-2 rounded-full text-sm bg-platerly-green text-platerly-dark hover:opacity-90 active:opacity-80"
+            className="mt-3 h-11 px-3 rounded-full text-sm bg-platerly-green text-platerly-dark hover:opacity-90 active:opacity-80"
           >
             + Add Ingredient
           </button>
         </div>
 
+        {/* Region / times */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm mb-1 text-platerly-subtle">Region</label>
@@ -400,7 +386,7 @@ export default function EditRecipePage() {
               name="region"
               value={form.region}
               onChange={onChange}
-              className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+              className="w-full h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
             />
           </div>
           <div>
@@ -411,7 +397,7 @@ export default function EditRecipePage() {
               name="prepTimeMinutes"
               value={form.prepTimeMinutes}
               onChange={onChange}
-              className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+              className="w-full h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
             />
           </div>
           <div>
@@ -422,12 +408,12 @@ export default function EditRecipePage() {
               name="cookTimeMinutes"
               value={form.cookTimeMinutes}
               onChange={onChange}
-              className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+              className="w-full h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
             />
           </div>
         </div>
 
-        {/* Tag groups (single-select) */}
+        {/* Tag groups */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {TAG_GROUPS.map(group => (
             <div key={group.key}>
@@ -435,7 +421,7 @@ export default function EditRecipePage() {
               <select
                 value={selectedGroups[group.key]}
                 onChange={(e) => handleGroupChange(group.key, e.target.value)}
-                className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+                className="w-full h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
                 aria-label={group.label}
               >
                 <option value="">{group.placeholder}</option>
@@ -445,7 +431,7 @@ export default function EditRecipePage() {
           ))}
         </div>
 
-        {/* Sensitivity (multi) */}
+        {/* Sensitivities */}
         <div>
           <label className="block text-sm mb-1 text-platerly-subtle">Sensitivity</label>
           <div className="flex flex-wrap gap-2">
@@ -454,17 +440,15 @@ export default function EditRecipePage() {
               return (
                 <label
                   key={opt}
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${
-                    checked
-                      ? 'border-platerly-green bg-platerly-green/10'
-                      : 'border-platerly-light bg-platerly-card'
+                  className={`inline-flex items-center gap-2 px-3 h-11 rounded-full border transition-colors ${
+                    checked ? 'border-platerly-green bg-platerly-green/10' : 'border-platerly-light bg-platerly-card'
                   }`}
                 >
                   <input
                     type="checkbox"
                     checked={checked}
                     onChange={() => toggleSensitivity(opt)}
-                    className="w-4 h-4 rounded accent-current"
+                    className="w-5 h-5 rounded accent-current"
                   />
                   <span className="text-sm">{opt}</span>
                 </label>
@@ -473,8 +457,8 @@ export default function EditRecipePage() {
           </div>
         </div>
 
-        {/* Extra tags with autocomplete + chips */}
-        <div>
+        {/* Extra tags + autocomplete */}
+        <div className="relative">
           <label className="block text-sm mb-1 text-platerly-subtle">Extra Tags (optional)</label>
 
           {extraTags.length > 0 && (
@@ -482,7 +466,7 @@ export default function EditRecipePage() {
               {extraTags.map(tag => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-platerly-light bg-platerly-card text-platerly-text text-sm"
+                  className="inline-flex items-center gap-2 px-3 h-9 rounded-full border border-platerly-light bg-platerly-card text-platerly-text text-sm"
                 >
                   {tag}
                   <button
@@ -504,12 +488,12 @@ export default function EditRecipePage() {
             onChange={(e) => setTagQuery(e.target.value)}
             onKeyDown={handleExtraTagKeyDown}
             placeholder="Type to search tags… press Enter to add"
-            className="w-full rounded-lg bg-platerly-card border border-platerly-light px-3 py-2 text-sm text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            className="w-full h-11 rounded-lg bg-platerly-card border border-platerly-light px-3 text-sm text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
           />
 
           {tagLoading && <div className="text-xs text-platerly-subtle mt-1">Searching…</div>}
           {!tagLoading && !!tagSuggestions.length && (
-            <ul className="mt-2 max-h-56 overflow-auto rounded-lg border border-platerly-light bg-platerly-card/95 backdrop-blur">
+            <ul className="absolute z-20 mt-2 w-full max-h-72 overflow-auto rounded-lg border border-platerly-light bg-platerly-card/95 backdrop-blur">
               {tagSuggestions.map(s => {
                 const disabled = lowerExtraSet.has(s.name.toLowerCase())
                 return (
@@ -540,7 +524,7 @@ export default function EditRecipePage() {
               name="difficulty"
               value={form.difficulty}
               onChange={onChange}
-              className="w-full bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+              className="w-full h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
             >
               {DIFFICULTY_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
@@ -552,33 +536,36 @@ export default function EditRecipePage() {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="px-4 py-2 rounded-md border border-platerly-light text-platerly-text hover:bg-platerly-light/40 focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            className="h-11 px-4 rounded-md border border-platerly-light text-platerly-text hover:bg-platerly-light/40 focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="px-4 py-2 rounded-md bg-platerly-green text-platerly-dark hover:opacity-90 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            className="h-11 px-4 rounded-md bg-platerly-green text-platerly-dark hover:opacity-90 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
           >
             {saving ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
 
-        {/* Mobile sticky action bar (optional) */}
-        <div className="md:hidden h-16" />
-        <div className="md:hidden fixed bottom-0 inset-x-0 border-t border-platerly-light bg-platerly-dark/95 backdrop-blur px-4 py-3 flex items-center justify-end gap-2">
+        {/* Mobile sticky action bar */}
+        <div className="md:hidden h-[72px]" />
+        <div
+          className="md:hidden fixed bottom-0 inset-x-0 border-t border-platerly-light bg-platerly-dark/95 backdrop-blur px-4 py-3 flex items-center justify-end gap-2"
+          style={{ paddingBottom: 'max(0px, env(safe-area-inset-bottom))' }}
+        >
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="px-4 py-2 rounded-md border border-platerly-light text-platerly-text"
+            className="h-11 px-4 rounded-md border border-platerly-light text-platerly-text"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="px-4 py-2 rounded-md bg-platerly-green text-platerly-dark disabled:opacity-60"
+            className="h-11 px-4 rounded-md bg-platerly-green text-platerly-dark disabled:opacity-60"
           >
             {saving ? 'Saving…' : 'Save'}
           </button>

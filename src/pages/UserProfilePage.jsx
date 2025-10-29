@@ -13,7 +13,6 @@ const escapeHTML = (s = "") =>
     .replaceAll("'", "&#39;");
 
 function autolinkBio(text = "") {
-  // escape first to avoid XSS, then linkify + hashtagify
   const safe = escapeHTML(text);
   return safe
     .replace(
@@ -32,19 +31,22 @@ const withScheme = (u) => (!u ? "" : /^https?:\/\//i.test(u) ? u : `https://${u}
 
 const Skeleton = () => (
   <div className="mx-auto max-w-5xl animate-pulse">
-    <div className="h-48 md:h-56 bg-neutral-900/70 rounded-b-2xl" />
+    <div className="h-48 md:h-56 bg-platerly-light rounded-b-2xl" />
     <div className="px-4 md:px-6 -mt-10 flex gap-4 items-end">
-      <div className="w-24 h-24 rounded-2xl bg-neutral-900 border-4 border-neutral-950" />
-      <div className="h-6 w-48 bg-neutral-900 rounded" />
+      <div className="w-24 h-24 rounded-2xl bg-platerly-card border-4 border-platerly-dark" />
+      <div className="h-6 w-48 bg-platerly-card rounded" />
     </div>
-    <div className="px-4 md:px-6 mt-4 h-4 w-80 bg-neutral-900 rounded" />
+    <div className="px-4 md:px-6 mt-4 h-4 w-80 bg-platerly-card rounded" />
   </div>
 );
 
 const EmptyState = ({ title, subtitle }) => (
   <div className="py-12 text-center">
-    <h3 className="font-medium">{title}</h3>
-    <p className="text-sm text-neutral-400 mt-1">{subtitle}</p>
+    <div className="mx-auto mb-3 h-10 w-10 rounded-xl grid place-content-center border border-platerly-border bg-platerly-card/70 shadow">
+      <span className="text-platerly-yellow">★</span>
+    </div>
+    <h3 className="font-semibold text-platerly-text">{title}</h3>
+    <p className="text-sm text-platerly-muted mt-1">{subtitle}</p>
   </div>
 );
 
@@ -105,18 +107,18 @@ const SocialLinksRow = ({ websiteUrl, youTubeUrl, xUrl, instagramUrl }) => {
   if (!items.length) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 text-neutral-300">
+    <div className="flex flex-wrap items-center gap-2">
       {items.map(({ key, href, label, icon }) => (
         <a
           key={key}
           href={withScheme(href)}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center rounded-lg border border-neutral-700/70 bg-neutral-800/40 hover:bg-neutral-700/50 px-2.5 py-1.5"
+          className="inline-flex items-center justify-center rounded-lg border border-platerly-border bg-platerly-card hover:ring-2 hover:ring-platerly-green/40 px-2.5 py-1.5 transition"
           aria-label={label}
           title={label}
         >
-          {icon}
+          <span className="text-platerly-text/90">{icon}</span>
         </a>
       ))}
     </div>
@@ -204,7 +206,6 @@ const UserProfilePage = () => {
     try {
       const res = await fetch(endpoint, { method, headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error("Failed to toggle follow");
-      // Optimistic update
       if (isFollowing) {
         setFollowers((prev) => prev.filter((f) => f.username?.toLowerCase?.() !== user.username?.toLowerCase?.()));
       } else {
@@ -262,10 +263,12 @@ const UserProfilePage = () => {
     <div className="min-h-screen">
       <div className="mx-auto max-w-5xl">
         {/* Banner */}
-        <div className="relative h-44 md:h-56 rounded-b-2xl overflow-hidden bg-neutral-900/60 z-0">
+        <div className="relative h-44 md:h-56 rounded-b-2xl overflow-hidden bg-platerly-light z-0">
           {profile.bannerImageUrl && (
-            <img src={profile.bannerImageUrl} alt="" loading="lazy" className="w-full h-full object-cover" />)
-          }
+            <img src={profile.bannerImageUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
+          )}
+          {/* soft gradient for premium sheen */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20" />
         </div>
 
         {/* Row 1: avatar + name (overlaps banner) */}
@@ -275,27 +278,29 @@ const UserProfilePage = () => {
               src={profile.profileImageUrl}
               alt={`${profile.username} avatar`}
               loading="lazy"
-              className="z-20 w-24 h-24 rounded-2xl border-4 border-neutral-950 object-cover shadow"
+              className="z-20 w-24 h-24 rounded-2xl border-4 border-platerly-dark object-cover shadow-[0_10px_30px_-10px_rgba(34,197,94,0.35)]"
             />
           ) : (
-            <div className="w-24 h-24 rounded-2xl border-4 border-neutral-950 bg-neutral-800 flex items-center justify-center text-2xl font-bold">
+            <div className="w-24 h-24 rounded-2xl border-4 border-platerly-dark bg-platerly-card grid place-content-center text-2xl font-bold text-platerly-cream">
               {profile.username[0]?.toUpperCase() ?? "U"}
             </div>
           )}
           <div className="pb-2">
-            <h1 className="text-xl md:text-2xl font-semibold">{profile.displayName || profile.username}</h1>
-            <div className="text-sm text-neutral-400">@{profile.username}</div>
+            <h1 className="text-xl md:text-2xl font-semibold text-platerly-text">
+              {profile.displayName || profile.username}
+            </h1>
+            <div className="text-sm text-platerly-muted">@{profile.username}</div>
           </div>
         </div>
 
-        {/* Row 2: actions + social (under banner) */}
+        {/* Row 2: actions + social */}
         <div className="px-4 md:px-6 mt-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div className="flex gap-2">
             {isOwnProfile && (
               <>
                 <button
                   onClick={() => fileRef.current?.click()}
-                  className="px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-sm disabled:opacity-60"
+                  className="px-4 py-2 rounded-xl bg-platerly-card hover:bg-platerly-light border border-platerly-border text-sm text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
                   disabled={uploadingBanner}
                   aria-label="Change banner image"
                 >
@@ -312,17 +317,21 @@ const UserProfilePage = () => {
             )}
 
             {isOwnProfile ? (
-              <Link to="/settings" className="px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-sm">
+              <Link
+                to="/settings"
+                className="px-4 py-2 rounded-xl bg-platerly-card hover:bg-platerly-light border border-platerly-border text-sm text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
+              >
                 Edit Profile
               </Link>
             ) : token ? (
               <button
                 onClick={handleFollowToggle}
-                className={`px-4 py-2 rounded-xl text-sm border transition ${
+                className={[
+                  "px-4 py-2 rounded-xl text-sm border transition focus:outline-none focus:ring-2",
                   isFollowing
-                    ? "bg-neutral-800 border-red-500 text-red-400 hover:bg-red-900/40"
-                    : "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700"
-                }`}
+                    ? "bg-transparent border-red-500/60 text-red-300 hover:bg-red-900/30 focus:ring-red-400/30"
+                    : "bg-platerly-green/90 hover:bg-platerly-green text-white border-emerald-700 focus:ring-platerly-green/40",
+                ].join(" ")}
               >
                 {isFollowing ? "Unfollow" : "Follow"}
               </button>
@@ -338,18 +347,18 @@ const UserProfilePage = () => {
         </div>
 
         {/* Meta row */}
-        <div className="px-4 md:px-6 mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-neutral-300">
-          {profile.location && <span>{profile.location}</span>}
+        <div className="px-4 md:px-6 mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+          {profile.location && <span className="text-platerly-muted">{profile.location}</span>}
           {profile.websiteUrl && (
-            <a className="underline" href={withScheme(profile.websiteUrl)} target="_blank" rel="noopener noreferrer">
+            <a className="underline text-platerly-cream/90 hover:text-platerly-cream" href={withScheme(profile.websiteUrl)} target="_blank" rel="noopener noreferrer">
               {websiteShort}
             </a>
           )}
 
-          <Link to={`/user/${profile.username}/followers`} className="underline-offset-2 hover:underline">
+          <Link to={`/user/${profile.username}/followers`} className="underline-offset-2 hover:underline text-platerly-text">
             <b>{followerCount}</b> Followers
           </Link>
-          <Link to={`/user/${profile.username}/following`} className="underline-offset-2 hover:underline">
+          <Link to={`/user/${profile.username}/following`} className="underline-offset-2 hover:underline text-platerly-text">
             <b>{followingCount}</b> Following
           </Link>
         </div>
@@ -357,34 +366,36 @@ const UserProfilePage = () => {
         {/* Bio */}
         {profile.bio && (
           <div
-            className="px-4 md:px-6 mt-3 text-neutral-200 text-sm leading-6"
+            className="px-4 md:px-6 mt-3 text-platerly-cream/95 text-sm leading-6"
             dangerouslySetInnerHTML={{ __html: autolinkBio(profile.bio) }}
           />
         )}
 
         {/* Tabs */}
-        <div className="px-4 md:px-6 mt-6 border-b border-neutral-800">
-          <nav className="flex gap-6" role="tablist" aria-label="Profile content tabs">
-            <button
-              role="tab"
-              aria-selected={tab === 'recipes'}
-              className={`px-1 pb-3 -mb-px text-sm ${
-                tab === "recipes" ? "border-b-2 border-emerald-400 text-white" : "text-neutral-400 hover:text-white"
-              }`}
-              onClick={() => setTab("recipes")}
-            >
-              Recipes
-            </button>
-            <button
-              role="tab"
-              aria-selected={tab === 'cookbooks'}
-              className={`px-1 pb-3 -mb-px text-sm ${
-                tab === "cookbooks" ? "border-b-2 border-emerald-400 text-white" : "text-neutral-400 hover:text-white"
-              }`}
-              onClick={() => setTab("cookbooks")}
-            >
-              Cookbooks
-            </button>
+        <div className="px-4 md:px-6 mt-6 border-b border-platerly-border">
+          <nav className="flex gap-2" role="tablist" aria-label="Profile content tabs">
+            {[
+              { k: "recipes", label: "Recipes" },
+              { k: "cookbooks", label: "Cookbooks" },
+            ].map(({ k, label }) => {
+              const active = tab === k;
+              return (
+                <button
+                  key={k}
+                  role="tab"
+                  aria-selected={active}
+                  className={[
+                    "px-3 py-1.5 rounded-full text-sm transition",
+                    active
+                      ? "bg-platerly-green text-black font-semibold shadow-sm"
+                      : "text-platerly-muted hover:text-platerly-text hover:bg-platerly-card",
+                  ].join(" ")}
+                  onClick={() => setTab(k)}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </nav>
         </div>
 
@@ -397,17 +408,27 @@ const UserProfilePage = () => {
                   <Link
                     key={r.recipeId || r.id}
                     to={`/recipe/${r.recipeId || r.id}`}
-                    className="group rounded-2xl overflow-hidden bg-neutral-900 hover:bg-neutral-800 transition border border-neutral-800"
+                    className="group rounded-2xl overflow-hidden border border-platerly-border bg-platerly-card shadow transition hover:shadow-[0_12px_30px_-12px_rgba(34,197,94,0.35)] hover:-translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
                   >
-                    <div className="w-full aspect-[4/3] bg-neutral-900 overflow-hidden">
+                    <div className="relative w-full aspect-[4/3] bg-platerly-light overflow-hidden">
                       {r.imageUrl && (
-                        <img src={r.imageUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
+                        <img
+                          src={r.imageUrl}
+                          alt=""
+                          loading="lazy"
+                          className="w-full h-full object-cover transition duration-300 group-hover:scale-[1.015]"
+                        />
                       )}
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent" />
                     </div>
                     <div className="p-3">
-                      <div className="font-medium line-clamp-1 group-hover:underline">{r.title}</div>
+                      <div className="font-medium text-platerly-text line-clamp-1 group-hover:underline">
+                        {r.title}
+                      </div>
                       {r.description && (
-                        <div className="text-xs text-neutral-400 line-clamp-2 mt-1">{r.description}</div>
+                        <div className="text-xs text-platerly-muted line-clamp-2 mt-1">
+                          {r.description}
+                        </div>
                       )}
                     </div>
                   </Link>
@@ -422,16 +443,32 @@ const UserProfilePage = () => {
                 <Link
                   key={c.id}
                   to={`/cookbook/${c.id}`}
-                  className="rounded-2xl overflow-hidden bg-neutral-900 hover:bg-neutral-800 transition border border-neutral-800"
+                  className="group rounded-2xl overflow-hidden border border-platerly-border bg-platerly-card shadow transition hover:shadow-[0_12px_30px_-12px_rgba(246,200,105,0.35)] hover:-translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-platerly-yellow/40"
                 >
-                  <div className="w-full aspect-[4/3] bg-neutral-900 overflow-hidden">
+                  <div className="relative w-full aspect-[4/3] bg-platerly-light overflow-hidden">
                     {c.coverUrl && (
-                      <img src={c.coverUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
+                      <img
+                        src={c.coverUrl}
+                        alt=""
+                        loading="lazy"
+                        className="w-full h-full object-cover transition duration-300 group-hover:scale-[1.015]"
+                      />
                     )}
+                    {/* gold badge for count */}
+                    <div className="absolute left-2 top-2 rounded-full bg-platerly-yellow/90 text-black text-[11px] font-semibold px-2 py-0.5 shadow">
+                      {(c.recipeCount ?? 0)} recipes
+                    </div>
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent" />
                   </div>
                   <div className="p-3">
-                    <div className="font-medium">{c.title}</div>
-                    <div className="text-xs text-neutral-400">{c.recipeCount ?? 0} recipes</div>
+                    <div className="font-medium text-platerly-text line-clamp-1 group-hover:underline">
+                      {c.title}
+                    </div>
+                    {c.description ? (
+                      <div className="text-xs text-platerly-muted line-clamp-2 mt-1">
+                        {c.description}
+                      </div>
+                    ) : null}
                   </div>
                 </Link>
               ))}
@@ -443,5 +480,6 @@ const UserProfilePage = () => {
       </div>
     </div>
   );
-}
+};
+
 export default UserProfilePage;

@@ -134,11 +134,13 @@ const RecipeDetailsPage = () => {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const menuRef = useRef(null)
 
-  /* Close kebab on outside click */
+  /* Close kebab on outside click + Escape */
   useEffect(() => {
     const onDocClick = (e) => { if (!menuRef.current) return; if (!menuRef.current.contains(e.target)) setMenuOpen(false) }
+    const onEsc = (e) => { if (e.key === 'Escape') setMenuOpen(false) }
     document.addEventListener('click', onDocClick)
-    return () => document.removeEventListener('click', onDocClick)
+    window.addEventListener('keydown', onEsc)
+    return () => { document.removeEventListener('click', onDocClick); window.removeEventListener('keydown', onEsc) }
   }, [])
 
   /* ---------- Load ---------- */
@@ -259,30 +261,40 @@ const RecipeDetailsPage = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 text-platerly-text">
-      {/* HERO */}
-      <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] rounded-[22px] overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.45)] ring-1 ring-platerly-border">
-        {recipe.imageUrl
-          ? <img src={recipe.imageUrl} alt={recipe.title} className="w-full h-full object-cover" />
-          : <div className="w-full h-full bg-platerly-card" />
-        }
+      {/* HERO image */}
+      <div className="relative w-full aspect-[5/4] sm:aspect-[16/9] lg:aspect-[21/9] min-h-[220px] rounded-[22px] overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.45)] ring-1 ring-platerly-border bg-platerly-light">
+        {recipe?.imageUrl ? (
+          <img
+            src={recipe.imageUrl}
+            alt={recipe.title || 'Recipe image'}
+            className="w-full h-full object-cover [image-rendering:auto]"
+            fetchpriority="high"
+            decoding="async"
+            loading="eager"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 900px"
+          />
+        ) : (
+          <div className="w-full h-full bg-platerly-card" />
+        )}
 
-        {/* gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+        {/* gradient + inset ring */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
+          <div className="absolute inset-0 ring-1 ring-inset ring-white/5" />
+        </div>
 
-        {/* KEBAB pinned to HERO top-right (sibling of bottom bar) */}
+        {/* Kebab (top-right) */}
         <div ref={menuRef} className="absolute top-2 sm:top-3 right-2 sm:right-3 z-40">
           <button
             onClick={() => setMenuOpen(v => !v)}
-            className="p-2 rounded-full bg-black/60 hover:bg-black/75 border border-white/10 text-white shadow
-                       focus:outline-none focus:ring-2 focus:ring-platerly-accent/40"
+            className="p-2 rounded-full bg-black/60 hover:bg-black/75 border border-white/10 text-white shadow focus:outline-none focus:ring-2 focus:ring-platerly-accent/40"
             aria-label="Actions"
           >
             <MoreVertical className="w-5 h-5" />
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 mt-2 w-44 rounded-xl bg-platerly-card/95 backdrop-blur
-                            border border-platerly-border shadow-xl overflow-hidden">
+            <div className="absolute right-0 mt-2 w-44 rounded-xl bg-platerly-card border border-platerly-border shadow-xl overflow-hidden backdrop-blur">
               {isOwner && (
                 <>
                   <button onClick={goEdit} className="w-full text-left px-3 py-2 text-sm hover:bg-white/5 flex items-center gap-2">
@@ -304,40 +316,91 @@ const RecipeDetailsPage = () => {
           )}
         </div>
 
-        {/* Bottom content bar (title, meta, Save) */}
-        <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6">
+        {/* DESKTOP/TABLET overlay (md+): pills + Save inline and anchored at bottom */}
+        <div className="hidden md:block absolute inset-x-0 bottom-0 p-6">
           <div className="flex items-end justify-between">
             <div>
-              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white drop-shadow-sm">
-                {recipe.title}
+              <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-white drop-shadow-sm">
+                {recipe?.title || 'Untitled recipe'}
               </h1>
-              <div className="mt-1 text-xs sm:text-sm text-platerly-muted">
-                <Link to={`/profile/${recipe.authorUsername}`} className="hover:text-platerly-accent hover:underline transition-colors">
-                  @{recipe.authorUsername}
-                </Link>
-                <span className="mx-2 opacity-60">•</span>
-                <span>{new Date(recipe.createdAt).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' })}</span>
+              <div className="mt-1 text-sm text-platerly-muted">
+                {recipe?.authorUsername ? (
+                  <Link to={`/profile/${recipe.authorUsername}`} className="hover:text-platerly-accent hover:underline transition-colors">
+                    @{recipe.authorUsername}
+                  </Link>
+                ) : '—'}
+                {recipe?.createdAt && (
+                  <>
+                    <span className="mx-2 opacity-60">•</span>
+                    <span>{new Date(recipe.createdAt).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' })}</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Meta pills + Save */}
-          <div className="mt-3 flex items-center gap-2">
-            {difficulty && <span className={PILL_SUCCESS}><span className="font-semibold">Difficulty:</span> {difficulty}</span>}
-            {(prep || cook) && <span className={PILL_NEUTRAL}><Clock className="w-4 h-4" /> {prep && `${prep} prep`}{prep && cook ? ', ' : ''}{cook && `${cook} cook`}</span>}
-            {totalFmt && <span className={PILL_NEUTRAL}><Clock className="w-4 h-4" /> Total: {totalFmt}</span>}
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              {difficulty && <span className={PILL_SUCCESS}><span className="font-semibold">Difficulty:</span> {difficulty}</span>}
+              {(prep || cook) && <span className={PILL_NEUTRAL}><Clock className="w-4 h-4" /> {prep && `${prep} prep`}{prep && cook ? ', ' : ''}{cook && `${cook} cook`}</span>}
+              {totalFmt && <span className={PILL_NEUTRAL}><Clock className="w-4 h-4" /> Total: {totalFmt}</span>}
+              {remixMeta?.isRemix && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/35 backdrop-blur px-3 py-1 text-xs text-white">
+                  <span className="opacity-80">Lineage</span>
+                  <span className="opacity-50">•</span>
+                  {remixMeta.parentRecipeId
+                    ? <Link to={`/recipe/${remixMeta.parentRecipeId}`} className="underline hover:no-underline">source</Link>
+                    : <span className="opacity-60">source</span>}
+                  <span className="opacity-50">·</span>
+                  {remixMeta.originalRecipeId
+                    ? <Link to={`/recipe/${remixMeta.originalRecipeId}`} className="underline hover:no-underline">origin</Link>
+                    : <span className="opacity-60">origin</span>}
+                </span>
+              )}
+            </div>
+
             {token && (
               <button
                 onClick={() => setSaveOpen(v => !v)}
-                className="ml-auto px-3 py-1.5 rounded-full text-xs sm:text-sm bg-platerly-accent text-black hover:brightness-110 shadow inline-flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-black/30">
+                className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-platerly-accent text-black px-3 py-1.5 text-sm font-medium hover:brightness-110 shadow focus:outline-none focus:ring-2 focus:ring-black/30"
+              >
                 <BookmarkPlus className="w-4 h-4" /> Save
               </button>
             )}
           </div>
+        </div>
+      </div>
 
-          {/* Remix lineage */}
+      {/* MOBILE header card: pills row that wraps; Save sits in the SAME row and flows with it */}
+      <Card className="mt-3 px-4 py-3 sm:px-5 sm:py-4 md:hidden">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-xl font-extrabold tracking-tight text-platerly-text break-words">
+              {recipe?.title || 'Untitled recipe'}
+            </h1>
+            <div className="mt-1 text-xs text-platerly-muted">
+              {recipe?.authorUsername ? (
+                <Link to={`/profile/${recipe.authorUsername}`} className="hover:text-platerly-accent hover:underline">
+                  @{recipe.authorUsername}
+                </Link>
+              ) : '—'}
+              {recipe?.createdAt && (
+                <>
+                  <span className="mx-2 opacity-60">•</span>
+                  <span>{new Date(recipe.createdAt).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' })}</span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* The Save button is part of this wrapping row; ml-auto pushes it to the right when space allows */}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {difficulty && <span className={PILL_SUCCESS}><span className="font-semibold">Difficulty:</span> {difficulty}</span>}
+          {(prep || cook) && <span className={PILL_NEUTRAL}><Clock className="w-4 h-4" /> {prep && `${prep} prep`}{prep && cook ? ', ' : ''}{cook && `${cook} cook`}</span>}
+          {totalFmt && <span className={PILL_NEUTRAL}><Clock className="w-4 h-4" /> Total: {totalFmt}</span>}
           {remixMeta?.isRemix && (
-            <div className="mt-2 text-[11px] sm:text-xs bg-black/35 backdrop-blur rounded-full px-3 py-1 border border-white/10 inline-flex items-center gap-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs">
               <span className="opacity-80">Lineage</span>
               <span className="opacity-50">•</span>
               {remixMeta.parentRecipeId
@@ -347,10 +410,19 @@ const RecipeDetailsPage = () => {
               {remixMeta.originalRecipeId
                 ? <Link to={`/recipe/${remixMeta.originalRecipeId}`} className="underline hover:no-underline">origin</Link>
                 : <span className="opacity-60">origin</span>}
-            </div>
+            </span>
+          )}
+
+          {token && (
+            <button
+              onClick={() => setSaveOpen(v => !v)}
+              className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-platerly-accent text-black px-3 py-1.5 text-sm font-medium hover:brightness-110 shadow focus:outline-none focus:ring-2 focus:ring-black/30"
+            >
+              <BookmarkPlus className="w-4 h-4" /> Save
+            </button>
           )}
         </div>
-      </div>
+      </Card>
 
       {token && saveOpen && recipe?.id && (
         <Card className="mt-3 p-4">
@@ -389,20 +461,20 @@ const RecipeDetailsPage = () => {
       {/* Sections */}
       <div className="space-y-5 mt-8 sm:mt-10">
         <Section icon={Globe} title="Region">
-          <div className="text-platerly-muted">{recipe.region || '—'}</div>
+          <div className="text-platerly-muted">{recipe?.region || '—'}</div>
         </Section>
 
         <Section icon={BookOpenText} title="Description">
-          <div className="leading-relaxed text-platerly-text/95">{recipe.description || 'No description provided.'}</div>
+          <div className="leading-relaxed text-platerly-text/95">{recipe?.description || 'No description provided.'}</div>
         </Section>
 
         <Section icon={ListChecks} title="Instructions">
-          <div className="leading-relaxed whitespace-pre-line text-platerly-text/95">{recipe.instructions || 'No instructions provided.'}</div>
+          <div className="leading-relaxed whitespace-pre-line text-platerly-text/95">{recipe?.instructions || 'No instructions provided.'}</div>
         </Section>
 
         <Section icon={TagIcon} title="Ingredients">
           <div className="flex flex-wrap gap-2.5">
-            {(recipe.ingredients || []).map((ing, i) => {
+            {(recipe?.ingredients || []).map((ing, i) => {
               const sev = lookupSeverity(ing?.name, ing)
               const visual = sev || 'safe'
               const cls =
