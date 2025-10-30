@@ -9,9 +9,10 @@ const App = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
-        <AnalyticsTracker />
-        <SoftWallRoot />
+        <SoftWallRoot>
+          <AppRoutes />
+          <AnalyticsTracker />
+        </SoftWallRoot>
       </AuthProvider>
     </BrowserRouter>
   )

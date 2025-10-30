@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import RecipeCard from '../components/ui/RecipeCard'
 import { API_BASE_URL } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
+import { useApi } from '../utils/fetchWithAuth'
 
 const SkeletonPost = () => (
   <div className="rounded-xl bg-platerly-card border border-platerly-light p-4 animate-pulse">
@@ -22,13 +23,10 @@ const Feed = () => {
 
   const [sp, setSp] = useSearchParams()
   const navigate = useNavigate()
-  const { user, token } = useAuth()
+  const { authed, token, loading: authLoading, user } = useAuth()
+  const { apiFetch } = useApi()
 
-  // ✅ Auth check (handles cold starts)
-  const authed = !!(user || token || (typeof window !== 'undefined' &&
-    (localStorage.getItem('token') || sessionStorage.getItem('token'))))
-
-  // ✅ Force guests to stay in Explore tab
+  // Tabs
   const rawTab = sp.get('tab')
   const tab = authed && rawTab === 'following' ? 'following' : 'explore'
 
@@ -40,11 +38,9 @@ const Feed = () => {
 
   const tags = useMemo(() => {
     if (!tagsQs) return []
-    return Array.from(
-      new Set(
-        tagsQs.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
-      )
-    )
+    return Array.from(new Set(
+      tagsQs.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
+    ))
   }, [tagsQs])
 
   const updateParams = (updates) => {
@@ -69,15 +65,13 @@ const Feed = () => {
     if (requireAllTags) params.set('requireAllTags', 'true')
     if (hideRemixes) params.set('hideRemixes', 'true')
     if (hideMyAllergens) params.set('hideMyAllergens', 'true')
-    return `${API_BASE_URL}/api/feed/explore${params.toString() ? `?${params.toString()}` : ''}`
+    return `/api/feed/explore${params.toString() ? `?${params.toString()}` : ''}`
   }
 
   const fetchUserAllergies = async () => {
     if (!token) return
     try {
-      const res = await fetch(`${API_BASE_URL}/api/Allergy/my-allergies`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await apiFetch('/api/Allergy/my-allergies')
       if (res.ok) {
         const data = await res.json()
         setUserAllergies(Array.isArray(data) ? data.map(n => (n || '').toLowerCase()) : [])
@@ -90,9 +84,7 @@ const Feed = () => {
   const fetchCurrentUserId = async () => {
     if (!token) return
     try {
-      const res = await fetch(`${API_BASE_URL}/api/user/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await apiFetch('/api/User/me')
       if (res.ok) {
         const data = await res.json()
         setCurrentUserId(data?.id || null)
@@ -107,12 +99,8 @@ const Feed = () => {
       setLoading(true)
       setError('')
 
-      const url = tab === 'explore'
-        ? buildExploreUrl()
-        : `${API_BASE_URL}/api/feed/following`
-
-      const headers = token ? { Authorization: `Bearer ${token}` } : {}
-      const res = await fetch(url, { headers })
+      const path = tab === 'explore' ? buildExploreUrl() : '/api/feed/following'
+      const res = await apiFetch(path)
       if (!res.ok) throw new Error('Failed to fetch feed')
       const data = await res.json()
       setRecipes(Array.isArray(data) ? data : [])
@@ -185,20 +173,39 @@ const Feed = () => {
     return list
   }, [tab, recipes, hideRemixes, difficulty, tags, requireAllTags, hideMyAllergens])
 
+  // Main effect: wait for auth rehydration; re-run when token/authed change
   useEffect(() => {
+    let cancelled = false
+
     const init = async () => {
-      if (token) {
-        await fetchUserAllergies()
-        await fetchCurrentUserId()
-      } else {
-        setUserAllergies([])
-        setCurrentUserId(null)
+      // Wait until AuthContext has finished loading (rehydration from storage/refresh)
+      if (authLoading) return
+
+      if (!cancelled) {
+        if (token) {
+          await Promise.all([fetchUserAllergies(), fetchCurrentUserId()])
+        } else {
+          setUserAllergies([])
+          setCurrentUserId(null)
+        }
+        await fetchFeed()
       }
-      await fetchFeed()
     }
+
     init()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, difficulty, tagsQs, requireAllTags, hideRemixes, hideMyAllergens])
+    return () => { cancelled = true }
+    // include token/authed/authLoading so first page load picks up auth state
+  }, [
+    tab,
+    difficulty,
+    tagsQs,
+    requireAllTags,
+    hideRemixes,
+    hideMyAllergens,
+    token,
+    authed,
+    authLoading
+  ])
 
   const renderList = tab === 'following' ? filteredFollowing : recipes
 
@@ -233,13 +240,13 @@ const Feed = () => {
 
       {/* Feed content */}
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6">
-        {loading && (
+        {(loading || authLoading) && (
           <div className="grid grid-cols-1 gap-6">
             {Array.from({ length: 4 }).map((_, i) => <SkeletonPost key={i} />)}
           </div>
         )}
 
-        {!loading && error && (
+        {!loading && !authLoading && error && (
           <div className="rounded-xl border border-platerly-light bg-platerly-card p-6 text-center">
             <p className="text-platerly-subtle">{error}</p>
             <button
@@ -251,13 +258,13 @@ const Feed = () => {
           </div>
         )}
 
-        {!loading && !error && renderList.length === 0 && (
+        {!loading && !authLoading && !error && renderList.length === 0 && (
           <div className="rounded-xl border border-platerly-light bg-platerly-card p-6 text-center">
             <p className="text-platerly-subtle">No recipes found.</p>
           </div>
         )}
 
-        {!loading && !error && renderList.map((recipe) => (
+        {!loading && !authLoading && !error && renderList.map((recipe) => (
           <RecipeCard
             key={`${recipe.recipeId}-${recipe.type || 'original'}`}
             id={recipe.recipeId}

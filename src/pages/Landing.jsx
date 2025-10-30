@@ -4,21 +4,14 @@ import { useAuth } from '../context/AuthContext'
 import Button from '../components/ui/Button'
 
 const Landing = () => {
-  const { user, token } = useAuth()
+  const { authed } = useAuth()
   const navigate = useNavigate()
 
-  // Also check storage so returning users bounce immediately on cold start
-  const stored =
-    typeof window !== 'undefined'
-      ? (localStorage.getItem('token') || sessionStorage.getItem('token'))
-      : null
-
   useEffect(() => {
-    const authed = !!(user || token || stored)
     if (authed) {
       navigate('/feed', { replace: true })
     }
-  }, [user, token, stored, navigate])
+  }, [authed, navigate])
 
   useEffect(() => {
     document.title = 'Platerly — Allergy-aware recipes'
@@ -40,26 +33,19 @@ const Landing = () => {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-2">
             <Link to="/register" className="w-full sm:w-40">
-              <Button
-                size="lg"
-                className="w-full focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
-              >
+              <Button size="lg" className="w-full focus:outline-none focus:ring-2 focus:ring-platerly-green/40">
                 Join Platerly
               </Button>
             </Link>
 
             <Link to="/login" className="w-full sm:w-40">
-              <Button
-                variant="secondary"
-                size="lg"
-                className="w-full focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
-              >
+              <Button variant="secondary" size="lg" className="w-full focus:outline-none focus:ring-2 focus:ring-platerly-green/40">
                 Log In
               </Button>
             </Link>
           </div>
 
-          {/* Explore as guest (soft wall will handle later) */}
+          {/* Explore as guest */}
           <div className="pt-2">
             <Link
               to="/feed?tab=explore"
@@ -70,19 +56,13 @@ const Landing = () => {
           </div>
         </div>
 
-        {/* Footer links (tiny + brand) */}
+        {/* Footer links */}
         <div className="mt-6 text-center text-xs text-platerly-subtle">
-          <Link
-            to="/privacy"
-            className="hover:underline focus:outline-none focus:ring-2 focus:ring-platerly-green/30 rounded px-1"
-          >
+          <Link to="/privacy" className="hover:underline focus:outline-none focus:ring-2 focus:ring-platerly-green/30 rounded px-1">
             Privacy
           </Link>
           <span className="mx-2">•</span>
-          <Link
-            to="/terms"
-            className="hover:underline focus:outline-none focus:ring-2 focus:ring-platerly-green/30 rounded px-1"
-          >
+          <Link to="/terms" className="hover:underline focus:outline-none focus:ring-2 focus:ring-platerly-green/30 rounded px-1">
             Terms
           </Link>
         </div>

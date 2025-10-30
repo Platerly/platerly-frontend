@@ -21,11 +21,12 @@ const Register = () => {
 
   const navigate = useNavigate()
   const location = useLocation()
-  const { setUser, setToken } = useAuth()
+  const { login } = useAuth()
 
   const redirectPath = useMemo(() => {
     const qp = new URLSearchParams(location.search)
     const p = qp.get('redirect') || '/feed'
+    // prevent open-redirects: only allow same-site paths
     return /^\//.test(p) ? p : '/feed'
   }, [location.search])
 
@@ -38,7 +39,7 @@ const Register = () => {
     const e = {}
     if (!form.name.trim()) e.name = 'Name is required.'
     if (!form.username.trim()) e.username = 'Username is required.'
-    if (!/^[a-z0-9_\.\-]{3,20}$/i.test(form.username.trim())) e.username = '3–20 chars, letters/numbers/._-'
+    if (!/^[a-z0-9_.-]{3,20}$/i.test(form.username.trim())) e.username = '3–20 chars, letters/numbers/._-'
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email.'
     if (form.password.length < 6) e.password = 'Min 6 characters.'
     if (form.password !== form.confirmPassword) e.confirmPassword = 'Passwords do not match.'
@@ -53,6 +54,7 @@ const Register = () => {
 
     setLoading(true)
     try {
+      // 1) Create the account
       const res = await fetch(`${API_BASE_URL}/api/User/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -67,16 +69,40 @@ const Register = () => {
       })
 
       let data
-      try { data = await res.json() } catch (_) { data = {} }
+      try { data = await res.json() } catch { data = {} }
 
-      if (!res.ok) throw new Error(data.message || 'Registration failed.')
+      if (!res.ok) {
+        throw new Error(data.message || 'Registration failed.')
+      }
 
-      if (data?.token) setToken(data.token)
-      if (data?.user) setUser(data.user)
+      // 2) Premium UX: auto-login (remembered) immediately
+      if (data?.token && data?.user) {
+        // Backend already returns token + user
+        login({ token: data.token, user: data.user, remember: true })
+        navigate(redirectPath, { replace: true })
+        return
+      }
 
+      // 3) Fallback: if backend doesn't return token, call login endpoint
+      const loginRes = await fetch(`${API_BASE_URL}/api/Auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({email: form.email.trim(),password: form.password}),
+        credentials: 'include' // <— to set HttpOnly refresh cookie
+      })
+
+      let loginData
+      try { loginData = await loginRes.json() } catch { loginData = {} }
+
+      if (!loginRes.ok || !loginData?.token || !loginData?.user) {
+        // If even the fallback fails, send them to login screen gracefully
+        navigate('/login', { replace: true })
+        return
+      }
+
+      login({ token: loginData.token, user: loginData.user, remember: true })
       navigate(redirectPath, { replace: true })
     } catch (err) {
-      // Map server error to a friendly spot
       setErrors((s) => ({ ...s, email: err.message || 'Registration failed.' }))
     } finally {
       setLoading(false)

@@ -1,98 +1,111 @@
-// src/components/banners/EmailVerificationBanner.jsx
-import React, { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { resendVerificationEmail } from "../../utils/api";
-import { toast } from "react-hot-toast";
-import { MailWarning, X, Loader2 } from "lucide-react";
+// src/components/account/EmailVerificationBanner.jsx
+import { useEffect, useState, useMemo } from 'react'
+import { useAuth } from '../../context/AuthContext'
+import { API_BASE_URL } from '../../utils/api'
 
-const DISMISS_KEY = "platerly.emailBanner.dismissed";
+const EmailVerificationBanner = () => {
+  const { user, token, setUser } = useAuth()
 
-export default function EmailVerificationBanner() {
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+  // Hooks must be at top-level, no conditionals around them.
+  const [sending, setSending] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
 
+  // Normalize to boolean; undefined until first load is OK.
+  const isVerified = !!user?.isEmailVerified
+
+  // If we logged in with older payloads that didn't include isEmailVerified,
+  // sync once from /api/User/me (only if token exists and flag is missing).
   useEffect(() => {
-    setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
-  }, []);
+    let cancelled = false
+    const sync = async () => {
+      if (!token) return
+      // Only fetch if we don't yet have the flag
+      if (user && typeof user.isEmailVerified === 'boolean') return
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/User/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (!res.ok) return
+        const me = await res.json()
+        if (!cancelled && typeof me?.isEmailVerified === 'boolean') {
+          setUser({ ...(user || {}), ...me })
+        }
+      } catch {
+        // ignore network errors here
+      }
+    }
+    sync()
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token])
 
-  if (!user || user.isEmailVerified || dismissed) return null;
+  const shouldShow = useMemo(() => {
+    // Only show when we know the user and they’re not verified and not dismissed.
+    if (!user) return false
+    if (isVerified) return false
+    if (dismissed) return false
+    return true
+  }, [user, isVerified, dismissed])
+
+  // Now it’s safe to conditionally return — hooks already ran.
+  if (!shouldShow) return null
 
   const handleResend = async () => {
+    if (sending) return
+    setSending(true)
     try {
-      setLoading(true);
-      await resendVerificationEmail(user.email);
-      toast.success("Verification email sent.");
-    } catch (err) {
-      console.error(err);
-      toast.error("Couldn’t send verification email. Try again.");
+      const res = await fetch(`${API_BASE_URL}/api/User/resend-verification-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
+      })
+      if (res.ok) {
+        // Optionally show a toast; do nothing else.
+        return
+      }
+      // If API says already verified, reflect that and hide banner
+      if (res.status === 400) {
+        const body = await res.json().catch(() => ({}))
+        const msg = (body?.message || '').toLowerCase()
+        if (msg.includes('already verified')) {
+          setUser({ ...(user || {}), isEmailVerified: true })
+          setDismissed(true)
+        }
+      }
     } finally {
-      setLoading(false);
+      setSending(false)
     }
-  };
-
-  const handleDismiss = () => {
-    localStorage.setItem(DISMISS_KEY, "1");
-    setDismissed(true);
-  };
+  }
 
   return (
-    <div
-      role="region"
-      aria-label="Email verification notice"
-      className="sticky top-0 z-40 w-full border-b border-white/10
-                 bg-platerly-dark/95 backdrop-blur supports-[backdrop-filter]:bg-platerly-dark/75"
-    >
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-          {/* Left: Icon + message */}
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg
-                            bg-yellow-500/15 ring-1 ring-yellow-500/25">
-              <MailWarning className="h-5 w-5 text-yellow-400" aria-hidden="true" />
-            </div>
-            <div className="text-sm">
-              <p className="text-white">
-                Verify your email to unlock all Platerly features.
-              </p>
-              <p className="mt-0.5 text-platerly-subtle">
-                We sent a link to <span className="text-white">{user.email}</span>. Didn’t get it?
-              </p>
-            </div>
+    <div className="mx-auto max-w-4xl my-3 px-4">
+      <div className="flex items-start gap-3 rounded-xl border border-platerly-light bg-platerly-card p-3 sm:p-4">
+        <div className="flex-1 text-sm">
+          <div className="font-medium mb-1">Verify your email to unlock all Platerly features.</div>
+          <div className="text-platerly-subtle">
+            We sent a link to <b>{user?.email}</b>. Didn’t get it?
           </div>
-
-          {/* Right: Actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              onClick={handleResend}
-              disabled={loading}
-              className="inline-flex items-center justify-center gap-2 rounded-lg
-                         bg-green-500 px-3.5 py-2 text-sm font-medium text-white
-                         transition-colors hover:bg-green-600 focus:outline-none
-                         focus:ring-2 focus:ring-green-400 disabled:opacity-60"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Sending…
-                </>
-              ) : (
-                <>Resend verification</>
-              )}
-            </button>
-
-            <button
-              onClick={handleDismiss}
-              className="group rounded-lg p-2 text-platerly-subtle transition
-                         hover:bg-white/5 hover:text-white focus:outline-none
-                         focus:ring-2 focus:ring-neutral-500"
-              aria-label="Dismiss email verification notice"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleResend}
+            disabled={sending}
+            className="rounded-md bg-platerly-green text-platerly-dark px-3 py-1.5 text-sm font-medium hover:opacity-90 disabled:opacity-60"
+          >
+            {sending ? 'Sending…' : 'Resend verification'}
+          </button>
+          <button
+            onClick={() => setDismissed(true)}
+            className="rounded-md px-2 py-1.5 text-sm text-platerly-subtle hover:text-platerly-text hover:bg-white/5"
+          >
+            ✕
+          </button>
         </div>
       </div>
     </div>
-  );
+  )
 }
+
+export default EmailVerificationBanner

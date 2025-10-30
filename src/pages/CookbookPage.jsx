@@ -6,16 +6,6 @@ import { useAuth } from "../context/AuthContext";
 
 const ENDPOINT = `${API_BASE_URL}/api/Cookbook`; // canonical casing
 
-/**
- * CookbookPage (Mobile-first + Brand-consistent)
- *
- * Upgrades:
- * - Mobile-first layout, comfortable spacing, and responsive typography.
- * - Consistent brand styles (emerald accents, dark neutrals, rounded-2xl, focus-visible rings).
- * - Stronger UX: loading skeletons, quiet error handling, accessible form controls (44px min-hit targets).
- * - Pagination controls with disabled states and aria-live updates.
- */
-
 const SkeletonCard = () => (
   <div className="rounded-2xl bg-neutral-900 border border-neutral-800 overflow-hidden">
     <div className="aspect-[4/3] bg-neutral-800 animate-pulse" />

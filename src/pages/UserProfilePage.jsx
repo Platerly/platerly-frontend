@@ -1,16 +1,13 @@
+// src/pages/UserProfilePage.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { API_BASE_URL } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
+import { apiFetch } from "../utils/fetchWithAuth"
+import { API_BASE_URL } from "../utils/api";
 
-/* ───────────── helpers ───────────── */
+/* ---------- helpers ---------- */
 const escapeHTML = (s = "") =>
-  s
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
+  s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 
 function autolinkBio(text = "") {
   const safe = escapeHTML(text);
@@ -20,10 +17,7 @@ function autolinkBio(text = "") {
       (m) =>
         `<a href="${m.startsWith("http") ? m : `https://${m}`}" target="_blank" rel="noopener noreferrer" class="underline">${m}</a>`
     )
-    .replace(
-      /(^|\s)#([a-z0-9_]{2,30})/gi,
-      (_match, p1, p2) => `${p1}<a class="underline" href="/tags/${p2.toLowerCase()}">#${p2}</a>`
-    )
+    .replace(/(^|\s)#([a-z0-9_]{2,30})/gi, (_match, p1, p2) => `${p1}<a class="underline" href="/tags/${p2.toLowerCase()}">#${p2}</a>`)
     .replace(/\n/g, "<br/>");
 }
 
@@ -36,15 +30,11 @@ const Skeleton = () => (
       <div className="w-24 h-24 rounded-2xl bg-platerly-card border-4 border-platerly-dark" />
       <div className="h-6 w-48 bg-platerly-card rounded" />
     </div>
-    <div className="px-4 md:px-6 mt-4 h-4 w-80 bg-platerly-card rounded" />
   </div>
 );
 
 const EmptyState = ({ title, subtitle }) => (
   <div className="py-12 text-center">
-    <div className="mx-auto mb-3 h-10 w-10 rounded-xl grid place-content-center border border-platerly-border bg-platerly-card/70 shadow">
-      <span className="text-platerly-yellow">★</span>
-    </div>
     <h3 className="font-semibold text-platerly-text">{title}</h3>
     <p className="text-sm text-platerly-muted mt-1">{subtitle}</p>
   </div>
@@ -125,10 +115,11 @@ const SocialLinksRow = ({ websiteUrl, youTubeUrl, xUrl, instagramUrl }) => {
   );
 };
 
+/* ---------- component ---------- */
 const UserProfilePage = () => {
   const { username } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, token } = useAuth();
+  const { user, token, authed, loading: authLoading } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -138,31 +129,29 @@ const UserProfilePage = () => {
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
-
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const fileRef = useRef(null);
 
   const tab = (searchParams.get("tab") || "recipes").toLowerCase();
   const setTab = (t) => setSearchParams({ tab: t });
+  const isOwnProfile = user?.username?.toLowerCase() === username?.toLowerCase();
 
-  const isOwnProfile = user?.username?.toLowerCase?.() === username?.toLowerCase?.();
-
-  // Fetch profile + lists
+  /* ---------- fetch profile ---------- */
   useEffect(() => {
+    if (authLoading) return; // ⏳ wait for AuthContext ready
     const ac = new AbortController();
     setLoading(true);
     setError("");
 
     (async () => {
       try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const [userRes, cookbooksRes, followersRes, followingRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}`, { signal: ac.signal }),
-          fetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}/cookbooks`, { signal: ac.signal }),
-          fetch(`${API_BASE_URL}/api/Follow/followers?username=${encodeURIComponent(username)}` , { signal: ac.signal, headers: token ? { Authorization: `Bearer ${token}` } : {} }),
-          fetch(`${API_BASE_URL}/api/Follow/following?username=${encodeURIComponent(username)}` , { signal: ac.signal, headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+          apiFetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}`, { signal: ac.signal, headers }),
+          apiFetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}/cookbooks`, { signal: ac.signal, headers }),
+          apiFetch(`${API_BASE_URL}/api/Follow/followers?username=${encodeURIComponent(username)}`, { signal: ac.signal, headers }),
+          apiFetch(`${API_BASE_URL}/api/Follow/following?username=${encodeURIComponent(username)}`, { signal: ac.signal, headers }),
         ]);
-
-        if (!userRes.ok) throw new Error("Failed to load profile");
 
         const userData = await userRes.json();
         const cbData = cookbooksRes.ok ? await cookbooksRes.json() : [];
@@ -185,18 +174,12 @@ const UserProfilePage = () => {
     })();
 
     return () => ac.abort();
-  }, [username, token]);
+  }, [username, token, authLoading]);
 
-  // Determine if current user follows this profile
   useEffect(() => {
     if (!token || !user || !followers?.length) return setIsFollowing(false);
-    setIsFollowing(
-      followers.some((f) => f.username?.toLowerCase?.() === user.username?.toLowerCase?.())
-    );
+    setIsFollowing(followers.some((f) => f.username?.toLowerCase() === user.username?.toLowerCase()));
   }, [followers, user, token]);
-
-  const followerCount = followers.length;
-  const followingCount = following.length;
 
   const handleFollowToggle = async () => {
     if (!token || !profile) return;
@@ -204,10 +187,10 @@ const UserProfilePage = () => {
     const method = isFollowing ? "DELETE" : "POST";
 
     try {
-      const res = await fetch(endpoint, { method, headers: { Authorization: `Bearer ${token}` } });
+      const res = await apiFetch(endpoint, { method });
       if (!res.ok) throw new Error("Failed to toggle follow");
       if (isFollowing) {
-        setFollowers((prev) => prev.filter((f) => f.username?.toLowerCase?.() !== user.username?.toLowerCase?.()));
+        setFollowers((prev) => prev.filter((f) => f.username?.toLowerCase() !== user.username?.toLowerCase()));
       } else {
         setFollowers((prev) => [...prev, { username: user.username }]);
       }
@@ -217,22 +200,13 @@ const UserProfilePage = () => {
     }
   };
 
-  const websiteShort = useMemo(() => {
-    const w = profile?.websiteUrl;
-    return w ? w.replace(/^https?:\/\//, '').replace(/\/$/, '') : null;
-  }, [profile]);
-
   const onBannerFile = async (file) => {
     if (!file) return;
     setUploadingBanner(true);
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch(`${API_BASE_URL}/api/user/banner`, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: fd,
-      });
+      const res = await apiFetch(`${API_BASE_URL}/api/user/banner`, { method: "POST", body: fd });
       if (!res.ok) throw new Error("Upload failed");
       const data = await res.json();
       setProfile((p) => ({ ...p, bannerImageUrl: data.imageUrl }));
@@ -245,22 +219,21 @@ const UserProfilePage = () => {
     }
   };
 
-  if (loading) return <Skeleton />;
-  if (error) {
-    return (
-      <div className="max-w-5xl mx-auto px-4 md:px-6 py-16">
-        <div className="rounded-xl border border-red-500/40 bg-red-950/30 text-red-200 p-4">{error}</div>
-      </div>
-    );
-  }
-  if (!profile) {
-    return (
-      <div className="max-w-5xl mx-auto px-4 md:px-6 py-16 text-center">User not found.</div>
-    );
-  }
+  const followerCount = followers.length;
+  const followingCount = following.length;
+  const websiteShort = useMemo(() => {
+    const w = profile?.websiteUrl;
+    if (!w) return null;
+    return w.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  }, [profile]);
+  
+  if (authLoading || loading) return <Skeleton />;
+  if (error) return <div className="max-w-5xl mx-auto px-4 md:px-6 py-16 text-red-300">{error}</div>;
+  if (!profile) return <div className="max-w-5xl mx-auto px-4 md:px-6 py-16 text-center">User not found.</div>;
 
+  /* ---------- render ---------- */
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen text-platerly-text">
       <div className="mx-auto max-w-5xl">
         {/* Banner */}
         <div className="relative h-44 md:h-56 rounded-b-2xl overflow-hidden bg-platerly-light z-0">

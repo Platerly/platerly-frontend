@@ -1,25 +1,20 @@
-// src/components/chrome/Navbar.jsx
+// src/components/layout/Navbar.jsx
 import React, { useState, useEffect } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import classNames from 'classnames'
-import { logout as utilLogout } from '../../utils/auth'
 import { useAuth } from '../../context/AuthContext'
 import { Menu, X } from 'lucide-react'
+import { API_BASE_URL } from '../../utils/api'
 
 const Navbar = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { user, token, loading } = useAuth()
+  const { user, token, loading, authed, logout } = useAuth()
   const [open, setOpen] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
 
   // Close mobile menu on route change
   useEffect(() => { setOpen(false) }, [location.pathname])
-
-  // Consider authed if context or stored token exists (cold start)
-  const storedToken =
-    (typeof window !== 'undefined') &&
-    (localStorage.getItem('token') || sessionStorage.getItem('token'))
-  const authed = !!(user || token || storedToken)
 
   const isLandingPage = location.pathname === '/'
   const logoTarget = authed ? '/feed' : '/login'
@@ -35,9 +30,22 @@ const Navbar = () => {
     { name: 'Chefs', path: '/chefs' },
   ]
 
-  const handleLogout = () => {
-    utilLogout()
-    navigate('/login', { replace: true })
+  const handleLogout = async () => {
+    if (loggingOut) return
+    setLoggingOut(true)
+    try {
+      // Optional server revoke: clears HttpOnly refresh cookie
+      await fetch(`${API_BASE_URL}/api/Auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+    } catch {
+      // ignore network errors; still clear client state
+    } finally {
+      logout() // clear client token/user from storage & state
+      navigate('/login', { replace: true })
+      setLoggingOut(false)
+    }
   }
 
   const LinkClass = ({ isActive }) =>
@@ -52,7 +60,7 @@ const Navbar = () => {
         'sticky top-0 z-50 border-b border-white/10',
         'bg-platerly-dark/80 backdrop-blur supports-[backdrop-filter]:bg-platerly-dark/70',
         'text-sm',
-        'pt-[env(safe-area-inset-top)]' // iOS notch safe area
+        'pt-[env(safe-area-inset-top)]'
       )}
       role="banner"
     >
@@ -93,17 +101,17 @@ const Navbar = () => {
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="rounded-lg px-3 py-1.5 text-red-400 hover:text-red-300 hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-red-400"
-                    disabled={loading}
+                    className="rounded-lg px-3 py-1.5 text-red-400 hover:text-red-300 hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-60"
+                    disabled={loading || loggingOut}
                   >
-                    Log Out
+                    {loggingOut ? 'Logging out…' : 'Log Out'}
                   </button>
                 </>
               ) : null}
             </div>
           )}
 
-          {/* Mobile: menu button (hidden on landing if you want it clean) */}
+          {/* Mobile: menu button */}
           {!isLandingPage && (
             <button
               onClick={() => setOpen(v => !v)}
@@ -151,10 +159,10 @@ const Navbar = () => {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex-1 rounded-lg px-3 py-2 text-center text-red-400 hover:text-red-300 hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-red-400"
-                  disabled={loading}
+                  className="flex-1 rounded-lg px-3 py-2 text-center text-red-400 hover:text-red-300 hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-60"
+                  disabled={loading || loggingOut}
                 >
-                  Log Out
+                  {loggingOut ? 'Logging out…' : 'Log Out'}
                 </button>
               </div>
             ) : null}

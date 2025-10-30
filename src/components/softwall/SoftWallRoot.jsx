@@ -1,86 +1,115 @@
 // src/components/softwall/SoftWallRoot.jsx
-import { useMemo } from 'react'
-import { useLocation } from 'react-router-dom'
-import SoftWallBanner from './SoftWallBanner'
-import { useSoftWall } from '../../hooks/useSoftWall'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useLocation, Link } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 
-/** Static paths where we never render the soft wall */
-const IGNORE_PATHS = new Set([
-  '/login','/register','/forgot-password','/reset-password','/verify-email',
-  '/terms','/privacy','/guidelines','/disclaimer','/refunds','/contact','/',
-  '/billing','/checkout','/account'
-])
-
-/** Path prefixes we also want to ignore (server rewrites, share pages, etc.) */
-const IGNORE_PREFIXES = ['/api/', '/s/']  // server passthroughs / public share
-
-const isIgnoredPath = (pathname) => {
-  if (IGNORE_PATHS.has(pathname)) return true
-  for (const p of IGNORE_PREFIXES) if (pathname.startsWith(p)) return true
-  return false
+/* ---------- LocalStorage keys ---------- */
+const LS = {
+  guestSeenCount: 'pl_guest_seen_count_v1',
 }
 
-/** Basic bot guard so crawlers don’t burn guest views */
-const isBotUA = () => {
-  if (typeof navigator === 'undefined') return false
-  const ua = navigator.userAgent.toLowerCase()
-  return /bot|crawl|spider|slurp|mediapartners|facebookexternalhit|twitterbot|pinterest|embedly|quora link preview/.test(ua)
+/* ---------- Helpers (no hooks) ---------- */
+const readInt = (k, d = 0) => {
+  try { const n = parseInt(localStorage.getItem(k) || '', 10); return Number.isFinite(n) ? n : d } catch { return d }
 }
+const writeInt = (k, v) => { try { localStorage.setItem(k, String(v)) } catch {} }
 
-export default function SoftWallRoot() {
-  const { pathname, search } = useLocation()
+/* ---------- Behavior ---------- */
+const VIEW_THRESHOLD = 10
 
-  // 1) Never show on ignored routes
-  if (isIgnoredPath(pathname)) return null
+// Only these paths COUNT toward the wall and can SHOW it.
+// Everything else (including "/") is implicitly EXEMPT.
+const CONTENT_ALLOWLIST = [
+  '/feed',
+  '/explore',
+  '/chefs',
+  '/recipe',        // covers /recipe/:id
+  '/cookbooks',
+  '/profile',       // covers /profile/:username
+  '/tags',          // covers /tags/:tag
+]
 
-  // 2) Allow manual disable for testing: ?softwall=off
-  const sp = useMemo(() => new URLSearchParams(search), [search])
-  if (sp.get('softwall') === 'off') return null
+const AUTH_PAGES = [
+  '/login',
+  '/register',
+  '/reset-password',
+  '/verify-email',
+]
 
-  // 3) We only COUNT views on recipe detail routes
-  const countThisPage = useMemo(() => pathname.startsWith('/recipe/'), [pathname])
+const LEGAL_PAGES = [
+  '/privacy',
+  '/terms',
+]
 
-  // token is the dedupe key for your hook; include query for uniqueness
-  const token = useMemo(
-    () => (countThisPage ? `${pathname}${search || ''}` : null),
-    [countThisPage, pathname, search]
-  )
+const startsWithAny = (pathname, list) =>
+  list.some(p => pathname === p || pathname.startsWith(p + '/'))
 
-  // 4) Hook: computes guest state & whether to show the wall (counting only on recipe pages)
-  const {
-    isGuest,
-    showSoftWall,
-    dismissSoftWall,
-    viewsInWindow,
-    dailyLimit,
-  } = useSoftWall(token)
+const isAuthOrLegal = (pathname) =>
+  startsWithAny(pathname, AUTH_PAGES) || startsWithAny(pathname, LEGAL_PAGES)
 
-  // 5) Dev-only debug
-  if (typeof window !== 'undefined' && import.meta?.env?.MODE !== 'production') {
-    // eslint-disable-next-line no-console
-    console.debug('[SoftWall]', {
-      path: pathname,
-      query: search,
-      isGuest,
-      showSoftWall,
-      viewsInWindow,
-      dailyLimit,
-      counted: !!countThisPage,
-      bot: isBotUA(),
-    })
-  }
+// Count/show only on allowed content pages
+const isContentPath = (pathname) => startsWithAny(pathname, CONTENT_ALLOWLIST)
 
-  // 6) Don’t render for bots (avoids wasting view budget on crawlers)
-  if (isBotUA()) return null
+/**
+ * Hard wall:
+ * - Counts guest views only on content routes (allow-list)
+ * - Shows wall only on content routes
+ * - Never shows on landing "/" or on auth/legal pages
+ */
+const SoftWallRoot = ({ children }) => {
+  const { authed } = useAuth()
+  const location = useLocation()
+  const { pathname } = location
 
-  // 7) Only show to guests AND when the rule says it’s time
-  if (!isGuest || !showSoftWall) return null
+  const [guestSeenCount, setGuestSeenCount] = useState(() => readInt(LS.guestSeenCount, 0))
+
+  // Increment only for guests on content routes
+  useEffect(() => {
+    if (authed) return
+    if (!isContentPath(pathname)) return
+    const next = guestSeenCount + 1
+    setGuestSeenCount(next)
+    writeInt(LS.guestSeenCount, next)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname])
+
+  const shouldShow = useMemo(() => {
+    if (authed) return false
+    if (isAuthOrLegal(pathname)) return false
+    if (!isContentPath(pathname)) return false
+    return guestSeenCount >= VIEW_THRESHOLD
+  }, [authed, pathname, guestSeenCount])
 
   return (
-    <SoftWallBanner
-      onClose={dismissSoftWall}
-      viewsUsed={viewsInWindow}
-      limit={dailyLimit}
-    />
+    <div className="relative">
+      {children}
+
+      {shouldShow && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4">
+          <div className="w-full max-w-md rounded-2xl border border-platerly-light bg-platerly-card p-6 shadow-xl">
+            <h3 className="text-xl font-semibold mb-2">Create a free account to continue</h3>
+            <p className="text-sm text-platerly-subtle mb-4">
+              You’ve reached the guest limit. Log in or create an account to keep exploring recipes.
+            </p>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/register"
+                className="flex-1 text-center rounded-lg bg-platerly-green text-platerly-dark px-3 py-2 font-medium hover:opacity-90"
+              >
+                Join Platerly
+              </Link>
+              <Link
+                to="/login"
+                className="flex-1 text-center rounded-lg bg-white/10 text-white px-3 py-2 font-medium hover:bg-white/15"
+              >
+                Log in
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
+
+export default SoftWallRoot

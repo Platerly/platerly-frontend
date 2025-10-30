@@ -9,6 +9,12 @@ import { Toaster } from 'react-hot-toast'
 import SoftWallRoot from './components/softwall/SoftWallRoot'
 import ReactGA from "react-ga4";
 
+// Temporary canonicalization in production: force www
+if (import.meta.env.PROD && location.hostname === 'platerly.com') {
+  location.replace(`https://www.platerly.com${location.pathname}${location.search}${location.hash}`);
+}
+
+
 // Initialize GA only in production
 if (import.meta.env.VITE_GA_ID && import.meta.env.VITE_ENV === "production") {
   ReactGA.initialize(import.meta.env.VITE_GA_ID);

@@ -17,11 +17,12 @@ const useRedirectPath = () => {
 }
 
 const Login = () => {
-  const { setUser, setToken } = useAuth()
+  const { login } = useAuth()
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPw, setShowPw] = useState(false)
+  const [remember, setRemember] = useState(true) // premium apps default to remembering
 
   const navigate = useNavigate()
   const redirectPath = useRedirectPath()
@@ -37,27 +38,25 @@ const Login = () => {
     setLoading(true)
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/User/login`, {
+       const res = await fetch(`${API_BASE_URL}/api/Auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: form.email, password: form.password }),
+        credentials: 'include' // <— to set HttpOnly refresh cookie
       })
 
-      // if API returns non-JSON on error, guard with try
       let data
-      try {
-        data = await res.json()
-      } catch (_) {
-        data = {}
-      }
+      try { data = await res.json() } catch { data = {} }
 
       if (!res.ok) {
         throw new Error(data.message || 'Invalid email or password')
       }
 
       // Expecting { token, user }
-      if (data?.token) setToken(data.token)
-      if (data?.user) setUser(data.user)
+      if (data?.token && data?.user) {
+        // Synchronous persist (sessionStorage if remember=false)
+        login({ token: data.token, user: data.user, remember })
+      }
 
       navigate(redirectPath, { replace: true })
     } catch (err) {
@@ -128,11 +127,16 @@ const Login = () => {
                 </button>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2 select-none">
-                  {/* Optional remember me for mobile ease; safe to wire later */}
-                  <input id="remember" type="checkbox" className="h-4 w-4 rounded border-platerly-border bg-transparent" />
-                  <label htmlFor="remember" className="text-platerly-muted">Remember me</label>
-                </div>
+                <label htmlFor="remember" className="flex items-center gap-2 select-none">
+                  <input
+                    id="remember"
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-platerly-border bg-transparent"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                  />
+                  <span className="text-platerly-muted">Remember me</span>
+                </label>
                 <Link to="/forgot-password" className="text-platerly-accent hover:underline">
                   Forgot password?
                 </Link>

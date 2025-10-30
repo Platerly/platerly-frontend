@@ -1,49 +1,27 @@
+// src/pages/CookbookDetailsPage.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
-import CookbookRecipeCard from "../components/ui/CookbookRecipeCard";
-import { API_BASE_URL } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
+import { apiFetch } from "../utils/fetchWithAuth";
+import { API_BASE_URL } from "../utils/api";
+import CookbookRecipeCard from "../components/ui/CookbookRecipeCard";
 
-/**
- * CookbookDetailsPage (Mobile-optimized + Brand-consistent)
- *
- * Key upgrades:
- * - Mobile-first layout with responsive spacing/typography.
- * - Consistent brand styling (emerald accents, dark neutrals, rounded-2xl, focus rings).
- * - Safer owner-only UX: cover-change + contributors shown only if contributors list is available (GET 200).
- * - Accessible buttons/inputs (focus-visible rings, aria labels, min touch targets).
- * - Better image handling (lazy loading, responsive aspect ratios).
- * - Small UX niceties: chips for Public/Private, subtle dividers, improved error text.
- */
-
-// ---- Helpers (place near top)
+/* ---------------- Helpers ---------------- */
 const getErrorText = (err, fallback = "Something went wrong.") => {
-  const d = err?.response?.data;
-  if (typeof d === "string") return d;
-  if (d?.title) return d.title;
-  if (d?.error) return d.error;
-  return err?.message || fallback;
+  try {
+    if (typeof err === "string") return err;
+    if (err?.message) return err.message;
+    const d = err?.response?.data || err?.data;
+    if (typeof d === "string") return d;
+    if (d?.title) return d.title;
+    if (d?.error) return d.error;
+  } catch {}
+  return fallback;
 };
 
-// Optional: user lookup by username; falls back to interpreting lookup as a GUID
 const isGuid = (q) => /^[0-9a-fA-F-]{36}$/.test(q || "");
 
-const findUserId = async (q, authHeader) => {
-  const text = q?.trim();
-  if (!text) throw new Error("Enter a username or user ID.");
-  if (isGuid(text)) return text; // GUID? pass-through
-
-  // NOTE: the controller expects "q", not "query"
-  const res = await axios.get(
-    `${API_BASE_URL}/api/User/search?q=${encodeURIComponent(text)}`,
-    { headers: authHeader }
-  );
-  const match = Array.isArray(res.data) ? res.data[0] : null;
-  if (!match?.id) throw new Error("No user found with that name.");
-  return match.id;
-};
-
+/* ---------------- Small UI bits ---------------- */
 const Chip = ({ children, tone = "neutral" }) => {
   const toneClass =
     tone === "success"
@@ -70,93 +48,160 @@ const Section = ({ title, right, children }) => (
   </section>
 );
 
+/* ---------------- Page ---------------- */
 const CookbookDetailsPage = () => {
   const { id } = useParams();
-  const { token } = useAuth();
+  const { token, loading: authLoading } = useAuth();
 
   const [cookbook, setCookbook] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-
-  // contributors
   const [contributors, setContributors] = useState([]); // null => hide panel (non-owner)
   const [lookup, setLookup] = useState(""); // username or userId
+
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [error, setError] = useState("");
 
   const fileInputRef = useRef(null);
 
-  const authHeader = { Authorization: `Bearer ${token}` };
+  const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
 
-  const fetchCookbook = async () => {
-    const res = await axios.get(`${API_BASE_URL}/api/Cookbook/${id}`, { headers: authHeader });
-    setCookbook(res.data);
-  };
+  // --------- API calls (refresh-aware via apiFetch) ----------
+  // --------- API calls (refresh-aware via apiFetch) ----------
+const fetchCookbook = async (signal) => {
+  try {
+    const res = await apiFetch(`${API_BASE_URL}/api/Cookbook/${id}`, {
+      headers: authHeaders,
+      signal,
+    });
 
-  const fetchContributors = async () => {
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/Cookbook/${id}/contributors`, {
-        headers: authHeader,
-      });
-      setContributors(res.data || []);
-    } catch (err) {
-      // Non-owners get 403 here; hide the panel & owner-only UI
+    // ✅ Explicitly check result to catch 401/404 cleanly
+    if (res.status === 401) throw new Error("Unauthorized — please log in again.");
+    if (res.status === 404) throw new Error("Cookbook not found.");
+    if (!res.ok) throw new Error(`Unexpected error (${res.status}).`);
+
+    const data = await res.json();
+    setCookbook(data);
+    return data;
+  } catch (err) {
+    // ✅ Handle user-triggered aborts quietly
+    if (err.name === "AbortError") return;
+    console.error("fetchCookbook failed:", err);
+    setError(err.message || "Failed to load cookbook.");
+    throw err;
+  }
+};
+
+const fetchContributors = async (signal) => {
+  try {
+    const res = await apiFetch(`${API_BASE_URL}/api/Cookbook/${id}/contributors`, {
+      headers: authHeaders,
+      signal,
+    });
+
+    if (res.status === 403) {
+      // ✅ Non-owner → hide contributor panel
       setContributors(null);
+      return;
     }
+    if (!res.ok) throw new Error(`Failed to load contributors (${res.status})`);
+
+    const data = await res.json();
+    setContributors(data || []);
+  } catch (err) {
+    if (err.name === "AbortError") return;
+    console.error("fetchContributors failed:", err);
+    setContributors(null);
+  }
+};
+
+
+  const findUserId = async (q) => {
+    const text = q?.trim();
+    if (!text) throw new Error("Enter a username or user ID.");
+    if (isGuid(text)) return text;
+
+    const res = await apiFetch(`${API_BASE_URL}/api/User/search?q=${encodeURIComponent(text)}`, {
+      headers: authHeaders,
+    });
+    if (!res.ok) throw new Error("Search failed.");
+    const list = await res.json();
+    const match = Array.isArray(list) ? list[0] : null;
+    if (!match?.id) throw new Error("No user found with that name.");
+    return match.id;
   };
 
-  useEffect(() => {
-    (async () => {
-      try {
-        await fetchCookbook();
-        await fetchContributors();
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, token]);
+  // --------- Effects ----------
+ useEffect(() => {
+  if (authLoading) return; // wait for valid token
+  const ac = new AbortController();
+  const { signal } = ac;
 
-  // ---- Cover upload
+  setLoading(true);
+  setError("");
+
+  (async () => {
+    try {
+      //  Run sequentially (safer for state + avoids undefined Promise result)
+      await fetchCookbook(signal);
+      await fetchContributors(signal);
+    } catch (e) {
+      if (e.name === "CanceledError" || e.name === "AbortError") return;
+      console.error("Cookbook load error:", e);
+      setError(getErrorText(e, "Failed to load cookbook."));
+    } finally {
+      if (!signal.aborted) setLoading(false);
+    }
+  })();
+
+  // ✅ Cleanup on route change / unmount
+  return () => ac.abort();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [id, token, authLoading]);
+
+
+  // --------- Cover upload ----------
   const onPickCover = () => fileInputRef.current?.click();
 
   const onCoverSelected = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    const form = new FormData();
-    form.append("file", file);
     try {
-      const res = await axios.put(`${API_BASE_URL}/api/Cookbook/${id}/cover`, form, {
-        headers: { ...authHeader, "Content-Type": "multipart/form-data" },
+      const form = new FormData();
+      form.append("file", file);
+      const res = await apiFetch(`${API_BASE_URL}/api/Cookbook/${id}/cover`, {
+        method: "PUT",
+        headers: authHeaders, // fetchWithAuth will not clobber multipart boundary
+        body: form,
       });
-      // update local cover
-      setCookbook((prev) => ({ ...prev, coverImageUrl: res.data.coverUrl }));
+      if (!res.ok) throw new Error(res.status === 403 ? "Only the owner can change the cover." : "Failed to upload cover.");
+      const data = await res.json();
+      setCookbook((prev) => ({ ...prev, coverImageUrl: data.coverUrl }));
     } catch (err) {
-      const msg = err?.response?.status === 403 ? "Only the owner can change the cover." : "Failed to upload cover.";
-      alert(msg);
+      alert(getErrorText(err));
       console.error(err);
     } finally {
       setUploading(false);
-      e.target.value = ""; // reset
+      e.target.value = "";
     }
   };
 
-  // ---- Contributors CRUD
+  // --------- Contributors CRUD ----------
   const addContributor = async (e) => {
     e.preventDefault();
     if (!lookup.trim()) return;
     setAdding(true);
     try {
-      const userId = await findUserId(lookup, authHeader);
-      await axios.post(
-        `${API_BASE_URL}/api/Cookbook/${id}/contributors`,
-        { userId, role: "Write" },
-        { headers: authHeader }
-      );
+      const userId = await findUserId(lookup);
+      const res = await apiFetch(`${API_BASE_URL}/api/Cookbook/${id}/contributors`, {
+        method: "POST",
+        headers: { ...authHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, role: "Write" }),
+      });
+      if (!res.ok) throw new Error("Failed to add contributor.");
       setLookup("");
-      await fetchContributors();
+      await fetchContributors(); // refresh list
     } catch (err) {
       alert(getErrorText(err, "Failed to add contributor."));
       console.error(err);
@@ -168,10 +213,14 @@ const CookbookDetailsPage = () => {
   const removeContributor = async (userId) => {
     if (!confirm("Remove this contributor?")) return;
     try {
-      await axios.delete(`${API_BASE_URL}/api/Cookbook/${id}/contributors/${userId}`, { headers: authHeader });
+      const res = await apiFetch(`${API_BASE_URL}/api/Cookbook/${id}/contributors/${userId}`, {
+        method: "DELETE",
+        headers: authHeaders,
+      });
+      if (!res.ok) throw new Error("Failed to remove contributor.");
       await fetchContributors();
     } catch (err) {
-      alert("Failed to remove contributor.");
+      alert(getErrorText(err));
       console.error(err);
     }
   };
@@ -183,8 +232,8 @@ const CookbookDetailsPage = () => {
     }));
   };
 
-  // ---- Loading / Not Found
-  if (loading) {
+  // --------- Render ----------
+  if (authLoading || loading) {
     return (
       <div className="max-w-6xl mx-auto p-4 sm:p-6 text-white">
         <div className="animate-pulse space-y-4">
@@ -197,12 +246,12 @@ const CookbookDetailsPage = () => {
     );
   }
 
+  if (error) {
+    return <div className="max-w-3xl mx-auto p-6 text-center text-red-400">{error}</div>;
+  }
+
   if (!cookbook) {
-    return (
-      <div className="max-w-3xl mx-auto p-6 text-center text-red-400">
-        Cookbook not found.
-      </div>
-    );
+    return <div className="max-w-3xl mx-auto p-6 text-center text-red-400">Cookbook not found.</div>;
   }
 
   const items = cookbook.items || [];
@@ -310,18 +359,18 @@ const CookbookDetailsPage = () => {
 
       {/* Recipes grid */}
       <Section
-        title={`Recipes (${items.length})`}
+        title={`Recipes (${(cookbook.items || []).length})`}
         right={
-          items.length > 0 ? (
+          (cookbook.items || []).length > 0 ? (
             <div className="text-xs text-neutral-400">Tap a card to view • Long-press to open in new tab</div>
           ) : null
         }
       >
-        {items.length === 0 ? (
+        {(cookbook.items || []).length === 0 ? (
           <p className="text-neutral-400">No recipes saved in this cookbook yet.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {items.map((r) => (
+            {(cookbook.items || []).map((r) => (
               <CookbookRecipeCard
                 key={r.recipeId}
                 recipe={{ id: r.recipeId, title: r.title, description: r.description, imageUrl: r.imageUrl }}

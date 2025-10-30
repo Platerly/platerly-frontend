@@ -268,7 +268,7 @@ const RecipeDetailsPage = () => {
             src={recipe.imageUrl}
             alt={recipe.title || 'Recipe image'}
             className="w-full h-full object-cover [image-rendering:auto]"
-            fetchpriority="high"
+            fetchPriority="high"
             decoding="async"
             loading="eager"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 900px"
