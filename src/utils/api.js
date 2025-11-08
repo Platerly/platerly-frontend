@@ -1,9 +1,8 @@
 // utils/api.js
 
-// Base URL: dev -> local API, prod -> empty so calls become same-origin /api/...
-const RAW = (import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? 'https://localhost:7142' : '')).toString().trim();
+// Prefer VITE_API_BASE_URL; fallback to local API in dev; else same-origin
+const RAW = (import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? 'https://localhost:7142' : '')).toString().trim();
 export const API_BASE_URL = RAW.replace(/\/+$/, '');
-
 
 // ---------- helpers ----------
 
@@ -13,25 +12,27 @@ async function tryParse(res) {
   if (contentLength === '0') return null;
 
   const ct = (res.headers.get('content-type') || '').toLowerCase();
-
-  // Read once; decide how to interpret it
   const text = await res.text();
   if (!text) return null;
 
   if (ct.includes('application/json')) {
     try { return JSON.parse(text); } catch { /* fallthrough */ }
   }
-  // Non-JSON or invalid JSON: return as plain text
-  return text;
+  return text; // non-JSON: return as text
 }
 
 function buildOpts(method, body, extra = {}) {
-  const opts = { method, headers: { ...extra.headers } };
-  if (body !== undefined) {
-    opts.headers['Content-Type'] = 'application/json';
-    opts.body = JSON.stringify(body);
+  const headers = new Headers(extra.headers || {});
+  const isStringBody = typeof body === 'string';
+  const hasFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+  if (body !== undefined && !hasFormData && !isStringBody && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
   }
-  return { ...extra, ...opts };
+  const init = { method, headers, ...extra };
+  if (body !== undefined) {
+    init.body = hasFormData || isStringBody ? body : JSON.stringify(body);
+  }
+  return init;
 }
 
 function errorMessage(payload, res) {
@@ -40,33 +41,41 @@ function errorMessage(payload, res) {
   return payload.error || payload.message || `Request failed (${res.status})`;
 }
 
-async function request(path, { method = 'GET', body, ...extra } = {}) {
-  const url = `${API_BASE_URL}${path}`;
-  const res = await fetch(url, buildOpts(method, body, extra));
-  const data = await tryParse(res);
+function withTimeout(promise, ms = 15000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  return Promise.race([
+    promise(ctrl.signal).finally(() => clearTimeout(t)),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('Request timed out')), ms + 10))
+  ]);
+}
 
-  if (!res.ok) {
-    throw new Error(errorMessage(data, res));
-  }
+async function request(path, { method = 'GET', body, includeCredentials = false, ...extra } = {}) {
+  const url = `${API_BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`;
+  const init = buildOpts(method, body, {
+    ...extra,
+    credentials: includeCredentials ? 'include' : (extra.credentials ?? 'same-origin')
+  });
+
+  const res = await withTimeout((signal) => fetch(url, { ...init, signal }));
+  const data = await tryParse(res);
+  if (!res.ok) throw new Error(errorMessage(data, res));
   return data;
 }
 
 // ---------- exported API calls ----------
 
-// Auth
+// Auth (use credentials: include for login so refresh cookie can be set cross-site)
 export function login(email, password) {
-  // Your Swagger shows POST /api/User/login
-  return request('/api/User/login', { method: 'POST', body: { email, password } });
+  return request('/api/auth/login', {
+    method: 'POST',
+    body: { email, password },
+    includeCredentials: true
+  });
 }
 
 export function resendVerificationEmail(email) {
   return request('/api/User/resend-verification-email', { method: 'POST', body: { email } });
-}
-
-export async function fetchCurrentUser(token) {
-  return request('/api/User/me', {
-    headers: { Authorization: `Bearer ${token}` }
-  });
 }
 
 export function resetPassword(token, newPassword) {
@@ -75,4 +84,12 @@ export function resetPassword(token, newPassword) {
 
 export function forgotPassword(email) {
   return request('/api/User/forgot-password', { method: 'POST', body: { email } });
+}
+
+// Unauthenticated helpers may continue to use `request`.
+// For protected routes, prefer the `apiFetch` wrapper from fetchWithAuth.js.
+export async function fetchCurrentUser(token) {
+  return request('/api/User/me', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
 }

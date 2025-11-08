@@ -3,6 +3,7 @@ import axios from "axios";
 import CookbookCard from "../components/ui/CookbookCard";
 import { API_BASE_URL } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
+import ConfirmDialog from "../components/common/ConfirmDialog";
 
 const ENDPOINT = `${API_BASE_URL}/api/Cookbook`; // canonical casing
 
@@ -198,6 +199,7 @@ const CookbookPage = () => {
                   isPublic={cb.isPublic}
                   createdAt={cb.createdAt}
                   coverImageUrl={cb.coverImageUrl}
+                  recipeCount={cb.recipeCount} 
                 />
               ))}
             </div>

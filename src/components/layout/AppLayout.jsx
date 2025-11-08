@@ -1,12 +1,20 @@
-import React, {useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import Sidebar, { SidebarPanel } from './Sidebar'
 import RightColumn from './RightColumn'
 import EmailVerificationBanner from '../layout/EmailVerificationBanner'
 import Footer from '../Footer'
+import { useAuth } from '../../context/AuthContext'
+import { bumpGuestSeenCount } from '../../utils/softwall'
 
 const AppLayout = ({ children }) => {
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const { authed, loading } = useAuth()
+
+  // Increment guest counter only when we know the user is NOT authed
+  useEffect(() => {
+    bumpGuestSeenCount({ authed, loading })
+  }, [authed, loading])
 
   // Lock document scroll when drawer is open
   useEffect(() => {
@@ -47,38 +55,35 @@ const AppLayout = ({ children }) => {
 
       {/* ───────── Mobile sidebar drawer ───────── */}
       {drawerOpen && (
-  <>
-    {/* Backdrop overlay */}
-    <button
-      aria-hidden
-      className="fixed inset-0 z-40 bg-black/60"
-      onClick={() => setDrawerOpen(false)}
-    />
+        <>
+          {/* Backdrop overlay */}
+          <button
+            aria-hidden
+            className="fixed inset-0 z-40 bg-black/60"
+            onClick={() => setDrawerOpen(false)}
+          />
 
-    {/* Drawer panel (SOLID background) */}
-    <div
-      className="fixed inset-y-0 left-0 z-50 w-[85%] max-w-[320px] bg-platerly-dark border-r border-platerly-border shadow-2xl flex isolate"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div className="absolute top-0 right-0 p-3">
-        <button
-          onClick={() => setDrawerOpen(false)}
-          className="p-2 rounded-lg hover:bg-emerald-900/30"
-          aria-label="Close navigation"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Make sure this area itself does not introduce transparency */}
-      <div className="w-full overflow-y-auto pt-12 pb-6 bg-platerly-dark">
-        <SidebarPanel />
-      </div>
-    </div>
-  </>
-)}
-
+          {/* Drawer panel */}
+          <div
+            className="fixed inset-y-0 left-0 z-50 w-[85%] max-w-[320px] bg-platerly-dark border-r border-platerly-border shadow-2xl flex isolate"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="absolute top-0 right-0 p-3">
+              <button
+                onClick={() => setDrawerOpen(false)}
+                className="p-2 rounded-lg hover:bg-emerald-900/30"
+                aria-label="Close navigation"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="w-full overflow-y-auto pt-12 pb-6 bg-platerly-dark">
+              <SidebarPanel />
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ───────── Desktop right column ───────── */}
       <aside className="hidden xl:block fixed right-0 top-0 bottom-0 w-[320px] border-l border-platerly-border bg-platerly-elev z-20">
@@ -91,7 +96,6 @@ const AppLayout = ({ children }) => {
           'px-4 sm:px-6 py-6',
           'lg:ml-[260px]',
           'xl:mr-[320px]',
-          // leave room for ONE bottom tab bar (from Sidebar.jsx)
           'pb-[calc(env(safe-area-inset-bottom)+72px)] lg:pb-6',
         ].join(' ')}
       >

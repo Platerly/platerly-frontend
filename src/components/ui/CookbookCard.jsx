@@ -24,7 +24,14 @@ const placeholder =
      </svg>`
   );
 
-const CookbookCard = ({ id = "", title = "Untitled", isPublic, createdAt, coverImageUrl }) => {
+const CookbookCard = ({
+  id = "",
+  title = "Untitled",
+  isPublic,
+  createdAt,
+  coverImageUrl,
+  recipeCount = 0,           // <-- NEW: show count on the card
+}) => {
   const navigate = useNavigate();
   const colorIdx = Number.isFinite(id?.charCodeAt?.(0)) ? id.charCodeAt(0) % ringPalette.length : 0;
   const colorClass = ringPalette[colorIdx];
@@ -39,12 +46,10 @@ const CookbookCard = ({ id = "", title = "Untitled", isPublic, createdAt, coverI
       onClick={() => navigate(`/cookbook/${id}`)}
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate(`/cookbook/${id}`)}
       className={[
-        // container
         "group cursor-pointer rounded-2xl border-2",
         colorClass,
         "bg-platerly-card hover:bg-platerly-elev hover:shadow-xl hover:scale-[1.01]",
         "transition-transform duration-200 motion-reduce:transition-none shadow-md overflow-hidden",
-        // mobile padding & tap comfort
         "min-h-[44px]"
       ].join(" ")}
     >
@@ -57,10 +62,18 @@ const CookbookCard = ({ id = "", title = "Untitled", isPublic, createdAt, coverI
           loading="lazy"
           decoding="async"
         />
-        {/* gradient for text legibility if we overlay later */}
+        {/* gradient for possible future text overlays */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-black/0 to-transparent opacity-90" />
-        {/* visibility badge */}
+
+        {/* recipe count badge (gold) */}
         <div className="absolute left-2 top-2">
+          <span className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold bg-amber-300 text-black shadow">
+            {recipeCount} {recipeCount === 1 ? "recipe" : "recipes"}
+          </span>
+        </div>
+
+        {/* visibility badge */}
+        <div className="absolute right-2 top-2">
           <span
             className={[
               "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium",
@@ -82,7 +95,6 @@ const CookbookCard = ({ id = "", title = "Untitled", isPublic, createdAt, coverI
         </h3>
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm text-platerly-subtle">
           <span className="truncate">{dateLabel}</span>
-          {/* subtle chevron affordance on mobile */}
           <span className="opacity-70 group-hover:opacity-100 transition-opacity">View →</span>
         </div>
       </div>

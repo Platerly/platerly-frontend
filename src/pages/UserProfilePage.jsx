@@ -2,12 +2,18 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { apiFetch } from "../utils/fetchWithAuth"
+import { apiFetch } from "../utils/fetchWithAuth";
 import { API_BASE_URL } from "../utils/api";
+import CookbookCard from "../components/ui/CookbookCard";
 
 /* ---------- helpers ---------- */
 const escapeHTML = (s = "") =>
-  s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+  s
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 
 function autolinkBio(text = "") {
   const safe = escapeHTML(text);
@@ -40,86 +46,11 @@ const EmptyState = ({ title, subtitle }) => (
   </div>
 );
 
-/* Social icon row (renders only provided links) */
-const SocialLinksRow = ({ websiteUrl, youTubeUrl, xUrl, instagramUrl }) => {
-  const items = [
-    {
-      key: "youTubeUrl",
-      href: youTubeUrl,
-      label: "YouTube",
-      icon: (
-        <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
-          <path
-            fill="currentColor"
-            d="M23.5 6.2a4 4 0 0 0-2.8-2.8C18.9 3 12 3 12 3s-6.9 0-8.7.4A4 4 0 0 0 .5 6.2 41 41 0 0 0 0 12a41 41 0 0 0 .5 5.8 4 4 0 0 0 2.8 2.8C5.1 21 12 21 12 21s6.9 0 8.7-.4a4 4 0 0 0 2.8-2.8A41 41 0 0 0 24 12a41 41 0 0 0-.5-5.8zM9.8 15.5v-7l6 3.5z"
-          />
-        </svg>
-      ),
-    },
-    {
-      key: "xUrl",
-      href: xUrl,
-      label: "X (Twitter)",
-      icon: (
-        <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
-          <path fill="currentColor" d="M18 2h3l-7 8 8 10h-6l-5-6-6 6H2l7-8-8-10h6l5 6z" />
-        </svg>
-      ),
-    },
-    {
-      key: "instagramUrl",
-      href: instagramUrl,
-      label: "Instagram",
-      icon: (
-        <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
-          <path
-            fill="currentColor"
-            d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6zM18.5 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"
-          />
-        </svg>
-      ),
-    },
-    {
-      key: "websiteUrl",
-      href: websiteUrl,
-      label: "Website",
-      icon: (
-        <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
-          <path
-            fill="currentColor"
-            d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm7.9 9h-3.2a14 14 0 0 0-1.4-5 8 8 0 0 1 4.6 5zM12 4c.9 1.2 1.7 3 2.2 5H9.8c.5-2 1.3-3.8 2.2-5zM4.1 11a8 8 0 0 1 4.6-5 14 14 0 0 0-1.4 5H4.1zM7.3 13a14 14 0 0 0 1.4 5 8 8 0 0 1-4.6-5h3.2zm2.5 0h4.4c-.5 2-1.3 3.8-2.2 5-.9-1.2-1.7-3-2.2-5zm6.9 0h3.2a8 8 0 0 1-4.6 5c.6-1.2 1.1-3 1.4-5z"
-          />
-        </svg>
-      ),
-    },
-  ].filter((i) => !!i.href);
-
-  if (!items.length) return null;
-
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      {items.map(({ key, href, label, icon }) => (
-        <a
-          key={key}
-          href={withScheme(href)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center justify-center rounded-lg border border-platerly-border bg-platerly-card hover:ring-2 hover:ring-platerly-green/40 px-2.5 py-1.5 transition"
-          aria-label={label}
-          title={label}
-        >
-          <span className="text-platerly-text/90">{icon}</span>
-        </a>
-      ))}
-    </div>
-  );
-};
-
 /* ---------- component ---------- */
 const UserProfilePage = () => {
   const { username } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, token, authed, loading: authLoading } = useAuth();
+  const { user, token, loading: authLoading } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -129,6 +60,7 @@ const UserProfilePage = () => {
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
+
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const fileRef = useRef(null);
 
@@ -136,34 +68,112 @@ const UserProfilePage = () => {
   const setTab = (t) => setSearchParams({ tab: t });
   const isOwnProfile = user?.username?.toLowerCase() === username?.toLowerCase();
 
+  const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+
+  // normalize one cookbook row from various shapes
+  const normalizeCookbook = (c) => {
+    if (!c) return null;
+
+    const id = c.id ?? c.Id ?? c.cookbookId ?? c.CookbookId;
+    const title = c.title ?? c.Title ?? "Untitled";
+    const description = c.description ?? c.Description ?? "";
+    const isPublic = (typeof c.isPublic === "boolean" ? c.isPublic : c.IsPublic) ?? false;
+    const createdAt = c.createdAt ?? c.CreatedAt ?? null;
+
+    // recipe count across shapes
+    const recipeCount =
+      (typeof c.recipeCount === "number" && c.recipeCount) ??
+      (typeof c.recipesCount === "number" && c.recipesCount) ??
+      (typeof c.totalRecipes === "number" && c.totalRecipes) ??
+      (typeof c.RecipeCount === "number" && c.RecipeCount) ??
+      (Array.isArray(c.recipes) ? c.recipes.length : undefined);
+
+    // cover across shapes
+    const coverImageUrl =
+      c.coverImageUrl ??
+      c.coverUrl ??
+      c.imageUrl ??
+      c.CoverImageUrl ??
+      c.ImageUrl ??
+      null;
+
+    return { id, title, description, isPublic, createdAt, recipeCount, coverImageUrl };
+  };
+
+  // fetch details for any cookbook missing cover or count
+  const hydrateMissingCookbookBits = async (rows) => {
+    const needHydrate = rows.filter(
+      (r) => !r || r.coverImageUrl == null || typeof r.recipeCount !== "number"
+    );
+    if (needHydrate.length === 0) return rows;
+
+    const byId = new Map(rows.map((r) => [r.id, { ...r }]));
+
+    await Promise.all(
+      needHydrate.map(async (r) => {
+        try {
+          const res = await apiFetch(`${API_BASE_URL}/api/Cookbook/${r.id}`, { headers: authHeaders });
+          if (!res.ok) return;
+          const json = await res.json();
+          const full = normalizeCookbook(json);
+          if (!full) return;
+          const base = byId.get(full.id) || {};
+          byId.set(full.id, {
+            ...base,
+            // prefer hydrated values when missing
+            coverImageUrl: base.coverImageUrl ?? full.coverImageUrl ?? null,
+            recipeCount: typeof base.recipeCount === "number" ? base.recipeCount : (typeof full.recipeCount === "number" ? full.recipeCount : 0),
+            // keep other known fields
+            title: base.title ?? full.title,
+            description: base.description ?? full.description,
+            isPublic: typeof base.isPublic === "boolean" ? base.isPublic : full.isPublic ?? false,
+            createdAt: base.createdAt ?? full.createdAt ?? null,
+            id: base.id ?? full.id,
+          });
+        } catch {
+          // ignore hydration failures silently
+        }
+      })
+    );
+
+    return Array.from(byId.values());
+  };
+
   /* ---------- fetch profile ---------- */
   useEffect(() => {
-    if (authLoading) return; // ⏳ wait for AuthContext ready
+    if (authLoading) return;
     const ac = new AbortController();
-    setLoading(true);
-    setError("");
 
     (async () => {
+      setLoading(true);
+      setError("");
       try {
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const [userRes, cookbooksRes, followersRes, followingRes] = await Promise.all([
-          apiFetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}`, { signal: ac.signal, headers }),
-          apiFetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}/cookbooks`, { signal: ac.signal, headers }),
-          apiFetch(`${API_BASE_URL}/api/Follow/followers?username=${encodeURIComponent(username)}`, { signal: ac.signal, headers }),
-          apiFetch(`${API_BASE_URL}/api/Follow/following?username=${encodeURIComponent(username)}`, { signal: ac.signal, headers }),
+          apiFetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}`, { signal: ac.signal, headers: authHeaders }),
+          apiFetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}/cookbooks`, { signal: ac.signal, headers: authHeaders }),
+          apiFetch(`${API_BASE_URL}/api/Follow/followers?username=${encodeURIComponent(username)}`, { signal: ac.signal, headers: authHeaders }),
+          apiFetch(`${API_BASE_URL}/api/Follow/following?username=${encodeURIComponent(username)}`, { signal: ac.signal, headers: authHeaders }),
         ]);
 
         const userData = await userRes.json();
-        const cbData = cookbooksRes.ok ? await cookbooksRes.json() : [];
-        const folData = followersRes.ok ? await followersRes.json() : [];
-        const ingData = followingRes.ok ? await followingRes.json() : [];
+
+        // unwrap items if the cookbooks response is paginated
+        let cbRaw = cookbooksRes.ok ? await cookbooksRes.json() : [];
+        const cbList = Array.isArray(cbRaw) ? cbRaw : Array.isArray(cbRaw?.items) ? cbRaw.items : [];
+
+        // normalize rows
+        let normalized = cbList.map(normalizeCookbook).filter(Boolean);
+
+        // hydrate any missing cover/count from cookbook details
+        normalized = await hydrateMissingCookbookBits(normalized);
 
         if (ac.signal.aborted) return;
+
         setProfile(userData.user);
         setRecipes(userData.recipes || []);
-        setCookbooks(cbData || []);
-        setFollowers(folData || []);
-        setFollowing(ingData || []);
+        setCookbooks(normalized);
+        setFollowers(followersRes.ok ? await followersRes.json() : []);
+        setFollowing(followingRes.ok ? await followingRes.json() : []);
       } catch (e) {
         if (ac.signal.aborted) return;
         console.error(e);
@@ -174,31 +184,13 @@ const UserProfilePage = () => {
     })();
 
     return () => ac.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username, token, authLoading]);
 
   useEffect(() => {
     if (!token || !user || !followers?.length) return setIsFollowing(false);
     setIsFollowing(followers.some((f) => f.username?.toLowerCase() === user.username?.toLowerCase()));
   }, [followers, user, token]);
-
-  const handleFollowToggle = async () => {
-    if (!token || !profile) return;
-    const endpoint = `${API_BASE_URL}/api/Follow/${profile.id}`;
-    const method = isFollowing ? "DELETE" : "POST";
-
-    try {
-      const res = await apiFetch(endpoint, { method });
-      if (!res.ok) throw new Error("Failed to toggle follow");
-      if (isFollowing) {
-        setFollowers((prev) => prev.filter((f) => f.username?.toLowerCase() !== user.username?.toLowerCase()));
-      } else {
-        setFollowers((prev) => [...prev, { username: user.username }]);
-      }
-      setIsFollowing(!isFollowing);
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   const onBannerFile = async (file) => {
     if (!file) return;
@@ -224,9 +216,9 @@ const UserProfilePage = () => {
   const websiteShort = useMemo(() => {
     const w = profile?.websiteUrl;
     if (!w) return null;
-    return w.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    return w.replace(/^https?:\/\//, "").replace(/\/$/, "");
   }, [profile]);
-  
+
   if (authLoading || loading) return <Skeleton />;
   if (error) return <div className="max-w-5xl mx-auto px-4 md:px-6 py-16 text-red-300">{error}</div>;
   if (!profile) return <div className="max-w-5xl mx-auto px-4 md:px-6 py-16 text-center">User not found.</div>;
@@ -238,13 +230,17 @@ const UserProfilePage = () => {
         {/* Banner */}
         <div className="relative h-44 md:h-56 rounded-b-2xl overflow-hidden bg-platerly-light z-0">
           {profile.bannerImageUrl && (
-            <img src={profile.bannerImageUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
+            <img
+              src={profile.bannerImageUrl}
+              alt=""
+              loading="lazy"
+              className="w-full h-full object-cover"
+            />
           )}
-          {/* soft gradient for premium sheen */}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20" />
         </div>
 
-        {/* Row 1: avatar + name (overlaps banner) */}
+        {/* Row 1: avatar + name */}
         <div className="px-4 md:px-6 -mt-8 flex items-end gap-4">
           {profile.profileImageUrl ? (
             <img
@@ -264,59 +260,26 @@ const UserProfilePage = () => {
             </h1>
             <div className="text-sm text-platerly-muted">@{profile.username}</div>
           </div>
-        </div>
 
-        {/* Row 2: actions + social */}
-        <div className="px-4 md:px-6 mt-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div className="flex gap-2">
-            {isOwnProfile && (
-              <>
-                <button
-                  onClick={() => fileRef.current?.click()}
-                  className="px-4 py-2 rounded-xl bg-platerly-card hover:bg-platerly-light border border-platerly-border text-sm text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
-                  disabled={uploadingBanner}
-                  aria-label="Change banner image"
-                >
-                  {uploadingBanner ? "Uploading..." : "Change banner"}
-                </button>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => onBannerFile(e.target.files?.[0])}
-                />
-              </>
-            )}
-
-            {isOwnProfile ? (
-              <Link
-                to="/settings"
-                className="px-4 py-2 rounded-xl bg-platerly-card hover:bg-platerly-light border border-platerly-border text-sm text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
-              >
-                Edit Profile
-              </Link>
-            ) : token ? (
+          {isOwnProfile && (
+            <div className="ml-auto pb-2">
               <button
-                onClick={handleFollowToggle}
-                className={[
-                  "px-4 py-2 rounded-xl text-sm border transition focus:outline-none focus:ring-2",
-                  isFollowing
-                    ? "bg-transparent border-red-500/60 text-red-300 hover:bg-red-900/30 focus:ring-red-400/30"
-                    : "bg-platerly-green/90 hover:bg-platerly-green text-white border-emerald-700 focus:ring-platerly-green/40",
-                ].join(" ")}
+                onClick={() => fileRef.current?.click()}
+                className="px-4 py-2 rounded-xl bg-platerly-card hover:bg-platerly-light border border-platerly-border text-sm text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
+                disabled={uploadingBanner}
+                aria-label="Change banner image"
               >
-                {isFollowing ? "Unfollow" : "Follow"}
+                {uploadingBanner ? "Uploading..." : "Change banner"}
               </button>
-            ) : null}
-          </div>
-
-          <SocialLinksRow
-            websiteUrl={profile.websiteUrl}
-            youTubeUrl={profile.youTubeUrl}
-            xUrl={profile.xUrl}
-            instagramUrl={profile.instagramUrl}
-          />
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => onBannerFile(e.target.files?.[0])}
+              />
+            </div>
+          )}
         </div>
 
         {/* Meta row */}
@@ -327,7 +290,6 @@ const UserProfilePage = () => {
               {websiteShort}
             </a>
           )}
-
           <Link to={`/user/${profile.username}/followers`} className="underline-offset-2 hover:underline text-platerly-text">
             <b>{followerCount}</b> Followers
           </Link>
@@ -413,37 +375,15 @@ const UserProfilePage = () => {
           ) : cookbooks?.length ? (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {cookbooks.map((c) => (
-                <Link
+                <CookbookCard
                   key={c.id}
-                  to={`/cookbook/${c.id}`}
-                  className="group rounded-2xl overflow-hidden border border-platerly-border bg-platerly-card shadow transition hover:shadow-[0_12px_30px_-12px_rgba(246,200,105,0.35)] hover:-translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-platerly-yellow/40"
-                >
-                  <div className="relative w-full aspect-[4/3] bg-platerly-light overflow-hidden">
-                    {c.coverUrl && (
-                      <img
-                        src={c.coverUrl}
-                        alt=""
-                        loading="lazy"
-                        className="w-full h-full object-cover transition duration-300 group-hover:scale-[1.015]"
-                      />
-                    )}
-                    {/* gold badge for count */}
-                    <div className="absolute left-2 top-2 rounded-full bg-platerly-yellow/90 text-black text-[11px] font-semibold px-2 py-0.5 shadow">
-                      {(c.recipeCount ?? 0)} recipes
-                    </div>
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent" />
-                  </div>
-                  <div className="p-3">
-                    <div className="font-medium text-platerly-text line-clamp-1 group-hover:underline">
-                      {c.title}
-                    </div>
-                    {c.description ? (
-                      <div className="text-xs text-platerly-muted line-clamp-2 mt-1">
-                        {c.description}
-                      </div>
-                    ) : null}
-                  </div>
-                </Link>
+                  id={c.id}
+                  title={c.title}
+                  isPublic={c.isPublic}
+                  createdAt={c.createdAt}
+                  coverImageUrl={c.coverImageUrl}
+                  recipeCount={typeof c.recipeCount === "number" ? c.recipeCount : 0}
+                />
               ))}
             </div>
           ) : (
