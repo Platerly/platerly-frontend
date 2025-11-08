@@ -11,7 +11,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog"
-import Button from "../ui/button"
+import Button from "../ui/Button"
 
 const ConfirmDialog = ({
   title = "Are you sure?",
