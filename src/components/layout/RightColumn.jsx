@@ -285,14 +285,14 @@ const RightColumn = () => {
         <span>Trending</span>
       </h3>
 
-      <button
+      {/* <button
         onClick={() => navigate('/feed?sort=trending')}
         className="inline-flex items-center gap-1 text-xs font-semibold text-orange-400 hover:text-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-400/40 rounded"
         aria-label="See all trending"
       >
         See all
         <ChevronRight className="h-3.5 w-3.5" />
-      </button>
+      </button> */}
     </div>
 
     {tLoading && (
