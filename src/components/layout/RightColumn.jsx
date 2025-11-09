@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { API_BASE_URL } from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
 import classNames from 'classnames'
-import { Filter, Search, TrendingUp, X } from 'lucide-react'
+import { Filter, Search, TrendingUp, X, ChevronRight } from 'lucide-react'
 
 /* ---------- small utils ---------- */
 const useAuthed = (user, token) =>
@@ -278,66 +278,81 @@ const RightColumn = () => {
   )
 
   const Trending = (
-    <div className="rounded-xl border border-platerly-border bg-platerly-card/60 backdrop-blur-sm p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="flex items-center gap-2 text-sm font-semibold tracking-wide text-platerly-subtle">
-          <TrendingUp className="h-4 w-4" /> Trending
-        </h3>
-        <button
-          onClick={() => navigate('/feed?sort=trending')}
-          className="text-xs underline opacity-80 hover:opacity-100"
-        >
-          See all
-        </button>
-      </div>
+  <div className="rounded-xl border border-platerly-border bg-platerly-card/60 backdrop-blur-sm p-4">
+    <div className="mb-3 flex items-center justify-between">
+      <h3 className="flex items-center gap-2 text-sm font-semibold tracking-wide text-orange-400">
+        <TrendingUp className="h-4 w-4 stroke-orange-400" />
+        <span>Trending</span>
+      </h3>
 
-      {tLoading && (
-        <ul className="space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <li key={i} className="animate-pulse">
-              <div className="flex gap-3">
-                <div className="h-12 w-16 rounded-md bg-white/10" />
-                <div className="flex-1">
-                  <div className="mb-2 h-3 w-2/3 rounded bg-white/10" />
-                  <div className="h-3 w-1/3 rounded bg-white/10" />
-                </div>
+      <button
+        onClick={() => navigate('/feed?sort=trending')}
+        className="inline-flex items-center gap-1 text-xs font-semibold text-orange-400 hover:text-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-400/40 rounded"
+        aria-label="See all trending"
+      >
+        See all
+        <ChevronRight className="h-3.5 w-3.5" />
+      </button>
+    </div>
+
+    {tLoading && (
+      <ul className="space-y-3">
+        {[...Array(5)].map((_, i) => (
+          <li key={i} className="animate-pulse">
+            <div className="grid grid-cols-[64px_1fr] items-center gap-3">
+              <div className="h-12 w-16 rounded-md bg-white/10" />
+              <div className="space-y-2">
+                <div className="h-3 w-3/4 rounded bg-white/10" />
+                <div className="h-3 w-1/3 rounded bg-white/10" />
               </div>
-            </li>
-          ))}
-        </ul>
-      )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
 
-      {!tLoading && tError && <div className="text-xs text-red-300">{tError}</div>}
+    {!tLoading && tError && <div className="text-xs text-red-300">{tError}</div>}
 
-      {!tLoading && !tError && (
-        <ul className="space-y-3">
-          {trending.map((it) => (
-            <li key={it.id}>
-              <button onClick={() => navigate(`/recipe/${it.id}`)} className="group flex w-full gap-3 text-left">
-                <div className="relative">
+    {!tLoading && !tError && (
+      <ul className="space-y-3">
+        {trending.map((it) => (
+          <li key={it.id}>
+            <button
+              onClick={() => navigate(`/recipe/${it.id}`)}
+              className="group w-full text-left"
+            >
+              <div className="grid grid-cols-[64px_1fr] items-center gap-3">
+                {/* thumb */}
+                <div className="relative h-12 w-16 overflow-hidden rounded-md ring-1 ring-white/10">
                   <img
                     src={it.imageUrl}
                     alt={it.title}
-                    className="h-12 w-16 rounded-md object-cover ring-1 ring-white/10"
+                    className="h-full w-full object-cover"
                     loading="lazy"
                   />
-                  <span className="absolute -left-2 -top-2 rounded-md bg-orange-500/80 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-md">
+                  <span className="absolute left-1 top-1 rounded-md bg-orange-500/90 px-1.5 py-0.5 text-[10px] font-bold text-white shadow">
                     #{it.rank}
                   </span>
                 </div>
+
+                {/* text */}
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-medium group-hover:underline">{it.title}</div>
-                  <div className="mt-0.5 text-xs opacity-70">
-                    by <span className="font-medium">{it.username}</span>
+                  <div className="truncate text-sm font-medium group-hover:underline">
+                    {it.title}
+                  </div>
+                  <div className="mt-0.5 text-xs text-platerly-subtle">
+                    by <span className="font-medium text-platerly-text/90">{it.username}</span>
                   </div>
                 </div>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
+              </div>
+            </button>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+)
+
 
   /* ---------- render ---------- */
   return (
