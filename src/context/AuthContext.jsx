@@ -108,7 +108,7 @@ export function AuthProvider({ children }) {
 
     const doRefresh = (async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+        const res = await fetch(`${API_BASE_URL}/api/Auth/refresh`, {
           method: 'POST',
           credentials: 'include'
         });
