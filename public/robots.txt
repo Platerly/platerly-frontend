@@ -4,4 +4,4 @@ Disallow: /api/
 Disallow: /billing
 Allow: /
 
-Sitemap: https://platerly.com/sitemap.xml
+Sitemap: https://platerly-api-g9htcadmbda6h8ej.canadacentral-01.azurewebsites.net/sitemap.xml
