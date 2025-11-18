@@ -44,9 +44,15 @@ function createApiFetch(getToken, tryRefresh, onUnauthorized) {
     const doFetch = async () => {
       const headers = new Headers(init.headers || {})
       const t = getToken()
-      if (t && !headers.has('Authorization')) headers.set('Authorization', `Bearer ${t}`)
+      if (t && !headers.has('Authorization')) {
+        headers.set('Authorization', `Bearer ${t}`)
+      }
 
-      const isFormData = (init.body && typeof FormData !== 'undefined' && init.body instanceof FormData)
+      const isFormData =
+        init.body &&
+        typeof FormData !== 'undefined' &&
+        init.body instanceof FormData
+
       if (!isFormData && init.body && !headers.has('Content-Type') && typeof init.body === 'string') {
         headers.set('Content-Type', 'application/json')
       }
@@ -55,17 +61,32 @@ function createApiFetch(getToken, tryRefresh, onUnauthorized) {
     }
 
     let res = await doFetch()
-    if (res.status !== 401) return res
+
+    // If not unauthorized, just return
+    if (res.status !== 401 && res.status !== 403) {
+      return res
+    }
 
     // Try a single silent refresh
     const refreshed = await tryRefresh().catch(() => false)
     if (!refreshed) {
+      // refresh failed -> global unauthorized handling
       onUnauthorized?.()
-      return res
+
+      // Optional: throw so callers don't accidentally use a 401 response
+      throw new Error('Unauthorized – session expired')
     }
 
     // Retry once with new token
-    return doFetch()
+    res = await doFetch()
+
+    // If still unauthorized after refresh, treat as hard logout
+    if (res.status === 401 || res.status === 403) {
+      onUnauthorized?.()
+      throw new Error('Unauthorized – session expired')
+    }
+
+    return res
   }
 }
 
@@ -78,7 +99,7 @@ export function useApi() {
       createApiFetch(
         () => token || '',
         async () => !!(await refreshAccessToken()),
-        () => logout()
+        () => logout() // your logout can clear state + navigate to /login
       ),
     [token, logout, refreshAccessToken]
   )
@@ -92,7 +113,7 @@ async function refreshOutsideReact() {
     const res = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
-      // no body; refresh cookie (HttpOnly) is sent by the browser
+      // refresh cookie (HttpOnly) is sent by the browser
     })
     if (!res.ok) return false
     const data = await res.json().catch(() => ({}))
@@ -104,8 +125,24 @@ async function refreshOutsideReact() {
   }
 }
 
+// Global handler when we’re outside React context
+function handleUnauthorizedOutsideReact() {
+  try {
+    sessionStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(TOKEN_KEY)
+  } catch {}
+
+  if (typeof window !== 'undefined') {
+    const isOnLogin = window.location.pathname.startsWith('/login')
+    if (!isOnLogin) {
+      const params = new URLSearchParams({ reason: 'session-expired' }).toString()
+      window.location.assign(`/login?${params}`)
+    }
+  }
+}
+
 export const apiFetch = createApiFetch(
   () => getTokenFromStorage(),
   async () => await refreshOutsideReact(),
-  () => {} // no global logout here
+  handleUnauthorizedOutsideReact
 )

@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /settings
+Disallow: /api/
+Disallow: /billing
+Allow: /
+
+Sitemap: https://platerly.com/sitemap.xml
