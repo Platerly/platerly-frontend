@@ -1,6 +1,7 @@
 // src/pages/CookbookDetailsPage.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { Info } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/fetchWithAuth";
 import { API_BASE_URL } from "../utils/api";
@@ -31,7 +32,9 @@ const Chip = ({ children, tone = "neutral" }) => {
       ? "bg-red-500/10 text-red-300 border-red-500/20"
       : "bg-neutral-700/30 text-neutral-300 border-neutral-600/50";
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs border ${toneClass}`}>
+    <span
+      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs border ${toneClass}`}
+    >
       {children}
     </span>
   );
@@ -52,8 +55,7 @@ const Section = ({ title, right, children }) => (
 /* ---------------- Page ---------------- */
 const CookbookDetailsPage = () => {
   const { id } = useParams();
-  // NEW: pull `user` so we can exclude current user from suggestions
-  const { token, loading: authLoading, user } = useAuth(); // was: { token, loading: authLoading }
+  const { token, loading: authLoading, user } = useAuth();
 
   const [cookbook, setCookbook] = useState(null);
   const [contributors, setContributors] = useState([]); // null => hide panel (non-owner / forbidden)
@@ -102,15 +104,19 @@ const CookbookDetailsPage = () => {
 
   const fetchContributors = async (signal) => {
     try {
-      const res = await apiFetch(`${API_BASE_URL}/api/Cookbook/${id}/contributors`, {
-        headers: authHeaders,
-        signal,
-      });
+      const res = await apiFetch(
+        `${API_BASE_URL}/api/Cookbook/${id}/contributors`,
+        {
+          headers: authHeaders,
+          signal,
+        }
+      );
       if (res.status === 403) {
         setContributors(null); // hide if not owner
         return;
       }
-      if (!res.ok) throw new Error(`Failed to load contributors (${res.status})`);
+      if (!res.ok)
+        throw new Error(`Failed to load contributors (${res.status})`);
       const data = await res.json();
       setContributors(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -130,10 +136,15 @@ const CookbookDetailsPage = () => {
     setSLoading(true);
     setSError("");
     try {
-      const res = await apiFetch(`${API_BASE_URL}/api/User/search?q=${encodeURIComponent(q.trim())}`, {
-        headers: authHeaders,
-        signal,
-      });
+      const res = await apiFetch(
+        `${API_BASE_URL}/api/User/search?q=${encodeURIComponent(
+          q.trim()
+        )}`,
+        {
+          headers: authHeaders,
+          signal,
+        }
+      );
       if (!res.ok) throw new Error(`Search failed (${res.status})`);
       const list = await res.json();
 
@@ -145,7 +156,7 @@ const CookbookDetailsPage = () => {
         avatarUrl: u.avatarUrl || u.profileImageUrl || "",
       }));
 
-      // NEW: compute existingIds once and filter out self + already-contributors
+      // filter out self + already-contributors
       const existingIds = new Set(
         (Array.isArray(contributors) ? contributors : []).map((c) => c.userId)
       );
@@ -172,20 +183,23 @@ const CookbookDetailsPage = () => {
     const text = q?.trim();
     if (!text) throw new Error("Enter a username or user ID.");
     if (isGuid(text)) {
-      // NEW: block adding self/given guid if it's the current user or already a contributor
       if (text === user?.id) throw new Error("You can't add yourself.");
-      const exists = (Array.isArray(contributors) ? contributors : []).some((c) => c.userId === text);
+      const exists = (Array.isArray(contributors) ? contributors : []).some(
+        (c) => c.userId === text
+      );
       if (exists) throw new Error("User is already a contributor.");
       return text;
     }
 
-    const res = await apiFetch(`${API_BASE_URL}/api/User/search?q=${encodeURIComponent(text)}`, {
-      headers: authHeaders,
-    });
+    const res = await apiFetch(
+      `${API_BASE_URL}/api/User/search?q=${encodeURIComponent(text)}`,
+      {
+        headers: authHeaders,
+      }
+    );
     if (!res.ok) throw new Error("Search failed.");
     const list = await res.json();
 
-    // NEW: choose the first non-self, non-existing contributor
     const existingIds = new Set(
       (Array.isArray(contributors) ? contributors : []).map((c) => c.userId)
     );
@@ -198,12 +212,27 @@ const CookbookDetailsPage = () => {
   };
 
   const addContributorById = async (userId) => {
-    const res = await apiFetch(`${API_BASE_URL}/api/Cookbook/${id}/contributors`, {
-      method: "POST",
-      headers: { ...authHeaders, "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, role: "Write" }),
-    });
-    if (!res.ok) throw new Error("Failed to add contributor.");
+    const res = await apiFetch(
+      `${API_BASE_URL}/api/Cookbook/${id}/contributors`,
+      {
+        method: "POST",
+        headers: { ...authHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, role: "Write" }),
+      }
+    );
+
+    if (!res.ok) {
+      let msg = "Failed to add contributor.";
+      if (res.status === 400 || res.status === 403) {
+        try {
+          const text = await res.text();
+          if (text) msg = text;
+        } catch {
+          // ignore, fall back to default msg
+        }
+      }
+      throw new Error(msg);
+    }
   };
 
   /* --------- Effects ---------- */
@@ -270,13 +299,20 @@ const CookbookDetailsPage = () => {
     try {
       const form = new FormData();
       form.append("file", file);
-      const res = await apiFetch(`${API_BASE_URL}/api/Cookbook/${id}/cover`, {
-        method: "PUT",
-        headers: authHeaders,
-        body: form,
-      });
+      const res = await apiFetch(
+        `${API_BASE_URL}/api/Cookbook/${id}/cover`,
+        {
+          method: "PUT",
+          headers: authHeaders,
+          body: form,
+        }
+      );
       if (!res.ok) {
-        throw new Error(res.status === 403 ? "Only the owner can change the cover." : "Failed to upload cover.");
+        throw new Error(
+          res.status === 403
+            ? "Only the owner can change the cover."
+            : "Failed to upload cover."
+        );
       }
       const data = await res.json();
       setCookbook((prev) => ({ ...prev, coverImageUrl: data.coverUrl }));
@@ -315,7 +351,7 @@ const CookbookDetailsPage = () => {
       setSuggestions([]);
       setSOpen(false);
 
-      await fetchContributors(); // refresh
+      await fetchContributors();
       setInlineMsg("Contributor added.");
     } catch (err) {
       setInlineMsg(getErrorText(err, "Failed to add contributor."));
@@ -327,10 +363,13 @@ const CookbookDetailsPage = () => {
   };
 
   const removeContributor = async (userId) => {
-    const res = await apiFetch(`${API_BASE_URL}/api/Cookbook/${id}/contributors/${userId}`, {
-      method: "DELETE",
-      headers: authHeaders,
-    });
+    const res = await apiFetch(
+      `${API_BASE_URL}/api/Cookbook/${id}/contributors/${userId}`,
+      {
+        method: "DELETE",
+        headers: authHeaders,
+      }
+    );
     if (!res.ok) throw new Error("Failed to remove contributor.");
     await fetchContributors();
   };
@@ -339,7 +378,9 @@ const CookbookDetailsPage = () => {
   const handleRecipeRemove = (recipeId) => {
     setCookbook((prev) => {
       const next = { ...(prev || {}) };
-      next.items = (prev?.items || []).filter((r) => (r.recipeId ?? r.id) !== recipeId);
+      next.items = (prev?.items || []).filter(
+        (r) => (r.recipeId ?? r.id) !== recipeId
+      );
       return next;
     });
   };
@@ -358,8 +399,18 @@ const CookbookDetailsPage = () => {
     );
   }
 
-  if (error) return <div className="max-w-3xl mx-auto p-6 text-center text-red-400">{error}</div>;
-  if (!cookbook) return <div className="max-w-3xl mx-auto p-6 text-center text-red-400">Cookbook not found.</div>;
+  if (error)
+    return (
+      <div className="max-w-3xl mx-auto p-6 text-center text-red-400">
+        {error}
+      </div>
+    );
+  if (!cookbook)
+    return (
+      <div className="max-w-3xl mx-auto p-6 text-center text-red-400">
+        Cookbook not found.
+      </div>
+    );
 
   const items = cookbook.items || [];
   const isOwner = Array.isArray(contributors);
@@ -385,17 +436,24 @@ const CookbookDetailsPage = () => {
 
         <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold truncate">{cookbook.title}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold truncate">
+              {cookbook.title}
+            </h1>
             <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-neutral-400">
               <Chip tone={cookbook.isPublic ? "success" : "neutral"}>
                 {cookbook.isPublic ? "Public" : "Private"}
               </Chip>
               <span aria-hidden>•</span>
-              <span>Created {new Date(cookbook.createdAt).toLocaleDateString()}</span>
+              <span>
+                Created {new Date(cookbook.createdAt).toLocaleDateString()}
+              </span>
               {inlineMsg && (
                 <>
                   <span aria-hidden>•</span>
-                  <span className="text-emerald-300">{inlineMsg}</span>
+                  <span className="inline-flex items-center gap-1 text-emerald-300 text-sm">
+                    <Info className="w-4 h-4" />
+                    {inlineMsg}
+                  </span>
                 </>
               )}
             </div>
@@ -431,30 +489,46 @@ const CookbookDetailsPage = () => {
           ) : (
             <ul className="mb-4 divide-y divide-neutral-800">
               {contributors.map((c) => (
-                <li key={c.userId} className="py-3 flex items-center justify-between">
+                <li
+                  key={c.userId}
+                  className="py-3 flex items-center justify-between"
+                >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="h-9 w-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-xs text-neutral-300">
                       {(c.displayName || "U").slice(0, 1).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <div className="font-medium truncate">{c.displayName || c.userId}</div>
+                      <div className="font-medium truncate">
+                        {c.displayName || c.userId}
+                      </div>
                       <div className="text-xs text-neutral-400">
-                        Role: {c.role} • Added {new Date(c.addedAt).toLocaleDateString()}
+                        Role: {c.role} • Added{" "}
+                        {new Date(c.addedAt).toLocaleDateString()}
                       </div>
                     </div>
                   </div>
 
                   <ConfirmDialog
                     title="Remove contributor?"
-                    description={`This will revoke ${c.displayName || "this user"}'s access to this cookbook.`}
+                    description={`This will revoke ${
+                      c.displayName || "this user"
+                    }'s access to this cookbook.`}
                     confirmLabel="Remove"
                     cancelLabel="Cancel"
                     tone="danger"
                     onConfirm={async () => {
                       try {
                         await removeContributor(c.userId);
+                        setInlineMsg("Contributor removed.");
                       } catch (err) {
-                        alert(getErrorText(err, "Failed to remove contributor."));
+                        setInlineMsg(
+                          getErrorText(
+                            err,
+                            "Failed to remove contributor."
+                          )
+                        );
+                      } finally {
+                        setTimeout(() => setInlineMsg(""), 2500);
                       }
                     }}
                     trigger={
@@ -498,7 +572,9 @@ const CookbookDetailsPage = () => {
                     setSIndex((i) => (i + 1) % suggestions.length);
                   } else if (e.key === "ArrowUp") {
                     e.preventDefault();
-                    setSIndex((i) => (i - 1 + suggestions.length) % suggestions.length);
+                    setSIndex(
+                      (i) => (i - 1 + suggestions.length) % suggestions.length
+                    );
                   } else if (e.key === "Enter") {
                     if (sIndex >= 0) {
                       e.preventDefault();
@@ -541,11 +617,17 @@ const CookbookDetailsPage = () => {
                 className="absolute z-20 mt-2 w-full sm:w-[60%] max-h-72 overflow-auto rounded-xl border border-neutral-800 bg-neutral-900/95 backdrop-blur shadow-xl"
               >
                 {sLoading ? (
-                  <div className="px-3 py-3 text-sm text-neutral-400">Searching…</div>
+                  <div className="px-3 py-3 text-sm text-neutral-400">
+                    Searching…
+                  </div>
                 ) : sError ? (
-                  <div className="px-3 py-3 text-sm text-red-400">{sError}</div>
+                  <div className="px-3 py-3 text-sm text-red-400">
+                    {sError}
+                  </div>
                 ) : suggestions.length === 0 ? (
-                  <div className="px-3 py-3 text-sm text-neutral-400">No matches.</div>
+                  <div className="px-3 py-3 text-sm text-neutral-400">
+                    No matches.
+                  </div>
                 ) : (
                   suggestions.map((u, i) => (
                     <div
@@ -556,19 +638,30 @@ const CookbookDetailsPage = () => {
                       onClick={() => onPickSuggestion(u)}
                       className={[
                         "flex items-center justify-between gap-3 px-3 py-2 cursor-pointer",
-                        i === sIndex ? "bg-neutral-800" : "hover:bg-neutral-800/70",
+                        i === sIndex
+                          ? "bg-neutral-800"
+                          : "hover:bg-neutral-800/70",
                       ].join(" ")}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <img
-                          src={u.avatarUrl || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="}
+                          src={
+                            u.avatarUrl ||
+                            "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
+                          }
                           alt=""
                           className="h-8 w-8 rounded-full border border-neutral-700 object-cover"
-                          onError={(e) => { e.currentTarget.src = ""; }}
+                          onError={(e) => {
+                            e.currentTarget.src = "";
+                          }}
                         />
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium truncate text-white">{u.displayName}</div>
-                          <div className="text-xs text-neutral-400 truncate">@{u.username || "user"}</div>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium truncate text-white">
+                          {u.displayName}
+                        </div>
+                        <div className="text-xs text-neutral-400 truncate">
+                          @{u.username || "user"}
                         </div>
                       </div>
                       <button
@@ -586,7 +679,12 @@ const CookbookDetailsPage = () => {
                             setInlineMsg("Contributor added.");
                             setTimeout(() => setInlineMsg(""), 2000);
                           } catch (err) {
-                            setInlineMsg(getErrorText(err, "Failed to add contributor."));
+                            setInlineMsg(
+                              getErrorText(
+                                err,
+                                "Failed to add contributor."
+                              )
+                            );
                             setTimeout(() => setInlineMsg(""), 2500);
                           }
                         }}
@@ -605,10 +703,16 @@ const CookbookDetailsPage = () => {
       {/* Recipes grid */}
       <Section
         title={`Recipes (${items.length})`}
-        right={items.length > 0 ? <div className="text-xs text-neutral-400" /> : null}
+        right={
+          items.length > 0 ? (
+            <div className="text-xs text-neutral-400" />
+          ) : null
+        }
       >
         {items.length === 0 ? (
-          <p className="text-neutral-400">No recipes saved in this cookbook yet.</p>
+          <p className="text-neutral-400">
+            No recipes saved in this cookbook yet.
+          </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {items.map((r) => (

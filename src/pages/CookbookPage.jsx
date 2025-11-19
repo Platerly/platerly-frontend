@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { Info, AlertCircle } from "lucide-react";
 import CookbookCard from "../components/ui/CookbookCard";
 import { API_BASE_URL } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
-import ConfirmDialog from "../components/common/ConfirmDialog";
 
 const ENDPOINT = `${API_BASE_URL}/api/Cookbook`; // canonical casing
 
@@ -26,7 +26,13 @@ const CookbookPage = () => {
   const [isPublic, setIsPublic] = useState(false);
   const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Error for the list (“My Cookbooks”)
   const [errorText, setErrorText] = useState("");
+
+  // Inline status for the *create* form (success or error)
+  const [createStatus, setCreateStatus] = useState("");
+  const [createStatusIsError, setCreateStatusIsError] = useState(false);
 
   const [page, setPage] = useState(1);
   const pageSize = 12;
@@ -36,7 +42,13 @@ const CookbookPage = () => {
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
   const fetchCookbooks = async () => {
-    if (!token) return;
+    if (!token) {
+      setCookbooks([]);
+      setTotal(0);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setErrorText("");
     try {
@@ -57,11 +69,25 @@ const CookbookPage = () => {
       setTotal(Number.isFinite(data.total) ? data.total : items.length);
     } catch (err) {
       console.error("Error fetching cookbooks", err);
+      const status = err?.response?.status;
       const msg = err?.response?.data;
-      const text =
-        typeof msg === "string"
-          ? msg
-          : msg?.title || msg?.error || "Failed to load cookbooks.";
+
+      let text;
+
+      if (status === 403) {
+        // Clear message for non-subscribed users when trying to use cookbooks
+        text =
+          "Cookbooks are a premium feature. You need a Platerly subscription to use them.";
+      } else if (typeof msg === "string") {
+        text = msg;
+      } else {
+        text =
+          msg?.message ||
+          msg?.title ||
+          msg?.error ||
+          "Failed to load cookbooks.";
+      }
+
       setErrorText(text);
     } finally {
       setLoading(false);
@@ -79,8 +105,9 @@ const CookbookPage = () => {
     if (!cleanTitle) return;
 
     setCreating(true);
+    setCreateStatus("");
     try {
-      await axios.post(
+      const res = await axios.post(
         ENDPOINT,
         {
           title: cleanTitle,
@@ -90,22 +117,48 @@ const CookbookPage = () => {
         { headers }
       );
 
+      if (res.status < 200 || res.status >= 300) {
+        throw new Error("Create failed.");
+      }
+
       // reset form & refresh first page
       setTitle("");
       setDescription("");
       setIsPublic(false);
       setPage(1);
       await fetchCookbooks();
+
+      setCreateStatusIsError(false);
+      setCreateStatus("Cookbook created.");
     } catch (err) {
       console.error("Error creating cookbook", err);
+      const status = err?.response?.status;
       const msg = err?.response?.data;
-      const text =
-        typeof msg === "string"
-          ? msg
-          : msg?.title || msg?.error || "Create failed.";
-      alert(text);
+
+      let text;
+
+      if (status === 403) {
+        // Explicit, user-friendly subscription message
+        text =
+          "Cookbooks are a premium feature. You need a Platerly subscription to create cookbooks.";
+      } else if (typeof msg === "string") {
+        text = msg;
+      } else {
+        text =
+          msg?.message ||
+          msg?.title ||
+          msg?.error ||
+          "Create failed.";
+      }
+
+      setCreateStatusIsError(true);
+      setCreateStatus(text);
     } finally {
       setCreating(false);
+      // auto-clear after a short delay
+      setTimeout(() => {
+        setCreateStatus("");
+      }, 3000);
     }
   };
 
@@ -113,8 +166,13 @@ const CookbookPage = () => {
     <div className="max-w-6xl mx-auto p-4 sm:p-6 text-white space-y-8 sm:space-y-10">
       {/* Create Cookbook */}
       <div className="bg-platerly-card bg-neutral-900 border border-platerly-border border-neutral-800 rounded-2xl p-4 sm:p-6 shadow-md">
-        <h2 className="text-xl sm:text-2xl font-bold mb-4">📘 Create a New Cookbook</h2>
-        <form onSubmit={handleCreateCookbook} className="space-y-4 sm:space-y-5">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4">
+          📘 Create a New Cookbook
+        </h2>
+        <form
+          onSubmit={handleCreateCookbook}
+          className="space-y-4 sm:space-y-5"
+        >
           <div>
             <label className="block text-sm font-medium text-platerly-subtle text-neutral-300 mb-1">
               Title
@@ -153,7 +211,10 @@ const CookbookPage = () => {
               className="accent-emerald-500 w-5 h-5"
               aria-checked={isPublic}
             />
-            <label htmlFor="publicToggle" className="text-sm text-platerly-subtle text-neutral-300">
+            <label
+              htmlFor="publicToggle"
+              className="text-sm text-platerly-subtle text-neutral-300"
+            >
               Make public
             </label>
           </div>
@@ -165,12 +226,32 @@ const CookbookPage = () => {
           >
             {creating ? "Creating…" : "Create Cookbook"}
           </button>
+
+          {createStatus && (
+            <div
+              className={[
+                "mt-3 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm border",
+                createStatusIsError
+                  ? "bg-red-500/10 border-red-500/30 text-red-200"
+                  : "bg-emerald-500/10 border-emerald-500/30 text-emerald-200",
+              ].join(" ")}
+            >
+              {createStatusIsError ? (
+                <AlertCircle className="w-4 h-4" />
+              ) : (
+                <Info className="w-4 h-4" />
+              )}
+              <span>{createStatus}</span>
+            </div>
+          )}
         </form>
       </div>
 
       {/* My Cookbooks */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">📚 My Cookbooks</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">
+          📚 My Cookbooks
+        </h1>
 
         {errorText && (
           <div className="mb-4 text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl p-3">
@@ -199,12 +280,15 @@ const CookbookPage = () => {
                   isPublic={cb.isPublic}
                   createdAt={cb.createdAt}
                   coverImageUrl={cb.coverImageUrl}
-                  recipeCount={cb.recipeCount} 
+                  recipeCount={cb.recipeCount}
                 />
               ))}
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-6" aria-live="polite">
+            <div
+              className="flex flex-col sm:flex-row sm:items-center gap-3 mt-6"
+              aria-live="polite"
+            >
               <div className="inline-flex items-center gap-2">
                 <button
                   disabled={page <= 1}
@@ -221,7 +305,9 @@ const CookbookPage = () => {
                   Next
                 </button>
               </div>
-              <div className="text-sm opacity-80">Page {page} / {pages}</div>
+              <div className="text-sm opacity-80">
+                Page {page} / {pages}
+              </div>
             </div>
           </>
         )}
