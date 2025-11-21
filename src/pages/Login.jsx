@@ -33,38 +33,42 @@ const Login = () => {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+  e.preventDefault()
+  setError('')
+  setLoading(true)
 
-    try {
-       const res = await fetch(`${API_BASE_URL}/api/Auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email, password: form.password }),
-        credentials: 'include' // <— to set HttpOnly refresh cookie
-      })
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/Auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: form.email,
+        password: form.password,
+        rememberMe: remember, 
+      }),
+      credentials: 'include', // to set HttpOnly refresh cookie
+    })
 
-      let data
-      try { data = await res.json() } catch { data = {} }
+    let data
+    try { data = await res.json() } catch { data = {} }
 
-      if (!res.ok) {
-        throw new Error(data.message || 'Invalid email or password')
-      }
-
-      // Expecting { token, user }
-      if (data?.token && data?.user) {
-        // Synchronous persist (sessionStorage if remember=false)
-        login({ token: data.token, user: data.user, remember })
-      }
-
-      navigate(redirectPath, { replace: true })
-    } catch (err) {
-      setError(err.message || 'Something went wrong. Please try again.')
-    } finally {
-      setLoading(false)
+    if (!res.ok) {
+      throw new Error(data.message || 'Invalid email or password')
     }
+
+    if (data?.token && data?.user) {
+      // write token into storage (localStorage if remember=true)
+      login({ token: data.token, user: data.user, remember })
+    }
+
+    navigate(redirectPath, { replace: true })
+  } catch (err) {
+    setError(err.message || 'Something went wrong. Please try again.')
+  } finally {
+    setLoading(false)
   }
+}
+
 
   return (
     <div className="min-h-[100svh] bg-platerly-dark text-platerly-text flex items-center justify-center px-4 py-10">
