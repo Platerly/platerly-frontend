@@ -568,4 +568,4 @@ const RecipeDetailsPage = () => {
   )
 }
 
-export default RecipeDetailsPage
+export default RecipeDetailsPage 
