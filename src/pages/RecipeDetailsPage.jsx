@@ -17,10 +17,10 @@ const PILL_SUCCESS = `${PILL_BASE} bg-emerald-900/30 border-emerald-400/30 text-
 
 /* ---------- Severity classes ---------- */
 const SEVERITY_CLASS = {
-  high:   'bg-red-900/60 border-red-500 text-red-100',
+  high: 'bg-red-900/60 border-red-500 text-red-100',
   medium: 'bg-orange-900/60 border-orange-500 text-orange-100',
-  low:    'bg-amber-900/40 border-amber-500/70 text-amber-100',
-  safe:   'bg-emerald-900/30 border-emerald-600/70 text-emerald-100',
+  low: 'bg-amber-900/40 border-amber-500/70 text-amber-100',
+  safe: 'bg-emerald-900/30 border-emerald-600/70 text-emerald-100'
 }
 const qtyTint = (s) => {
   switch ((s || '').toLowerCase()) {
@@ -35,7 +35,8 @@ const qtyTint = (s) => {
 const norm = (s) => String(s || '').toLowerCase().trim().replace(/\s+/g, ' ')
 const variants = (s) => {
   const x = norm(s); if (!x) return []
-  const out = new Set([x]); x.endsWith('s') ? out.add(x.slice(0,-1)) : out.add(`${x}s`)
+  const out = new Set([x])
+  x.endsWith('s') ? out.add(x.slice(0,-1)) : out.add(`${x}s`)
   return [...out]
 }
 const isSevere = (s) => ['high','medium'].includes(String(s||'').toLowerCase())
@@ -127,14 +128,14 @@ const RecipeDetailsPage = () => {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [error, setError] = useState('')
-
   const [severityMap, setSeverityMap] = useState({})
   const [menuOpen, setMenuOpen] = useState(false)
   const [saveOpen, setSaveOpen] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+
   const menuRef = useRef(null)
 
-  /* Close kebab on outside click + Escape */
+  /* Close kebab menu */
   useEffect(() => {
     const onDocClick = (e) => { if (!menuRef.current) return; if (!menuRef.current.contains(e.target)) setMenuOpen(false) }
     const onEsc = (e) => { if (e.key === 'Escape') setMenuOpen(false) }
@@ -143,38 +144,50 @@ const RecipeDetailsPage = () => {
     return () => { document.removeEventListener('click', onDocClick); window.removeEventListener('keydown', onEsc) }
   }, [])
 
-  /* ---------- Load ---------- */
-  useEffect(() => {
+  /* ---------- Load recipe ALWAYS with medium severity ---------- */
+  const loadRecipe = async (signal) => {
     setRecipe(null); setRemixMeta(null); setTopLevelForTags(null)
     setSeverityMap({}); setLoading(true); setNotFound(false); setError('')
-    const ctl = new AbortController()
     const auth = token ? { Authorization: `Bearer ${token}` } : {}
 
-    ;(async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, { headers: auth, signal: ctl.signal })
-        if (res.status === 404) { setNotFound(true); setLoading(false); return }
-        if (!res.ok) throw new Error(`Failed to fetch recipe (${res.status})`)
-        const data = await res.json()
-        setTopLevelForTags(data)
-        const core = data.recipe ?? data
-        setRecipe(core)
-        setRemixMeta(data.remixMeta ?? null)
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}?allergyMin=medium`, { headers: auth, signal })
+      if (res.status === 404) { setNotFound(true); setLoading(false); return }
+      if (!res.ok) throw new Error(`Failed to fetch recipe (${res.status})`)
+      const data = await res.json()
 
-        const sevMap = core?.matchedAllergenSeverity && typeof core.matchedAllergenSeverity === 'object'
-          ? core.matchedAllergenSeverity : {}
-        const normalized = {}
-        Object.entries(sevMap).forEach(([k, v]) => { if (k) normalized[norm(k)] = String(v || '').toLowerCase() })
-        setSeverityMap(normalized)
+      setTopLevelForTags(data)
+      const core = data.recipe ?? data
+      setRecipe(core)
+      setRemixMeta(data.remixMeta ?? null)
+
+      const sevMap = core?.matchedAllergenSeverity || {}
+      const normalized = {}
+      Object.entries(sevMap).forEach(([k, v]) => {
+        if (k) normalized[norm(k)] = String(v || '').toLowerCase()
+      })
+      setSeverityMap(normalized)
+
+      setLoading(false)
+    } catch (e) {
+      if (!signal || !signal.aborted) {
+        console.error(e)
+        setError('Something went wrong loading this recipe.')
         setLoading(false)
-      } catch (e) {
-        if (!ctl.signal.aborted) { console.error(e); setError('Something went wrong loading this recipe.'); setLoading(false) }
       }
-    })()
+    }
+  }
+
+  /* ---------- Load on mount ---------- */
+  useEffect(() => {
+    const ctl = new AbortController()
+    loadRecipe(ctl.signal)
 
     ;(async () => {
       try {
-        const r = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, { headers: auth })
+        const r = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
         if (r.ok) setComments(await r.json())
       } catch {}
     })()
@@ -202,7 +215,7 @@ const RecipeDetailsPage = () => {
   const hasAnyAllergen = bannerTerms.length > 0
 
   const lookupSeverity = (ingredientName, ing) => {
-    const candidates = [ing?.globalIngredientName, ing?.globalIngredient?.name, ingredientName]
+    const candidates = [ing?.globalIngredientName, ing?.globalIngredient?.name, ing?.Name, ingredientName]
       .map(norm).filter(Boolean)
     for (const c of candidates) for (const v of variants(c)) {
       const sev = severityMap[v]; if (sev) return sev
@@ -215,12 +228,13 @@ const RecipeDetailsPage = () => {
     ? (DIFFICULTY_MAP[difficultyRaw] ?? String(difficultyRaw))
     : difficultyRaw
 
-  const prepMin  = toMinutes(recipe?.prepTimeMinutes ?? recipe?.prepMinutes ?? recipe?.prepTime)
-  const cookMin  = toMinutes(recipe?.cookTimeMinutes ?? recipe?.cookMinutes ?? recipe?.cookTime)
-  const prep     = prepMin ? fmtMinutes(prepMin) : null
-  const cook     = cookMin ? fmtMinutes(cookMin) : null
+  const prepMin = toMinutes(recipe?.prepTimeMinutes ?? recipe?.prepMinutes ?? recipe?.prepTime)
+  const cookMin = toMinutes(recipe?.cookTimeMinutes ?? recipe?.cookMinutes ?? recipe?.cookTime)
+  const prep = prepMin ? fmtMinutes(prepMin) : null
+  const cook = cookMin ? fmtMinutes(cookMin) : null
   const totalFmt = (prepMin + cookMin) > 0 ? fmtMinutes(prepMin + cookMin) : null
-  const tags     = coerceTags(recipe, topLevelForTags)
+
+  const tags = coerceTags(recipe, topLevelForTags)
 
   const isOwner = useMemo(() => {
     if (!user?.username || !recipe?.authorUsername) return false
@@ -234,13 +248,20 @@ const RecipeDetailsPage = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
         method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
       })
-      if (res.status === 204 || (res.ok && res.status >= 200 && res.status < 300)) { window.location.assign('/feed'); return }
-      if (res.status === 401 || res.status === 403) { window.location.assign('/login'); return }
+      if (res.status === 204 || res.ok) {
+        window.location.assign('/feed'); return
+      }
+      if (res.status === 401 || res.status === 403) {
+        window.location.assign('/login'); return
+      }
       let msg = ''; try { msg = await res.text() } catch {}
-      throw new Error(`Delete failed (${res.status})${msg ? `: ${msg}` : ''}`)
-    } catch (e) { console.error('Delete error:', e); alert('Sorry, delete failed.') }
+      throw new Error(`Delete failed (${res.status}): ${msg}`)
+    } catch (e) {
+      console.error('Delete error:', e)
+      alert('Sorry, delete failed.')
+    }
   }
 
   /* ---------- Render ---------- */
@@ -257,113 +278,94 @@ const RecipeDetailsPage = () => {
     )
   }
   if (notFound) return <div className="px-4 sm:px-6 py-12"><p className="text-red-400 text-lg font-medium">Recipe not found.</p></div>
-  if (error)    return <div className="px-4 sm:px-6 py-12"><p className="text-red-400">{error}</p></div>
+  if (error) return <div className="px-4 sm:px-6 py-12"><p className="text-red-400">{error}</p></div>
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 text-platerly-text">
-      {/* HERO image */}
-      <div className="relative w-full aspect-[5/4] sm:aspect-[16/9] lg:aspect-[21/9] min-h-[220px] rounded-[22px] overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.45)] ring-1 ring-platerly-border bg-platerly-light">
+
+      {/* HERO */}
+      <div className="relative w-full aspect-[5/4] sm:aspect-[16/9] lg:aspect-[21/9]
+                      min-h-[220px] rounded-[22px] overflow-hidden
+                      shadow-[0_25px_80px_rgba(0,0,0,0.45)]
+                      ring-1 ring-platerly-border bg-platerly-light">
         {recipe?.imageUrl ? (
           <img
             src={recipe.imageUrl}
             alt={recipe.title || 'Recipe image'}
-            className="w-full h-full object-cover [image-rendering:auto]"
+            className="w-full h-full object-cover"
             fetchPriority="high"
             decoding="async"
             loading="eager"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 900px"
           />
-        ) : (
-          <div className="w-full h-full bg-platerly-card" />
-        )}
+        ) : <div className="w-full h-full bg-platerly-card" />}
 
-        {/* gradient + inset ring */}
+        {/* gradient overlays */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
           <div className="absolute inset-0 ring-1 ring-inset ring-white/5" />
         </div>
 
-        {/* Kebab (top-right) */}
+        {/* kebab */}
         <div ref={menuRef} className="absolute top-2 sm:top-3 right-2 sm:right-3 z-40">
           <button
             onClick={() => setMenuOpen(v => !v)}
-            className="p-2 rounded-full bg-black/60 hover:bg-black/75 border border-white/10 text-white shadow focus:outline-none focus:ring-2 focus:ring-platerly-accent/40"
-            aria-label="Actions"
-          >
+            className="p-2 rounded-full bg-black/60 hover:bg-black/75 border border-white/10 text-white shadow">
             <MoreVertical className="w-5 h-5" />
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 mt-2 w-44 rounded-xl bg-platerly-card border border-platerly-border shadow-xl overflow-hidden backdrop-blur">
+            <div className="absolute right-0 mt-2 w-44 rounded-xl bg-platerly-card border border-platerly-border shadow-xl overflow-hidden">
               {isOwner && (
                 <>
-                  <button onClick={goEdit} className="w-full text-left px-3 py-2 text-sm hover:bg-white/5 flex items-center gap-2">
+                  <button onClick={goEdit} className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/5">
                     <Pencil className="w-4 h-4" /> Edit
                   </button>
                   <button
                     onClick={() => { setMenuOpen(false); setConfirmOpen(true) }}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-white/5 text-red-300 flex items-center gap-2"
-                  >
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-300 hover:bg-white/5">
                     <Trash2 className="w-4 h-4" /> Delete
                   </button>
                   <div className="h-px bg-platerly-border" />
                 </>
               )}
-              <button onClick={goRemix} className="w-full text-left px-3 py-2 text-sm hover:bg-white/5 flex items-center gap-2">
+              <button onClick={goRemix} className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/5">
                 <RefreshCw className="w-4 h-4" /> Remix
               </button>
             </div>
           )}
         </div>
 
-        {/* DESKTOP/TABLET overlay (md+): pills + Save inline and anchored at bottom */}
+        {/* DESKTOP/TABLET meta */}
         <div className="hidden md:block absolute inset-x-0 bottom-0 p-6">
-          <div className="flex items-end justify-between">
-            <div>
-              <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-white drop-shadow-sm">
-                {recipe?.title || 'Untitled recipe'}
-              </h1>
-              <div className="mt-1 text-sm text-platerly-muted">
-                {recipe?.authorUsername ? (
-                  <Link to={`/profile/${recipe.authorUsername}`} className="hover:text-platerly-accent hover:underline transition-colors">
-                    @{recipe.authorUsername}
-                  </Link>
-                ) : '—'}
-                {recipe?.createdAt && (
-                  <>
-                    <span className="mx-2 opacity-60">•</span>
-                    <span>{new Date(recipe.createdAt).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' })}</span>
-                  </>
-                )}
-              </div>
-            </div>
+          <h1 className="text-3xl lg:text-4xl font-extrabold text-white drop-shadow-sm">
+            {recipe?.title || 'Untitled recipe'}
+          </h1>
+          <div className="mt-1 text-sm text-platerly-muted">
+            {recipe?.authorUsername ? (
+              <Link to={`/profile/${recipe.authorUsername}`} className="hover:text-platerly-accent hover:underline">
+                @{recipe.authorUsername}
+              </Link>
+            ) : '—'}
+
+            {recipe?.createdAt && (
+              <>
+                <span className="mx-2 opacity-60">•</span>
+                <span>{new Date(recipe.createdAt).toLocaleDateString(undefined, {year:'numeric',month:'short',day:'numeric'})}</span>
+              </>
+            )}
           </div>
 
-          <div className="mt-3 flex items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              {difficulty && <span className={PILL_SUCCESS}><span className="font-semibold">Difficulty:</span> {difficulty}</span>}
-              {(prep || cook) && <span className={PILL_NEUTRAL}><Clock className="w-4 h-4" /> {prep && `${prep} prep`}{prep && cook ? ', ' : ''}{cook && `${cook} cook`}</span>}
-              {totalFmt && <span className={PILL_NEUTRAL}><Clock className="w-4 h-4" /> Total: {totalFmt}</span>}
-              {remixMeta?.isRemix && (
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/35 backdrop-blur px-3 py-1 text-xs text-white">
-                  <span className="opacity-80">Lineage</span>
-                  <span className="opacity-50">•</span>
-                  {remixMeta.parentRecipeId
-                    ? <Link to={`/recipe/${remixMeta.parentRecipeId}`} className="underline hover:no-underline">source</Link>
-                    : <span className="opacity-60">source</span>}
-                  <span className="opacity-50">·</span>
-                  {remixMeta.originalRecipeId
-                    ? <Link to={`/recipe/${remixMeta.originalRecipeId}`} className="underline hover:no-underline">origin</Link>
-                    : <span className="opacity-60">origin</span>}
-                </span>
-              )}
-            </div>
+          <div className="mt-3 flex items-center gap-2">
+            {difficulty && <span className={PILL_SUCCESS}><span className="font-semibold">Difficulty:</span> {difficulty}</span>}
+            {(prep || cook) && (
+              <span className={PILL_NEUTRAL}><Clock className="w-4 h-4" /> {prep && `${prep} prep`}{prep && cook ? ', ' : ''}{cook && `${cook} cook`}</span>
+            )}
+            {totalFmt && <span className={PILL_NEUTRAL}><Clock className="w-4 h-4" /> Total: {totalFmt}</span>}
 
             {token && (
               <button
                 onClick={() => setSaveOpen(v => !v)}
-                className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-platerly-accent text-black px-3 py-1.5 text-sm font-medium hover:brightness-110 shadow focus:outline-none focus:ring-2 focus:ring-black/30"
-              >
+                className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-platerly-accent text-black px-3 py-1.5 text-sm hover:brightness-110 shadow">
                 <BookmarkPlus className="w-4 h-4" /> Save
               </button>
             )}
@@ -371,53 +373,34 @@ const RecipeDetailsPage = () => {
         </div>
       </div>
 
-      {/* MOBILE header card: pills row that wraps; Save sits in the SAME row and flows with it */}
-      <Card className="mt-3 px-4 py-3 sm:px-5 sm:py-4 md:hidden">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="text-xl font-extrabold tracking-tight text-platerly-text break-words">
-              {recipe?.title || 'Untitled recipe'}
-            </h1>
-            <div className="mt-1 text-xs text-platerly-muted">
-              {recipe?.authorUsername ? (
-                <Link to={`/profile/${recipe.authorUsername}`} className="hover:text-platerly-accent hover:underline">
-                  @{recipe.authorUsername}
-                </Link>
-              ) : '—'}
-              {recipe?.createdAt && (
-                <>
-                  <span className="mx-2 opacity-60">•</span>
-                  <span>{new Date(recipe.createdAt).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' })}</span>
-                </>
-              )}
-            </div>
-          </div>
+      {/* MOBILE header */}
+      <Card className="mt-3 px-4 py-3 md:hidden">
+        <h1 className="text-xl font-extrabold">{recipe?.title || 'Untitled recipe'}</h1>
+
+        <div className="mt-1 text-xs text-platerly-muted">
+          {recipe?.authorUsername ? (
+            <Link to={`/profile/${recipe.authorUsername}`} className="hover:text-platerly-accent hover:underline">
+              @{recipe.authorUsername}
+            </Link>
+          ) : '—'}
+
+          {recipe?.createdAt && (
+            <>
+              <span className="mx-2 opacity-60">•</span>
+              <span>{new Date(recipe.createdAt).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})}</span>
+            </>
+          )}
         </div>
 
-        {/* The Save button is part of this wrapping row; ml-auto pushes it to the right when space allows */}
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {difficulty && <span className={PILL_SUCCESS}><span className="font-semibold">Difficulty:</span> {difficulty}</span>}
           {(prep || cook) && <span className={PILL_NEUTRAL}><Clock className="w-4 h-4" /> {prep && `${prep} prep`}{prep && cook ? ', ' : ''}{cook && `${cook} cook`}</span>}
           {totalFmt && <span className={PILL_NEUTRAL}><Clock className="w-4 h-4" /> Total: {totalFmt}</span>}
-          {remixMeta?.isRemix && (
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs">
-              <span className="opacity-80">Lineage</span>
-              <span className="opacity-50">•</span>
-              {remixMeta.parentRecipeId
-                ? <Link to={`/recipe/${remixMeta.parentRecipeId}`} className="underline hover:no-underline">source</Link>
-                : <span className="opacity-60">source</span>}
-              <span className="opacity-50">·</span>
-              {remixMeta.originalRecipeId
-                ? <Link to={`/recipe/${remixMeta.originalRecipeId}`} className="underline hover:no-underline">origin</Link>
-                : <span className="opacity-60">origin</span>}
-            </span>
-          )}
 
           {token && (
             <button
               onClick={() => setSaveOpen(v => !v)}
-              className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-platerly-accent text-black px-3 py-1.5 text-sm font-medium hover:brightness-110 shadow focus:outline-none focus:ring-2 focus:ring-black/30"
-            >
+              className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-platerly-accent text-black px-3 py-1.5 text-sm hover:brightness-110 shadow">
               <BookmarkPlus className="w-4 h-4" /> Save
             </button>
           )}
@@ -441,11 +424,11 @@ const RecipeDetailsPage = () => {
         </div>
       )}
 
-      {/* Allergy alert */}
+      {/* Allergy Alert */}
       {token && hasAnyAllergen && (
         <Card className="mt-6 border-red-500/60">
           <div className="px-5 py-3 flex items-start gap-3">
-            <div className="shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-full bg-red-500/20 ring-1 ring-red-500/40">
+            <div className="shrink-0 h-7 w-7 flex items-center justify-center rounded-full bg-red-500/20 ring-1 ring-red-500/40">
               <AlertTriangle className="w-4 h-4 text-red-200" />
             </div>
             <div>
@@ -459,17 +442,17 @@ const RecipeDetailsPage = () => {
       )}
 
       {/* Sections */}
-      <div className="space-y-5 mt-8 sm:mt-10">
+      <div className="space-y-5 mt-8">
         <Section icon={Globe} title="Region">
           <div className="text-platerly-muted">{recipe?.region || '—'}</div>
         </Section>
 
         <Section icon={BookOpenText} title="Description">
-          <div className="leading-relaxed text-platerly-text/95">{recipe?.description || 'No description provided.'}</div>
+          <div className="text-platerly-text/95 whitespace-pre-line">{recipe?.description || 'No description provided.'}</div>
         </Section>
 
         <Section icon={ListChecks} title="Instructions">
-          <div className="leading-relaxed whitespace-pre-line text-platerly-text/95">{recipe?.instructions || 'No instructions provided.'}</div>
+          <div className="text-platerly-text/95 whitespace-pre-line">{recipe?.instructions || 'No instructions provided.'}</div>
         </Section>
 
         <Section icon={TagIcon} title="Ingredients">
@@ -478,15 +461,17 @@ const RecipeDetailsPage = () => {
               const sev = lookupSeverity(ing?.name, ing)
               const visual = sev || 'safe'
               const cls =
-                visual === 'high'   ? SEVERITY_CLASS.high   :
+                visual === 'high'   ? SEVERITY_CLASS.high :
                 visual === 'medium' ? SEVERITY_CLASS.medium :
-                visual === 'low'    ? SEVERITY_CLASS.low    :
-                                       SEVERITY_CLASS.safe
+                visual === 'low'    ? SEVERITY_CLASS.low :
+                                      SEVERITY_CLASS.safe
+
               return (
                 <span
                   key={i}
-                  className={`px-3 py-1.5 rounded-full text-sm border ${cls} shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]`}
-                  title={sev ? `Severity: ${sev}` : undefined}>
+                  className={`px-3 py-1.5 rounded-full text-sm border ${cls}`}
+                  title={sev ? `Severity: ${sev}` : undefined}
+                >
                   {(visual === 'high' || visual === 'medium') && <span className="mr-1">⚠</span>}
                   {ing.quantity && <span className={`${qtyTint(visual)} font-semibold mr-1`}>{ing.quantity}</span>}
                   <span>{ing.name}</span>
@@ -512,7 +497,7 @@ const RecipeDetailsPage = () => {
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Write a comment…"
-                className="w-full bg-platerly-card border border-platerly-border text-platerly-text rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-platerly-accent/40"
+                className="w-full bg-platerly-card border border-platerly-border text-platerly-text rounded-lg p-3"
               />
               <button
                 onClick={async () => {
@@ -525,22 +510,24 @@ const RecipeDetailsPage = () => {
                     })
                     if (!res.ok) throw new Error('Failed to post comment')
                     setNewComment('')
-                    const refreshed = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+                    const refreshed = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
+                      headers: token ? { Authorization: `Bearer ${token}` } : {}
+                    })
                     const updated = await refreshed.json()
                     setComments(Array.isArray(updated) ? updated : [])
                   } catch (err) { console.error(err) }
                 }}
-                className="px-5 py-2 bg-platerly-accent text-black rounded-lg font-medium transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-platerly-accent/40">
+                className="px-5 py-2 bg-platerly-accent text-black rounded-lg font-medium hover:brightness-110">
                 Post Comment
               </button>
             </div>
 
             {comments.length > 0 && (
               <div className="mt-6 space-y-3">
-                {comments.map((comment) => (
+                {comments.map(comment => (
                   <div key={comment.id} className="rounded-xl border border-platerly-border bg-white/5 p-3">
                     <div className="flex justify-between items-center text-sm text-platerly-muted mb-1.5">
-                      <Link to={`/profile/${comment.username}`} className="font-medium hover:text-platerly-accent transition-colors">
+                      <Link to={`/profile/${comment.username}`} className="font-medium hover:text-platerly-accent">
                         @{comment.username}
                       </Link>
                       <span>{new Date(comment.createdAt).toLocaleString()}</span>
@@ -564,8 +551,9 @@ const RecipeDetailsPage = () => {
         onConfirm={async () => { setConfirmOpen(false); await doDelete() }}
         danger
       />
+
     </div>
   )
 }
 
-export default RecipeDetailsPage 
+export default RecipeDetailsPage

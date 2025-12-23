@@ -173,14 +173,11 @@ const Feed = () => {
     return list
   }, [tab, recipes, hideRemixes, difficulty, tags, requireAllTags, hideMyAllergens])
 
-  // Main effect: wait for auth rehydration; re-run when token/authed change
+  // Main effect
   useEffect(() => {
     let cancelled = false
-
     const init = async () => {
-      // Wait until AuthContext has finished loading (rehydration from storage/refresh)
       if (authLoading) return
-
       if (!cancelled) {
         if (token) {
           await Promise.all([fetchUserAllergies(), fetchCurrentUserId()])
@@ -191,10 +188,8 @@ const Feed = () => {
         await fetchFeed()
       }
     }
-
     init()
     return () => { cancelled = true }
-    // include token/authed/authLoading so first page load picks up auth state
   }, [
     tab,
     difficulty,

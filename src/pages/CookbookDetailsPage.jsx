@@ -1,7 +1,7 @@
 // src/pages/CookbookDetailsPage.jsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { Info } from "lucide-react";
+import { Info, GripVertical } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/fetchWithAuth";
 import { API_BASE_URL } from "../utils/api";
@@ -22,6 +22,14 @@ const getErrorText = (err, fallback = "Something went wrong.") => {
 };
 
 const isGuid = (q) => /^[0-9a-fA-F-]{36}$/.test(q || "");
+
+const moveIndex = (arr, from, to) => {
+  if (from === to) return arr;
+  const a = [...arr];
+  const item = a.splice(from, 1)[0];
+  a.splice(to, 0, item);
+  return a;
+};
 
 /* ---------------- Small UI bits ---------------- */
 const Chip = ({ children, tone = "neutral" }) => {
@@ -60,14 +68,14 @@ const CookbookDetailsPage = () => {
   const [cookbook, setCookbook] = useState(null);
   const [contributors, setContributors] = useState([]); // null => hide panel (non-owner / forbidden)
 
-  // --- Add contributor input + suggestions ---
-  const [lookup, setLookup] = useState(""); // username or userId
-  const [suggestions, setSuggestions] = useState([]); // [{id, username, displayName, avatarUrl}, ...]
+  // contributor search state
+  const [lookup, setLookup] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
   const [sOpen, setSOpen] = useState(false);
   const [sLoading, setSLoading] = useState(false);
   const [sError, setSError] = useState("");
-  const [sIndex, setSIndex] = useState(-1); // keyboard highlight
-  const selectedUserIdRef = useRef(null); // if user picked from list
+  const [sIndex, setSIndex] = useState(-1);
+  const selectedUserIdRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -75,10 +83,17 @@ const CookbookDetailsPage = () => {
   const [error, setError] = useState("");
   const [inlineMsg, setInlineMsg] = useState("");
 
+  // reorder state (grid, drag & drop)
+  const [recipes, setRecipes] = useState([]); // normalized from cookbook.items
+  const [dragIndex, setDragIndex] = useState(-1);
+  const [orderDirty, setOrderDirty] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const autosaveTimer = useRef(null);
+
   const fileInputRef = useRef(null);
   const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
 
-  const formWrapRef = useRef(null); // for click-outside on suggestions
+  const formWrapRef = useRef(null);
   const debounceRef = useRef(null);
 
   /* --------- API calls ---------- */
@@ -137,9 +152,7 @@ const CookbookDetailsPage = () => {
     setSError("");
     try {
       const res = await apiFetch(
-        `${API_BASE_URL}/api/User/search?q=${encodeURIComponent(
-          q.trim()
-        )}`,
+        `${API_BASE_URL}/api/User/search?q=${encodeURIComponent(q.trim())}`,
         {
           headers: authHeaders,
           signal,
@@ -148,7 +161,6 @@ const CookbookDetailsPage = () => {
       if (!res.ok) throw new Error(`Search failed (${res.status})`);
       const list = await res.json();
 
-      // Normalize fields we may have: id, username, displayName, avatarUrl
       let norm = (Array.isArray(list) ? list : []).map((u) => ({
         id: u.id,
         username: u.username || u.userName || "",
@@ -156,7 +168,6 @@ const CookbookDetailsPage = () => {
         avatarUrl: u.avatarUrl || u.profileImageUrl || "",
       }));
 
-      // filter out self + already-contributors
       const existingIds = new Set(
         (Array.isArray(contributors) ? contributors : []).map((c) => c.userId)
       );
@@ -227,9 +238,7 @@ const CookbookDetailsPage = () => {
         try {
           const text = await res.text();
           if (text) msg = text;
-        } catch {
-          // ignore, fall back to default msg
-        }
+        } catch {}
       }
       throw new Error(msg);
     }
@@ -247,8 +256,18 @@ const CookbookDetailsPage = () => {
 
     (async () => {
       try {
-        await fetchCookbook(signal);
+        const data = await fetchCookbook(signal);
         await fetchContributors(signal);
+
+        // normalize items for reorder list
+        const normalized = (data?.items || []).map((r) => ({
+          id: r.recipeId ?? r.id,
+          title: r.title,
+          imageUrl: r.imageUrl,
+          description: r.description,
+        }));
+        setRecipes(normalized);
+        setOrderDirty(false);
       } catch (e) {
         if (e?.name === "AbortError" || e?.name === "CanceledError") return;
         console.error("Cookbook load error:", e);
@@ -299,14 +318,11 @@ const CookbookDetailsPage = () => {
     try {
       const form = new FormData();
       form.append("file", file);
-      const res = await apiFetch(
-        `${API_BASE_URL}/api/Cookbook/${id}/cover`,
-        {
-          method: "PUT",
-          headers: authHeaders,
-          body: form,
-        }
-      );
+      const res = await apiFetch(`${API_BASE_URL}/api/Cookbook/${id}/cover`, {
+        method: "PUT",
+        headers: authHeaders,
+        body: form,
+      });
       if (!res.ok) {
         throw new Error(
           res.status === 403
@@ -345,7 +361,6 @@ const CookbookDetailsPage = () => {
 
       await addContributorById(userId);
 
-      // cleanup and refresh
       selectedUserIdRef.current = null;
       setLookup("");
       setSuggestions([]);
@@ -383,6 +398,87 @@ const CookbookDetailsPage = () => {
       );
       return next;
     });
+    setRecipes((prev) => {
+      const n = (prev || []).filter((x) => x.id !== recipeId);
+      setOrderDirty(true);
+      scheduleAutoSave(n);
+      return n;
+    });
+  };
+
+  /* --------- Drag & Drop ---------- */
+  const isOwner = useMemo(() => Array.isArray(contributors), [contributors]);
+
+  const onDragStart = (idx) => () => {
+    setDragIndex(idx);
+  };
+
+  const onDragOver = (e, overIdx) => {
+    e.preventDefault(); // allow drop
+    if (dragIndex === -1 || overIdx === dragIndex) return;
+    setRecipes((prev) => moveIndex(prev, dragIndex, overIdx));
+    setDragIndex(overIdx);
+    setOrderDirty(true);
+  };
+
+  const onDragEnd = () => {
+    setDragIndex(-1);
+    if (orderDirty) scheduleAutoSave();
+  };
+
+  const scheduleAutoSave = (overrideList) => {
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    autosaveTimer.current = setTimeout(() => {
+      saveOrder(overrideList);
+    }, 700); // debounce
+  };
+
+  const saveOrder = async (overrideList) => {
+    if (savingOrder || !isOwner) return;
+    const list = overrideList || recipes;
+    if (!list || list.length < 1) return;
+
+    setSavingOrder(true);
+    try {
+      // ✅ Match backend signature: PUT /recipes/order with { items: [{recipeId, sortOrder}] }
+      const items = list.map((r, i) => ({ recipeId: r.id, sortOrder: i }));
+
+      const res = await apiFetch(
+        `${API_BASE_URL}/api/Cookbook/${id}/recipes/order`,
+        {
+          method: "PUT",
+          headers: { ...authHeaders, "Content-Type": "application/json" },
+          body: JSON.stringify({ items }),
+        }
+      );
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(txt || `Failed to save order (${res.status})`);
+      }
+
+      // reflect new order into cookbook.items
+      setCookbook((prev) => {
+        if (!prev?.items) return prev;
+        const byId = new Map(prev.items.map((it) => [String(it.recipeId ?? it.id), it]));
+        const reordered = list
+          .map((r, i) => {
+            const it = byId.get(String(r.id));
+            return it ? { ...it, sortOrder: i } : null;
+          })
+          .filter(Boolean);
+        return { ...prev, items: reordered };
+      });
+
+      setOrderDirty(false);
+      setInlineMsg("Order saved.");
+      setTimeout(() => setInlineMsg(""), 2000);
+    } catch (err) {
+      setInlineMsg(getErrorText(err, "Failed to save order."));
+      console.error(err);
+      setTimeout(() => setInlineMsg(""), 3000);
+    } finally {
+      setSavingOrder(false);
+    }
   };
 
   /* --------- Render ---------- */
@@ -413,7 +509,6 @@ const CookbookDetailsPage = () => {
     );
 
   const items = cookbook.items || [];
-  const isOwner = Array.isArray(contributors);
 
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 text-white">
@@ -459,8 +554,9 @@ const CookbookDetailsPage = () => {
             </div>
           </div>
 
+          {/* Owner actions */}
           {isOwner && (
-            <div className="flex gap-2 sm:ml-auto">
+            <div className="flex flex-wrap gap-2 sm:ml-auto">
               <button
                 onClick={onPickCover}
                 disabled={uploading}
@@ -522,10 +618,7 @@ const CookbookDetailsPage = () => {
                         setInlineMsg("Contributor removed.");
                       } catch (err) {
                         setInlineMsg(
-                          getErrorText(
-                            err,
-                            "Failed to remove contributor."
-                          )
+                          getErrorText(err, "Failed to remove contributor.")
                         );
                       } finally {
                         setTimeout(() => setInlineMsg(""), 2500);
@@ -634,7 +727,7 @@ const CookbookDetailsPage = () => {
                       key={u.id}
                       role="option"
                       aria-selected={i === sIndex}
-                      onMouseDown={(e) => e.preventDefault()} // keep focus in input
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => onPickSuggestion(u)}
                       className={[
                         "flex items-center justify-between gap-3 px-3 py-2 cursor-pointer",
@@ -680,10 +773,7 @@ const CookbookDetailsPage = () => {
                             setTimeout(() => setInlineMsg(""), 2000);
                           } catch (err) {
                             setInlineMsg(
-                              getErrorText(
-                                err,
-                                "Failed to add contributor."
-                              )
+                              getErrorText(err, "Failed to add contributor.")
                             );
                             setTimeout(() => setInlineMsg(""), 2500);
                           }
@@ -700,33 +790,60 @@ const CookbookDetailsPage = () => {
         </Section>
       )}
 
-      {/* Recipes grid */}
+      {/* Recipes grid with Drag & Drop (owner-only handles) */}
       <Section
-        title={`Recipes (${items.length})`}
+        title={`Recipes (${recipes.length})`}
         right={
-          items.length > 0 ? (
-            <div className="text-xs text-neutral-400" />
+          isOwner ? (
+            <div className="text-xs text-neutral-400">
+              {savingOrder
+                ? "Saving…"
+                : orderDirty
+                ? "Reordered – saving shortly"
+                : "Drag the handle to reorder"}
+            </div>
           ) : null
         }
       >
-        {items.length === 0 ? (
-          <p className="text-neutral-400">
-            No recipes saved in this cookbook yet.
-          </p>
+        {recipes.length === 0 ? (
+          <p className="text-neutral-400">No recipes saved in this cookbook yet.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {items.map((r) => (
-              <CookbookRecipeCard
-                key={r.recipeId ?? r.id}
-                recipe={{
-                  id: r.recipeId ?? r.id,
-                  title: r.title,
-                  description: r.description,
-                  imageUrl: r.imageUrl,
-                }}
-                cookbookId={cookbook.id}
-                onRemove={handleRecipeRemove}
-              />
+            {recipes.map((r, idx) => (
+              <div
+                key={r.id}
+                className={[
+                  "group relative rounded-2xl border border-neutral-800 bg-neutral-900 overflow-hidden transition",
+                  dragIndex === idx ? "opacity-80 ring-2 ring-emerald-400/40" : "",
+                ].join(" ")}
+                draggable={isOwner}
+                onDragStart={isOwner ? onDragStart(idx) : undefined}
+                onDragOver={isOwner ? (e) => onDragOver(e, idx) : undefined}
+                onDragEnd={isOwner ? onDragEnd : undefined}
+              >
+                {/* Drag handle (owner only) */}
+                {isOwner && (
+                  <div
+                    className="absolute top-2 left-2 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-neutral-700 bg-neutral-900/90 backdrop-blur text-xs text-neutral-300 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition"
+                    title="Drag to reorder"
+                  >
+                    <GripVertical className="w-4 h-4" />
+                    #{idx + 1}
+                  </div>
+                )}
+
+                {/* Use your existing card inside for consistent visuals */}
+                <CookbookRecipeCard
+                  recipe={{
+                    id: r.id,
+                    title: r.title,
+                    description: r.description,
+                    imageUrl: r.imageUrl,
+                  }}
+                  cookbookId={cookbook.id}
+                  onRemove={handleRecipeRemove}
+                />
+              </div>
             ))}
           </div>
         )}
