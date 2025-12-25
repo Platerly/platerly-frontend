@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import RecipeCard from '../components/ui/RecipeCard'
-import { API_BASE_URL } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
 import { useApi } from '../utils/fetchWithAuth'
 
@@ -23,7 +22,7 @@ const Feed = () => {
 
   const [sp, setSp] = useSearchParams()
   const navigate = useNavigate()
-  const { authed, token, loading: authLoading, user } = useAuth()
+  const { authed, token, loading: authLoading } = useAuth()
   const { apiFetch } = useApi()
 
   // Tabs
@@ -38,9 +37,7 @@ const Feed = () => {
 
   const tags = useMemo(() => {
     if (!tagsQs) return []
-    return Array.from(new Set(
-      tagsQs.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
-    ))
+    return Array.from(new Set(tagsQs.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)))
   }, [tagsQs])
 
   const updateParams = (updates) => {
@@ -118,7 +115,8 @@ const Feed = () => {
   const variants = (s) => {
     const x = norm(s); if (!x) return []
     const out = new Set([x])
-    if (x.endsWith('s')) out.add(x.slice(0, -1)); else out.add(`${x}s`)
+    if (x.endsWith('s')) out.add(x.slice(0, -1))
+    else out.add(`${x}s`)
     return Array.from(out)
   }
   const isSevere = (s) => {
@@ -159,6 +157,7 @@ const Feed = () => {
     let list = recipes
     if (hideRemixes) list = list.filter(r => !r.isRemix)
     if (difficulty) list = list.filter(r => (r.difficulty || '').toLowerCase() === difficulty.toLowerCase())
+
     if (tags.length > 0) {
       list = list.filter(r => {
         const recipeTags = Array.isArray(r.tags) ? r.tags.map(t => (t || '').toLowerCase()) : []
@@ -167,9 +166,11 @@ const Feed = () => {
           : tags.some(t => recipeTags.some(rt => rt.includes(t)))
       })
     }
+
     if (hideMyAllergens) {
       list = list.filter(r => !hasSevereAllergen(r))
     }
+
     return list
   }, [tab, recipes, hideRemixes, difficulty, tags, requireAllTags, hideMyAllergens])
 
@@ -178,16 +179,18 @@ const Feed = () => {
     let cancelled = false
     const init = async () => {
       if (authLoading) return
-      if (!cancelled) {
-        if (token) {
-          await Promise.all([fetchUserAllergies(), fetchCurrentUserId()])
-        } else {
-          setUserAllergies([])
-          setCurrentUserId(null)
-        }
-        await fetchFeed()
+      if (cancelled) return
+
+      if (token) {
+        await Promise.all([fetchUserAllergies(), fetchCurrentUserId()])
+      } else {
+        setUserAllergies([])
+        setCurrentUserId(null)
       }
+
+      await fetchFeed()
     }
+
     init()
     return () => { cancelled = true }
   }, [
@@ -259,33 +262,42 @@ const Feed = () => {
           </div>
         )}
 
-        {!loading && !authLoading && !error && renderList.map((recipe) => (
-          <RecipeCard
-            key={`${recipe.recipeId}-${recipe.type || 'original'}`}
-            id={recipe.recipeId}
-            author={recipe.authorUsername}
-            title={recipe.title}
-            description={recipe.description}
-            imageUrl={recipe.imageUrl}
-            likes={recipe.likes}
-            isLiked={recipe.isLikedByCurrentUser}
-            reposts={recipe.repostCount}
-            isRepostedByCurrentUser={recipe.isRepostedByCurrentUser}
-            ingredients={recipe.ingredients}
-            ingredientNames={recipe.ingredientNames}
-            allergenMatches={recipe.allergenMatches}
-            matchedAllergenTerms={recipe.matchedAllergenTerms}
-            userAllergies={userAllergies}
-            allergenSeverity={recipe.matchedAllergenSeverity}
-            userId={recipe.postedBy?.userId}
-            isFollowing={recipe.isFollowing}
-            currentUserId={currentUserId}
-            prepTime={recipe.prepTimeMinutes}
-            cookTime={recipe.cookTimeMinutes}
-            difficulty={recipe.difficulty}
-            tags={recipe.tags}
-          />
-        ))}
+        {!loading && !authLoading && !error && renderList.map((recipe) => {
+          const rid = recipe?.recipeId ?? recipe?.id
+          if (!rid) {
+            // If this ever happens, your API is returning an unexpected shape.
+            // We skip rendering to avoid React key collisions.
+            return null
+          }
+
+          return (
+            <RecipeCard
+              key={`${rid}-${recipe.type || 'original'}`}
+              id={rid}
+              author={recipe.authorUsername}
+              title={recipe.title}
+              description={recipe.description}
+              imageUrl={recipe.imageUrl}
+              likes={recipe.likes}
+              isLiked={recipe.isLikedByCurrentUser}
+              reposts={recipe.repostCount}
+              isRepostedByCurrentUser={recipe.isRepostedByCurrentUser}
+              ingredients={recipe.ingredients}
+              ingredientNames={recipe.ingredientNames}
+              allergenMatches={recipe.allergenMatches}
+              matchedAllergenTerms={recipe.matchedAllergenTerms}
+              userAllergies={userAllergies}
+              allergenSeverity={recipe.matchedAllergenSeverity}
+              userId={recipe.postedBy?.userId}
+              isFollowing={recipe.isFollowing}
+              currentUserId={currentUserId}
+              prepTime={recipe.prepTimeMinutes}
+              cookTime={recipe.cookTimeMinutes}
+              difficulty={recipe.difficulty}
+              tags={recipe.tags}
+            />
+          )
+        })}
       </div>
     </div>
   )

@@ -36,10 +36,10 @@ const norm = (s) => String(s || '').toLowerCase().trim().replace(/\s+/g, ' ')
 const variants = (s) => {
   const x = norm(s); if (!x) return []
   const out = new Set([x])
-  x.endsWith('s') ? out.add(x.slice(0,-1)) : out.add(`${x}s`)
+  x.endsWith('s') ? out.add(x.slice(0, -1)) : out.add(`${x}s`)
   return [...out]
 }
-const isSevere = (s) => ['high','medium'].includes(String(s||'').toLowerCase())
+const isSevere = (s) => ['high', 'medium'].includes(String(s || '').toLowerCase())
 
 function coerceTags(recipeObj, topLevel) {
   const arr =
@@ -56,16 +56,16 @@ function coerceTags(recipeObj, topLevel) {
 }
 
 const fmtMinutes = (m) => {
-  if (m==null) return null
-  const h=Math.floor(m/60), mm=m%60
-  if(h&&mm) return `${h} hr ${mm} min`
-  if(h) return `${h} hr`
+  if (m == null) return null
+  const h = Math.floor(m / 60), mm = m % 60
+  if (h && mm) return `${h} hr ${mm} min`
+  if (h) return `${h} hr`
   return `${mm} min`
 }
 const toMinutes = (v) => {
   if (typeof v === 'number' && !Number.isNaN(v)) return v
-  const n=parseInt(String(v??0),10)
-  return Number.isNaN(n)?0:n
+  const n = parseInt(String(v ?? 0), 10)
+  return Number.isNaN(n) ? 0 : n
 }
 
 /* ---------- Premium shells ---------- */
@@ -86,7 +86,7 @@ const Section = ({ icon: Icon, title, children }) => (
 )
 
 /* ---------- Confirm modal ---------- */
-function ConfirmModal({ open, title='Are you sure?', description, confirmText='Confirm', cancelText='Cancel', onConfirm, onCancel, danger }) {
+function ConfirmModal({ open, title = 'Are you sure?', description, confirmText = 'Confirm', cancelText = 'Cancel', onConfirm, onCancel, danger }) {
   if (!open) return null
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
@@ -103,9 +103,8 @@ function ConfirmModal({ open, title='Are you sure?', description, confirmText='C
             </button>
             <button
               onClick={onConfirm}
-              className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-platerly-accent/40 ${
-                danger ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-platerly-accent text-black hover:brightness-110'
-              }`}>
+              className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-platerly-accent/40 ${danger ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-platerly-accent text-black hover:brightness-110'
+                }`}>
               {confirmText}
             </button>
           </div>
@@ -129,6 +128,9 @@ const RecipeDetailsPage = () => {
   const [notFound, setNotFound] = useState(false)
   const [error, setError] = useState('')
   const [severityMap, setSeverityMap] = useState({})
+  const [allergenHits, setAllergenHits] = useState([])
+  const [hitsLoading, setHitsLoading] = useState(false)
+
   const [menuOpen, setMenuOpen] = useState(false)
   const [saveOpen, setSaveOpen] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -144,13 +146,14 @@ const RecipeDetailsPage = () => {
     return () => { document.removeEventListener('click', onDocClick); window.removeEventListener('keydown', onEsc) }
   }, [])
 
-  /* ---------- Load recipe ALWAYS with medium severity ---------- */
+  /* ---------- Load recipe (kept for core page data) ---------- */
   const loadRecipe = async (signal) => {
     setRecipe(null); setRemixMeta(null); setTopLevelForTags(null)
     setSeverityMap({}); setLoading(true); setNotFound(false); setError('')
     const auth = token ? { Authorization: `Bearer ${token}` } : {}
 
     try {
+      // NOTE: keep this if your API still supports it; highlighting no longer relies on it
       const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}?allergyMin=medium`, { headers: auth, signal })
       if (res.status === 404) { setNotFound(true); setLoading(false); return }
       if (!res.ok) throw new Error(`Failed to fetch recipe (${res.status})`)
@@ -161,6 +164,7 @@ const RecipeDetailsPage = () => {
       setRecipe(core)
       setRemixMeta(data.remixMeta ?? null)
 
+      // legacy map (optional fallback)
       const sevMap = core?.matchedAllergenSeverity || {}
       const normalized = {}
       Object.entries(sevMap).forEach(([k, v]) => {
@@ -178,24 +182,68 @@ const RecipeDetailsPage = () => {
     }
   }
 
+  /* ---------- NEW: load hits for highlighting ---------- */
+  const loadAllergenHits = async (signal) => {
+    if (!token) { setAllergenHits([]); return }
+
+    try {
+      setHitsLoading(true)
+      const res = await fetch(`${API_BASE_URL}/api/Allergy/hits?recipeId=${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal,
+      })
+      if (!res.ok) {
+        setAllergenHits([])
+        return
+      }
+      const data = await res.json()
+      setAllergenHits(Array.isArray(data) ? data : [])
+    } catch (e) {
+      if (!signal || !signal.aborted) {
+        console.error(e)
+        setAllergenHits([])
+      }
+    } finally {
+      setHitsLoading(false)
+    }
+  }
+
   /* ---------- Load on mount ---------- */
   useEffect(() => {
     const ctl = new AbortController()
     loadRecipe(ctl.signal)
+    loadAllergenHits(ctl.signal)
 
-    ;(async () => {
+    ; (async () => {
       try {
         const r = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         })
         if (r.ok) setComments(await r.json())
-      } catch {}
+      } catch { }
     })()
 
     return () => ctl.abort()
   }, [id, token])
 
   /* ---------- Derived ---------- */
+  const hitSeverityByIngredientId = useMemo(() => {
+    const rank = { low: 1, medium: 2, high: 3 }
+    const map = {}
+    for (const h of (allergenHits || [])) {
+      const idKey = String(h?.ingredientId || '')
+      if (!idKey) continue
+      const sev = String(h?.hitSeverity || '').toLowerCase()
+      if (!map[idKey]) map[idKey] = sev
+      else {
+        const a = rank[map[idKey]] || 0
+        const b = rank[sev] || 0
+        if (b > a) map[idKey] = sev
+      }
+    }
+    return map
+  }, [allergenHits])
+
   const severeKeySet = useMemo(() => {
     const s = new Set()
     Object.entries(severityMap).forEach(([k, v]) => { if (k && isSevere(v)) s.add(norm(k)) })
@@ -203,18 +251,32 @@ const RecipeDetailsPage = () => {
   }, [severityMap])
 
   const bannerTerms = useMemo(() => {
-    if (!recipe?.ingredients || !severeKeySet.size) return []
+    // Prefer new hits for banner (high/medium), fallback to old map if needed
+    if (!token || !recipe?.ingredients) return []
+
     const out = new Set()
-    for (const ing of recipe.ingredients) {
-      const n = norm(ing?.name)
-      for (const v of variants(n)) if (severeKeySet.has(v)) { out.add(ing.name); break }
+    const byId = hitSeverityByIngredientId
+
+    for (const ing of (recipe.ingredients || [])) {
+      const idKey = String(ing?.id || ing?.ingredientId || '')
+      const sev = idKey ? (byId[idKey] || null) : null
+      if (sev && isSevere(sev)) out.add(ing.name)
     }
+
+    // fallback (old)
+    if (out.size === 0 && severeKeySet.size) {
+      for (const ing of recipe.ingredients) {
+        const n = norm(ing?.name)
+        for (const v of variants(n)) if (severeKeySet.has(v)) { out.add(ing.name); break }
+      }
+    }
+
     return [...out]
-  }, [recipe?.ingredients, severeKeySet])
+  }, [token, recipe?.ingredients, hitSeverityByIngredientId, severeKeySet])
 
   const hasAnyAllergen = bannerTerms.length > 0
 
-  const lookupSeverity = (ingredientName, ing) => {
+  const lookupSeverityFallback = (ingredientName, ing) => {
     const candidates = [ing?.globalIngredientName, ing?.globalIngredient?.name, ing?.Name, ingredientName]
       .map(norm).filter(Boolean)
     for (const c of candidates) for (const v of variants(c)) {
@@ -256,7 +318,7 @@ const RecipeDetailsPage = () => {
       if (res.status === 401 || res.status === 403) {
         window.location.assign('/login'); return
       }
-      let msg = ''; try { msg = await res.text() } catch {}
+      let msg = ''; try { msg = await res.text() } catch { }
       throw new Error(`Delete failed (${res.status}): ${msg}`)
     } catch (e) {
       console.error('Delete error:', e)
@@ -350,7 +412,7 @@ const RecipeDetailsPage = () => {
             {recipe?.createdAt && (
               <>
                 <span className="mx-2 opacity-60">•</span>
-                <span>{new Date(recipe.createdAt).toLocaleDateString(undefined, {year:'numeric',month:'short',day:'numeric'})}</span>
+                <span>{new Date(recipe.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
               </>
             )}
           </div>
@@ -387,7 +449,7 @@ const RecipeDetailsPage = () => {
           {recipe?.createdAt && (
             <>
               <span className="mx-2 opacity-60">•</span>
-              <span>{new Date(recipe.createdAt).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})}</span>
+              <span>{new Date(recipe.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
             </>
           )}
         </div>
@@ -435,6 +497,7 @@ const RecipeDetailsPage = () => {
               <p className="font-semibold text-red-100">Potential allergens detected</p>
               <p className="text-sm text-red-100/90 mt-0.5">
                 Matched: <span className="font-semibold">{bannerTerms.join(', ')}</span>
+                {hitsLoading && <span className="ml-2 text-xs text-red-100/70">(checking…)</span>}
               </p>
             </div>
           </div>
@@ -458,13 +521,20 @@ const RecipeDetailsPage = () => {
         <Section icon={TagIcon} title="Ingredients">
           <div className="flex flex-wrap gap-2.5">
             {(recipe?.ingredients || []).map((ing, i) => {
-              const sev = lookupSeverity(ing?.name, ing)
+              // ✅ Primary: by IngredientId from /api/Allergy/hits
+              const idKey = String(ing?.id || ing?.ingredientId || '')
+              const sevFromHits = idKey ? (hitSeverityByIngredientId[idKey] || null) : null
+
+              // Optional fallback: legacy matchedAllergenSeverity name-based
+              const sevFallback = lookupSeverityFallback(ing?.name, ing)
+              const sev = sevFromHits || sevFallback
+
               const visual = sev || 'safe'
               const cls =
-                visual === 'high'   ? SEVERITY_CLASS.high :
-                visual === 'medium' ? SEVERITY_CLASS.medium :
-                visual === 'low'    ? SEVERITY_CLASS.low :
-                                      SEVERITY_CLASS.safe
+                visual === 'high' ? SEVERITY_CLASS.high :
+                  visual === 'medium' ? SEVERITY_CLASS.medium :
+                    visual === 'low' ? SEVERITY_CLASS.low :
+                      SEVERITY_CLASS.safe
 
               return (
                 <span
