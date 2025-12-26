@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { API_BASE_URL } from "../../utils/api";
@@ -60,6 +60,8 @@ export default function BillingPanel() {
   const [status, setStatus] = useState(null);
   const [initialLoading, setInitialLoading] = useState(true);
 
+  const didToastBillingFailRef = useRef(false);
+
   const isPremium = !!status?.isPremium;
   const premiumStatus = status?.premiumStatus;
   const cancelAtPeriodEnd = !!status?.premiumCancelAtPeriodEnd;
@@ -73,37 +75,58 @@ export default function BillingPanel() {
     if (sub === "cancel") toast("Checkout canceled.");
   }, [location.search]);
 
+  const mapStatus = (data) => ({
+    isPremium: data.isPremium ?? data.IsPremium,
+    premiumStatus: data.premiumStatus ?? data.PremiumStatus,
+    premiumSince: data.premiumSince ?? data.PremiumSince,
+    premiumCancelAtPeriodEnd: data.cancelAtPeriodEnd
+      ?? data.premiumCancelAtPeriodEnd
+      ?? data.PremiumCancelAtPeriodEnd,
+    premiumCurrentPeriodEnd: data.currentPeriodEnd
+      ?? data.premiumCurrentPeriodEnd
+      ?? data.PremiumCurrentPeriodEnd,
+  });
+
   const fetchStatus = async () => {
+    // Don’t fetch until auth is ready
     if (!user?.id || !token) {
       setInitialLoading(false);
       return;
     }
+
     try {
-      const res = await fetch(`${API_BASE_URL}/api/billing/status/${user.id}`, {
+      // ✅ FIX: querystring endpoint, not /status/{id}
+      const url = `${API_BASE_URL}/api/billing/status?userId=${encodeURIComponent(user.id)}`;
+
+      const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error(`Status ${res.status}`);
+
+      if (!res.ok) {
+        throw new Error(`Status ${res.status}`);
+      }
+
       const data = await res.json();
-      setStatus({
-        isPremium: data.isPremium ?? data.IsPremium,
-        premiumStatus: data.premiumStatus ?? data.PremiumStatus,
-        premiumSince: data.premiumSince ?? data.PremiumSince,
-        premiumCancelAtPeriodEnd:
-          data.premiumCancelAtPeriodEnd ?? data.PremiumCancelAtPeriodEnd,
-        premiumCurrentPeriodEnd:
-          data.premiumCurrentPeriodEnd ?? data.PremiumCurrentPeriodEnd,
-      });
+      setStatus(mapStatus(data));
     } catch (e) {
       console.error(e);
-      toast.error("Failed to load billing status.");
+
+      // Avoid spamming toasts if React re-renders / retries
+      if (!didToastBillingFailRef.current) {
+        didToastBillingFailRef.current = true;
+        toast.error("Failed to load billing status.");
+      }
+
+      // keep status null so Retry button shows
+      setStatus(null);
     } finally {
       setInitialLoading(false);
     }
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     fetchStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, token]);
 
   const actionBtn = (label, onClick, variant = "primary", disabled = false) => {
@@ -214,9 +237,7 @@ export default function BillingPanel() {
   const headerNote = useMemo(() => {
     if (!status) return "$6.99/month • Manage with Stripe";
     if (!isPremium) return "$6.99/month • Upgrade in seconds";
-    return cancelAtPeriodEnd
-      ? "Will cancel at period end"
-      : "Renews automatically";
+    return cancelAtPeriodEnd ? "Will cancel at period end" : "Renews automatically";
   }, [status, isPremium, cancelAtPeriodEnd]);
 
   return (
@@ -271,6 +292,7 @@ export default function BillingPanel() {
         {/* actions */}
         <div className="mt-6 flex flex-wrap items-center gap-3">
           {!initialLoading && !isPremium && actionBtn("Upgrade to Premium", startCheckout, "primary", busy)}
+
           {!initialLoading && isPremium && (
             <>
               {actionBtn("Manage Billing", openPortal, "neutral", busy)}
