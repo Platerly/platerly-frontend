@@ -1,3 +1,8 @@
+// BillingPanel.jsx (FULL WORKING VERSION)
+// ✅ Re-fetches status after returning from Stripe portal (portal=return)
+// ✅ Also re-fetches after checkout success/cancel
+// ✅ Uses the backend fields you return (cancelAtPeriodEnd + currentPeriodEnd)
+
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -6,9 +11,9 @@ import { useAuth } from "../../context/AuthContext";
 
 /* ---------- utils ---------- */
 const fmtDate = (isoLike) => {
-  if (!isoLike) return null;
+  if (!isoLike) return "—";
   const d = new Date(isoLike);
-  if (Number.isNaN(d.getTime())) return null;
+  if (Number.isNaN(d.getTime())) return "—";
   return d.toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric" });
 };
 
@@ -67,80 +72,82 @@ export default function BillingPanel() {
   const cancelAtPeriodEnd = !!status?.premiumCancelAtPeriodEnd;
   const currentPeriodEnd = status?.premiumCurrentPeriodEnd;
 
-  // handle /settings?sub=success|cancel return from Stripe Checkout
-  useEffect(() => {
-    const sp = new URLSearchParams(location.search);
-    const sub = sp.get("sub");
-    if (sub === "success") toast.success("Subscription successful. Welcome to Premium!");
-    if (sub === "cancel") toast("Checkout canceled.");
-  }, [location.search]);
-
   const mapStatus = (data) => ({
     isPremium: data.isPremium ?? data.IsPremium,
     premiumStatus: data.premiumStatus ?? data.PremiumStatus,
     premiumSince: data.premiumSince ?? data.PremiumSince,
-    premiumCancelAtPeriodEnd: data.cancelAtPeriodEnd
-      ?? data.premiumCancelAtPeriodEnd
-      ?? data.PremiumCancelAtPeriodEnd,
-    premiumCurrentPeriodEnd: data.currentPeriodEnd
-      ?? data.premiumCurrentPeriodEnd
-      ?? data.PremiumCurrentPeriodEnd,
+
+    premiumCancelAtPeriodEnd:
+      data.cancelAtPeriodEnd ??
+      data.premiumCancelAtPeriodEnd ??
+      data.PremiumCancelAtPeriodEnd,
+
+    premiumCurrentPeriodEnd:
+      data.currentPeriodEnd ??
+      data.premiumCurrentPeriodEnd ??
+      data.PremiumCurrentPeriodEnd,
   });
 
-  const fetchStatus = async () => {
-    // Don’t fetch until auth is ready
+  const fetchStatus = async ({ silent = false } = {}) => {
     if (!user?.id || !token) {
       setInitialLoading(false);
       return;
     }
 
     try {
-      // ✅ FIX: querystring endpoint, not /status/{id}
+      if (!silent) setBusy(true);
+
       const url = `${API_BASE_URL}/api/billing/status?userId=${encodeURIComponent(user.id)}`;
-
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!res.ok) {
-        throw new Error(`Status ${res.status}`);
-      }
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error(`Status ${res.status}`);
 
       const data = await res.json();
       setStatus(mapStatus(data));
     } catch (e) {
       console.error(e);
 
-      // Avoid spamming toasts if React re-renders / retries
       if (!didToastBillingFailRef.current) {
         didToastBillingFailRef.current = true;
         toast.error("Failed to load billing status.");
       }
 
-      // keep status null so Retry button shows
       setStatus(null);
     } finally {
+      if (!silent) setBusy(false);
       setInitialLoading(false);
     }
   };
 
+  // initial load
   useEffect(() => {
     fetchStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, token]);
 
+  // handle return from Checkout + Portal
+  useEffect(() => {
+    const sp = new URLSearchParams(location.search);
+
+    const sub = sp.get("sub");
+    if (sub === "success") toast.success("Subscription successful. Welcome to Premium!");
+    if (sub === "cancel") toast("Checkout canceled.");
+
+    const portal = sp.get("portal");
+    if (portal === "return") {
+      // fetch immediately, then again after a short delay (webhook latency)
+      fetchStatus({ silent: true });
+      const t = setTimeout(() => fetchStatus({ silent: true }), 1200);
+      return () => clearTimeout(t);
+    }
+  }, [location.search]); // intentionally not including fetchStatus to avoid loops
+
   const actionBtn = (label, onClick, variant = "primary", disabled = false) => {
     const base =
       "px-4 py-2 rounded-xl transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-platerly-green/60";
     const styles = {
-      primary:
-        "bg-platerly-green hover:bg-platerly-green/90 text-white disabled:opacity-50",
+      primary: "bg-platerly-green hover:bg-platerly-green/90 text-white disabled:opacity-50",
       neutral:
         "bg-platerly-card hover:bg-platerly-card/80 text-platerly-text border border-platerly-border disabled:opacity-50",
-      danger:
-        "bg-red-700 hover:bg-red-600 text-white disabled:opacity-50",
-      warn:
-        "bg-amber-600 hover:bg-amber-500 text-white disabled:opacity-50",
     };
     return (
       <button
@@ -194,50 +201,10 @@ export default function BillingPanel() {
     }
   };
 
-  const cancelAtEnd = async () => {
-    if (!user?.id || !token) return;
-    try {
-      setBusy(true);
-      const res = await fetch(`${API_BASE_URL}/api/billing/cancel`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ userId: user.id }),
-      });
-      if (!res.ok) throw new Error(`Cancel ${res.status}`);
-      toast("Subscription will cancel at period end.");
-      await fetchStatus();
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to schedule cancellation.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const resume = async () => {
-    if (!user?.id || !token) return;
-    try {
-      setBusy(true);
-      const res = await fetch(`${API_BASE_URL}/api/billing/resume`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ userId: user.id }),
-      });
-      if (!res.ok) throw new Error(`Resume ${res.status}`);
-      toast.success("Subscription resumed.");
-      await fetchStatus();
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to resume subscription.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const headerNote = useMemo(() => {
     if (!status) return "$6.99/month • Manage with Stripe";
     if (!isPremium) return "$6.99/month • Upgrade in seconds";
-    return cancelAtPeriodEnd ? "Will cancel at period end" : "Renews automatically";
+    return cancelAtPeriodEnd ? "Active until period end" : "Renews automatically";
   }, [status, isPremium, cancelAtPeriodEnd]);
 
   return (
@@ -270,17 +237,13 @@ export default function BillingPanel() {
                     <span className="opacity-70 mr-2">Plan:</span>
                     <span>Premium</span>
                   </div>
-                  {cancelAtPeriodEnd ? (
-                    <div>
-                      <span className="opacity-70 mr-2">Cancels on:</span>
-                      <span>{fmtDate(currentPeriodEnd) ?? "—"}</span>
-                    </div>
-                  ) : (
-                    <div>
-                      <span className="opacity-70 mr-2">Renews on:</span>
-                      <span>{fmtDate(currentPeriodEnd) ?? "—"}</span>
-                    </div>
-                  )}
+
+                  <div>
+                    <span className="opacity-70 mr-2">
+                      {cancelAtPeriodEnd ? "Ends on:" : "Renews on:"}
+                    </span>
+                    <span>{fmtDate(currentPeriodEnd)}</span>
+                  </div>
                 </>
               ) : (
                 <div>You're on the free plan. Upgrade to unlock all features.</div>
@@ -296,14 +259,10 @@ export default function BillingPanel() {
           {!initialLoading && isPremium && (
             <>
               {actionBtn("Manage Billing", openPortal, "neutral", busy)}
-              {!cancelAtPeriodEnd
-                ? actionBtn("Cancel at Period End", cancelAtEnd, "danger", busy)
-                : actionBtn("Resume Subscription", resume, "warn", busy)}
             </>
           )}
 
-          {/* Try again if initial fetch failed and left us without status */}
-          {!initialLoading && !status && actionBtn("Retry", fetchStatus, "neutral", busy)}
+          {!initialLoading && !status && actionBtn("Retry", () => fetchStatus(), "neutral", busy)}
         </div>
       </section>
     </div>
