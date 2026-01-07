@@ -23,7 +23,11 @@ function autolinkBio(text = "") {
       (m) =>
         `<a href="${m.startsWith("http") ? m : `https://${m}`}" target="_blank" rel="noopener noreferrer" class="underline">${m}</a>`
     )
-    .replace(/(^|\s)#([a-z0-9_]{2,30})/gi, (_match, p1, p2) => `${p1}<a class="underline" href="/tags/${p2.toLowerCase()}">#${p2}</a>`)
+    .replace(
+      /(^|\s)#([a-z0-9_]{2,30})/gi,
+      (_match, p1, p2) =>
+        `${p1}<a class="underline" href="/tags/${p2.toLowerCase()}">#${p2}</a>`
+    )
     .replace(/\n/g, "<br/>");
 }
 
@@ -59,7 +63,10 @@ const UserProfilePage = () => {
   const [cookbooks, setCookbooks] = useState([]);
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
+
+  // ✅ correct meaning: does CURRENT USER follow THIS PROFILE?
   const [isFollowing, setIsFollowing] = useState(false);
+  const [followBusy, setFollowBusy] = useState(false);
 
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const fileRef = useRef(null);
@@ -102,9 +109,7 @@ const UserProfilePage = () => {
 
   // fetch details for any cookbook missing cover or count
   const hydrateMissingCookbookBits = async (rows) => {
-    const needHydrate = rows.filter(
-      (r) => !r || r.coverImageUrl == null || typeof r.recipeCount !== "number"
-    );
+    const needHydrate = rows.filter((r) => !r || r.coverImageUrl == null || typeof r.recipeCount !== "number");
     if (needHydrate.length === 0) return rows;
 
     const byId = new Map(rows.map((r) => [r.id, { ...r }]));
@@ -120,10 +125,13 @@ const UserProfilePage = () => {
           const base = byId.get(full.id) || {};
           byId.set(full.id, {
             ...base,
-            // prefer hydrated values when missing
             coverImageUrl: base.coverImageUrl ?? full.coverImageUrl ?? null,
-            recipeCount: typeof base.recipeCount === "number" ? base.recipeCount : (typeof full.recipeCount === "number" ? full.recipeCount : 0),
-            // keep other known fields
+            recipeCount:
+              typeof base.recipeCount === "number"
+                ? base.recipeCount
+                : typeof full.recipeCount === "number"
+                ? full.recipeCount
+                : 0,
             title: base.title ?? full.title,
             description: base.description ?? full.description,
             isPublic: typeof base.isPublic === "boolean" ? base.isPublic : full.isPublic ?? false,
@@ -147,12 +155,26 @@ const UserProfilePage = () => {
     (async () => {
       setLoading(true);
       setError("");
+
       try {
+        // ✅ Use UserController endpoints for followers/following by username
         const [userRes, cookbooksRes, followersRes, followingRes] = await Promise.all([
-          apiFetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}`, { signal: ac.signal, headers: authHeaders }),
-          apiFetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}/cookbooks`, { signal: ac.signal, headers: authHeaders }),
-          apiFetch(`${API_BASE_URL}/api/Follow/followers?username=${encodeURIComponent(username)}`, { signal: ac.signal, headers: authHeaders }),
-          apiFetch(`${API_BASE_URL}/api/Follow/following?username=${encodeURIComponent(username)}`, { signal: ac.signal, headers: authHeaders }),
+          apiFetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}`, {
+            signal: ac.signal,
+            headers: authHeaders,
+          }),
+          apiFetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(username)}/cookbooks`, {
+            signal: ac.signal,
+            headers: authHeaders,
+          }),
+          apiFetch(`${API_BASE_URL}/api/User/${encodeURIComponent(username)}/followers`, {
+            signal: ac.signal,
+            headers: authHeaders,
+          }),
+          apiFetch(`${API_BASE_URL}/api/User/${encodeURIComponent(username)}/following`, {
+            signal: ac.signal,
+            headers: authHeaders,
+          }),
         ]);
 
         const userData = await userRes.json();
@@ -187,10 +209,70 @@ const UserProfilePage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username, token, authLoading]);
 
+  // ✅ compute "do I follow this profile?" correctly
   useEffect(() => {
-    if (!token || !user || !followers?.length) return setIsFollowing(false);
-    setIsFollowing(followers.some((f) => f.username?.toLowerCase() === user.username?.toLowerCase()));
-  }, [followers, user, token]);
+    let alive = true;
+
+    (async () => {
+      // default
+      if (!token || !user || !profile || isOwnProfile) {
+        setIsFollowing(false);
+        return;
+      }
+
+      try {
+        // fetch MY following list and check if it contains this profile's id
+        const res = await apiFetch(
+          `${API_BASE_URL}/api/User/${encodeURIComponent(user.username)}/following`,
+          { headers: authHeaders }
+        );
+        if (!res.ok) {
+          if (alive) setIsFollowing(false);
+          return;
+        }
+
+        const list = await res.json();
+        const myFollowingIds = new Set(
+          (list || [])
+            .map((u) => u.id ?? u.userId ?? null)
+            .filter(Boolean)
+        );
+
+        if (alive) setIsFollowing(myFollowingIds.has(profile.id));
+      } catch {
+        if (alive) setIsFollowing(false);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, user, profile, isOwnProfile, username]);
+
+  const onToggleFollow = async () => {
+    if (!token || !profile?.id || followBusy) return;
+
+    setFollowBusy(true);
+    const prev = isFollowing;
+    const method = prev ? "DELETE" : "POST";
+
+    // optimistic
+    setIsFollowing(!prev);
+
+    try {
+      const res = await apiFetch(
+        `${API_BASE_URL}/api/User/${encodeURIComponent(profile.id)}/follow`,
+        { method, headers: authHeaders }
+      );
+      if (!res.ok) throw new Error("toggle failed");
+    } catch (e) {
+      // revert
+      setIsFollowing(prev);
+    } finally {
+      setFollowBusy(false);
+    }
+  };
 
   const onBannerFile = async (file) => {
     if (!file) return;
@@ -213,6 +295,7 @@ const UserProfilePage = () => {
 
   const followerCount = followers.length;
   const followingCount = following.length;
+
   const websiteShort = useMemo(() => {
     const w = profile?.websiteUrl;
     if (!w) return null;
@@ -230,17 +313,12 @@ const UserProfilePage = () => {
         {/* Banner */}
         <div className="relative h-44 md:h-56 rounded-b-2xl overflow-hidden bg-platerly-light z-0">
           {profile.bannerImageUrl && (
-            <img
-              src={profile.bannerImageUrl}
-              alt=""
-              loading="lazy"
-              className="w-full h-full object-cover"
-            />
+            <img src={profile.bannerImageUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
           )}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20" />
         </div>
 
-        {/* Row 1: avatar + name */}
+        {/* Row 1: avatar + name + actions */}
         <div className="px-4 md:px-6 -mt-8 flex items-end gap-4">
           {profile.profileImageUrl ? (
             <img
@@ -254,6 +332,7 @@ const UserProfilePage = () => {
               {profile.username[0]?.toUpperCase() ?? "U"}
             </div>
           )}
+
           <div className="pb-2">
             <h1 className="text-xl md:text-2xl font-semibold text-platerly-text">
               {profile.displayName || profile.username}
@@ -261,35 +340,62 @@ const UserProfilePage = () => {
             <div className="text-sm text-platerly-muted">@{profile.username}</div>
           </div>
 
-          {isOwnProfile && (
-            <div className="ml-auto pb-2">
+          {/* Actions */}
+          <div className="ml-auto pb-2 flex items-center gap-2">
+            {/* ✅ Follow/Unfollow for other users */}
+            {!isOwnProfile && token ? (
               <button
-                onClick={() => fileRef.current?.click()}
-                className="px-4 py-2 rounded-xl bg-platerly-card hover:bg-platerly-light border border-platerly-border text-sm text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
-                disabled={uploadingBanner}
-                aria-label="Change banner image"
+                onClick={onToggleFollow}
+                disabled={followBusy}
+                className={[
+                  "px-4 py-2 rounded-xl text-sm border transition focus:outline-none focus:ring-2 focus:ring-platerly-green/40",
+                  isFollowing
+                    ? "bg-transparent border-platerly-light text-platerly-subtle md:hover:bg-platerly-light/30"
+                    : "bg-platerly-green text-platerly-dark border-transparent md:hover:opacity-90",
+                  followBusy ? "opacity-60 cursor-not-allowed" : "",
+                ].join(" ")}
               >
-                {uploadingBanner ? "Uploading..." : "Change banner"}
+                {followBusy ? "…" : isFollowing ? "Unfollow" : "Follow"}
               </button>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => onBannerFile(e.target.files?.[0])}
-              />
-            </div>
-          )}
+            ) : null}
+
+            {/* Banner button only for own profile */}
+            {isOwnProfile && (
+              <>
+                <button
+                  onClick={() => fileRef.current?.click()}
+                  className="px-4 py-2 rounded-xl bg-platerly-card hover:bg-platerly-light border border-platerly-border text-sm text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
+                  disabled={uploadingBanner}
+                  aria-label="Change banner image"
+                >
+                  {uploadingBanner ? "Uploading..." : "Change banner"}
+                </button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => onBannerFile(e.target.files?.[0])}
+                />
+              </>
+            )}
+          </div>
         </div>
 
         {/* Meta row */}
         <div className="px-4 md:px-6 mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
           {profile.location && <span className="text-platerly-muted">{profile.location}</span>}
           {profile.websiteUrl && (
-            <a className="underline text-platerly-cream/90 hover:text-platerly-cream" href={withScheme(profile.websiteUrl)} target="_blank" rel="noopener noreferrer">
+            <a
+              className="underline text-platerly-cream/90 hover:text-platerly-cream"
+              href={withScheme(profile.websiteUrl)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               {websiteShort}
             </a>
           )}
+
           <Link to={`/user/${profile.username}/followers`} className="underline-offset-2 hover:underline text-platerly-text">
             <b>{followerCount}</b> Followers
           </Link>

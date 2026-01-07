@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 // small avatar / name row like X
 const UserRow = ({ u, onFollowToggle, busy }) => {
   const display = u.displayName || u.username;
+
   return (
     <div className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-platerly-light bg-platerly-card md:hover:bg-platerly-light/30 transition">
       <Link
@@ -24,16 +25,14 @@ const UserRow = ({ u, onFollowToggle, busy }) => {
             {u.username?.[0]?.toUpperCase() ?? "U"}
           </div>
         )}
+
         <div className="min-w-0">
           <div className="font-medium truncate text-platerly-text">{display}</div>
           <div className="text-xs text-platerly-subtle truncate">@{u.username}</div>
-          {u.bio ? (
-            <div className="text-xs text-platerly-subtle line-clamp-1 mt-0.5">{u.bio}</div>
-          ) : null}
         </div>
       </Link>
 
-      {/* show Follow/Unfollow if API included `isFollowing` */}
+      {/* Follow/Unfollow only when we KNOW isFollowing */}
       {typeof u.isFollowing === "boolean" && onFollowToggle ? (
         <button
           disabled={busy}
@@ -65,6 +64,7 @@ const Skeleton = () => (
 const FollowListPage = ({ type }) => {
   const { username } = useParams();
   const { token } = useAuth();
+
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState([]);
   const [headerUser, setHeaderUser] = useState(null);
@@ -77,58 +77,89 @@ const FollowListPage = ({ type }) => {
     const r = await fetch(`${API_BASE_URL}/api/user/profile/${encodeURIComponent(uname)}`);
     if (!r.ok) throw new Error("profile lookup failed");
     const data = await r.json(); // { user, recipes? }
-    return data?.user; // expects { id, username, displayName, ... }
+    return data?.user;
   };
 
-  // try username param first; if server doesn’t support it, fall back to userId
-  const fetchList = async (uname) => {
-    const u = await resolveUserByUsername(uname);
-    setHeaderUser(u);
+  // helper: current user (viewer) from token
+  const fetchMe = async () => {
+    if (!token) return null;
+    const r = await fetch(`${API_BASE_URL}/api/User/me`, { headers: authHeader });
+    if (!r.ok) return null;
+    return r.json(); // UserDto
+  };
 
-    const tryUsername = async () => {
-      const res = await fetch(
-        `${API_BASE_URL}/api/Follow/${type}?username=${encodeURIComponent(uname)}`,
-        { headers: authHeader }
-      );
-      if (!res.ok) throw new Error("username not supported");
-      return res.json();
-    };
+  // helper: get viewer's following ids (so we can mark isFollowing correctly)
+  const fetchMyFollowingIds = async (viewerUsername) => {
+    if (!viewerUsername) return new Set();
+    const r = await fetch(
+      `${API_BASE_URL}/api/User/${encodeURIComponent(viewerUsername)}/following`,
+      { headers: authHeader }
+    );
+    if (!r.ok) return new Set();
 
-    const tryUserId = async () => {
-      if (!u?.id) throw new Error("no userId to use");
-      const res = await fetch(
-        `${API_BASE_URL}/api/Follow/${type}?userId=${encodeURIComponent(u.id)}`,
-        { headers: authHeader }
-      );
-      if (!res.ok) throw new Error("userId query failed");
-      return res.json();
-    };
-
-    try {
-      return await tryUsername();
-    } catch {
-      return await tryUserId();
-    }
+    const list = await r.json(); // FollowUserDto[]
+    const ids = new Set();
+    (list || []).forEach((u) => {
+      const id = u.id ?? u.userId ?? null;
+      if (id) ids.add(id);
+    });
+    return ids;
   };
 
   useEffect(() => {
     let alive = true;
-    setLoading(true);
-    fetchList(username)
-      .then((list) => {
+
+    const run = async () => {
+      setLoading(true);
+      try {
+        // header info for @handle display
+        const header = await resolveUserByUsername(username);
         if (!alive) return;
-        const normalized = (list || []).map((u) => ({
-          id: u.id ?? u.userId ?? null,
-          username: u.username,
-          displayName: u.displayName,
-          profileImageUrl: u.profileImageUrl,
-          bio: u.bio,
-          isFollowing: typeof u.isFollowing === "boolean" ? u.isFollowing : false,
-        }));
+        setHeaderUser(header);
+
+        // list for the profile being viewed (followers or following)
+        const listRes = await fetch(
+          `${API_BASE_URL}/api/User/${encodeURIComponent(username)}/${type}`,
+          { headers: authHeader } // safe to include; endpoint is AllowAnonymous
+        );
+        if (!listRes.ok) throw new Error("list fetch failed");
+        const list = await listRes.json();
+
+        // compute follow-state for the VIEWER (logged-in user)
+        // so buttons show correctly (especially on your own Following page)
+        let myFollowingIds = null;
+        const me = await fetchMe();
+        if (me?.username) {
+          myFollowingIds = await fetchMyFollowingIds(me.username);
+        }
+
+        const normalized = (list || []).map((u) => {
+          const id = u.id ?? u.userId ?? null;
+          const isFollowing =
+            myFollowingIds && id ? myFollowingIds.has(id) : undefined; // undefined = hide button
+
+          return {
+            id,
+            username: u.username,
+            displayName: u.displayName,
+            profileImageUrl: u.profileImageUrl,
+            isFollowing,
+          };
+        });
+
+        if (!alive) return;
         setRows(normalized);
-      })
-      .catch(() => setRows([]))
-      .finally(() => alive && setLoading(false));
+      } catch (e) {
+        if (!alive) return;
+        setRows([]);
+      } finally {
+        if (!alive) return;
+        setLoading(false);
+      }
+    };
+
+    run();
+
     return () => {
       alive = false;
     };
@@ -141,14 +172,18 @@ const FollowListPage = ({ type }) => {
     const targetId = row.id;
     if (!targetId) return;
 
+    // if we don't know follow-state, don't allow toggle here
+    if (typeof row.isFollowing !== "boolean") return;
+
     setBusyId(targetId);
     const method = row.isFollowing ? "DELETE" : "POST";
-    const url = `${API_BASE_URL}/api/Follow/${targetId}`;
+    const url = `${API_BASE_URL}/api/User/${encodeURIComponent(targetId)}/follow`;
 
     // optimistic update
     setRows((prev) =>
       prev.map((r) => (r.id === targetId ? { ...r, isFollowing: !row.isFollowing } : r))
     );
+
     try {
       const res = await fetch(url, { method, headers: authHeader });
       if (!res.ok) throw new Error("toggle failed");
