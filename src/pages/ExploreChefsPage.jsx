@@ -77,7 +77,7 @@ const ExploreChefsPage = () => {
             const username = user.username || 'user'
             const displayName = user.displayName || username
             const bio = user.bio || ''
-            const avatar = user.profileImageUrl || '/default-avatar.png'
+            const avatar = user.profileImageUrl || '/default-avatar.svg'
 
             return (
               <div
