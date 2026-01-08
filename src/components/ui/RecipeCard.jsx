@@ -299,7 +299,7 @@ const RecipeCard = ({
           <div className="flex gap-4 sm:gap-6 items-center text-sm text-platerly-subtle">
             <button
               onClick={(e) => { e.stopPropagation(); handleLikeToggle() }}
-              className="flex items-center gap-1 hover:text-red-500 min-h-[44px]"
+              className={`flex items-center gap-1 min-h-[44px] ${isLikedState ? 'text-red-500' : 'text-platerly-subtle hover:text-red-500'}`}
             >
               <Heart className={`w-5 h-5 sm:w-4 sm:h-4 ${isLikedState ? 'fill-red-500 text-red-500' : ''}`} />
               {formatCount(likeCount)}
