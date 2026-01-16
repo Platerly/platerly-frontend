@@ -79,6 +79,18 @@ const Skeleton = () => (
   </div>
 );
 
+const TabPanel = ({ id, active, children }) => (
+  <div
+    role="tabpanel"
+    id={`${id}-panel`}
+    aria-labelledby={`${id}-tab`}
+    hidden={!active}
+    className="mb-12"
+  >
+    {active && children}
+  </div>
+);
+
 const inputClasses = "w-full bg-platerly-card border border-platerly-border rounded-xl px-3 py-2 text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/40";
 
 // Password strength validation
@@ -613,18 +625,6 @@ const SettingsPage = () => {
       setSaving(false);
     }
   };
-
-  const TabPanel = ({ id, active, children }) => (
-    <div
-      role="tabpanel"
-      id={`${id}-panel`}
-      aria-labelledby={`${id}-tab`}
-      hidden={!active}
-      className="mb-12"
-    >
-      {active && children}
-    </div>
-  );
 
   const photo = profileForm.profileImageUrl || "/placeholder-avatar.png";
 
