@@ -1,5 +1,6 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { API_BASE_URL } from "../utils/api";
+import { clearPremiumCache } from "../hooks/usePremium";
 
 const SOFTWALL_KEYS = ['pl_guest_seen_count_v1', 'pl_soft_wall_shown_at_v1'];
 const TOKEN_KEY = "token";
@@ -78,30 +79,31 @@ export function AuthProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const login = ({ token, user, remember }) => {
+  const login = useCallback(({ token: newToken, user: newUser, remember }) => {
     const store = remember ? localStorage : sessionStorage;
     storageRef.current = store;
-    writeTo(store, { token, user });
-    setToken(token);
-    setUser(user);
+    writeTo(store, { token: newToken, user: newUser });
+    setToken(newToken);
+    setUser(newUser);
     clearGuestSoftWall(); // ✅ ensure guest counters go away instantly
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     // best-effort server logout (revokes current RT)
-    fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
+    fetch(`${API_BASE_URL}/api/Auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
     clearFrom(sessionStorage);
     clearFrom(localStorage);
+    clearPremiumCache();
     storageRef.current = null;
     setToken(null);
     setUser(null);
-  };
+  }, []);
 
   /**
    * Refresh access token using HttpOnly refresh cookie.
-   * POST /api/auth/refresh -> { token }
+   * POST /api/Auth/refresh -> { token }
    */
-  const refreshAccessToken = async () => {
+  const refreshAccessToken = useCallback(async () => {
     if (refreshInFlightRef.current) {
       try { return await refreshInFlightRef.current; } catch { return false; }
     }
@@ -118,26 +120,24 @@ export function AuthProvider({ children }) {
         const newToken = data?.token;
         if (!newToken) return false;
 
-        // Persist new token in whichever store we’re using (default to sessionStorage)
+        // Persist new token in whichever store we're using (default to sessionStorage)
         const store = storageRef.current || sessionStorage;
-        writeTo(store, { token: newToken, user: user || null });
+        writeTo(store, { token: newToken, user: null });
 
         setToken(newToken);
 
-        // If user not present, hydrate now
-        if (!user) {
-          try {
-            const me = await fetch(`${API_BASE_URL}/api/User/me`, {
-              headers: { Authorization: `Bearer ${newToken}` },
-              credentials: 'include'
-            });
-            if (me.ok) {
-              const u = await me.json();
-              setUser(u);
-              writeTo(store, { token: newToken, user: u });
-            }
-          } catch {}
-        }
+        // Always try to hydrate user data after refresh
+        try {
+          const me = await fetch(`${API_BASE_URL}/api/User/me`, {
+            headers: { Authorization: `Bearer ${newToken}` },
+            credentials: 'include'
+          });
+          if (me.ok) {
+            const u = await me.json();
+            setUser(u);
+            writeTo(store, { token: newToken, user: u });
+          }
+        } catch {}
 
         clearGuestSoftWall(); // ✅ successful auth path: clear guest counters
         return true;
@@ -150,19 +150,45 @@ export function AuthProvider({ children }) {
 
     refreshInFlightRef.current = doRefresh;
     return doRefresh;
-  };
+  }, []);
 
   const authed = useMemo(() => !!token && !!user, [token, user]);
 
+  /**
+   * Update user data in state and storage (for profile edits, etc.)
+   * Merges partial updates with existing user data.
+   */
+  const updateUser = useCallback((updates) => {
+    setUser(prev => {
+      const newUser = { ...prev, ...updates };
+      const store = storageRef.current;
+      if (store) {
+        // Read current token from storage to avoid stale closure
+        const currentToken = store.getItem(TOKEN_KEY);
+        if (currentToken) {
+          writeTo(store, { token: currentToken, user: newUser });
+        }
+      }
+      return newUser;
+    });
+  }, []);
+
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    user,
+    setUser,
+    updateUser,
+    token,
+    setToken,
+    login,
+    logout,
+    authed,
+    loading,
+    refreshAccessToken,
+  }), [user, token, authed, loading, login, logout, updateUser, refreshAccessToken]);
+
   return (
-    <AuthContext.Provider value={{
-      user, setUser,
-      token, setToken,
-      login, logout,
-      authed,
-      loading,
-      refreshAccessToken,
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

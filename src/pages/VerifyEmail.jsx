@@ -4,14 +4,14 @@ import axios from "axios";
 import { API_BASE_URL, fetchCurrentUser } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
+import { CheckCircle, AlertCircle, Loader2, Mail } from "lucide-react";
+import logger from "../utils/logger";
 
 /**
- * Brand + Mobile Notes
- * - Uses a centered card on a neutral-950 canvas to match dark theme.
- * - Accent uses emerald for "success" and rose for "error" to stay consistent.
- * - Mobile-first layout with safe area padding and max-w for readability.
- * - Adds CTA buttons for error state: Resend, Login, Home.
- * - Accessible: aria-live regions, focus-visible rings, descriptive icons.
+ * VerifyEmail
+ * - Premium platerly styling with gradient orbs
+ * - Accessible: aria-live regions, focus-visible rings
+ * - Mobile-first layout with safe area padding
  */
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
@@ -50,7 +50,7 @@ export default function VerifyEmail() {
         if (!isMounted.current) return;
 
         if (res.status === 200) {
-          toast.success("Email verified! 🎉");
+          toast.success("Email verified!");
 
           // Refresh current user if we have or find a token
           try {
@@ -61,7 +61,7 @@ export default function VerifyEmail() {
               localStorage.setItem("user", JSON.stringify(updatedUser));
             }
           } catch (refreshErr) {
-            console.warn("Failed to refresh user after verification:", refreshErr);
+            logger.warn("Failed to refresh user after verification", refreshErr);
           }
 
           setStatus("success");
@@ -78,7 +78,7 @@ export default function VerifyEmail() {
       } catch (err) {
         if (!isMounted.current) return;
         if (axios.isCancel(err)) return; // aborted
-        console.error("Verification error:", err);
+        logger.error("Email verification failed", err);
         setStatus("error");
         setMessage("Verification failed. Your link may be expired or already used.");
       }
@@ -93,43 +93,46 @@ export default function VerifyEmail() {
   }, [token, navigate, authToken, setUser]);
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex items-center justify-center px-4 py-10 sm:px-6">
-      <div className="w-full max-w-md">
-        <div className="rounded-2xl border border-neutral-800 bg-neutral-900/60 backdrop-blur p-6 sm:p-8 shadow-xl">
+    <div className="min-h-screen bg-platerly-dark text-platerly-text flex items-center justify-center px-4 py-10 sm:px-6 relative overflow-hidden">
+      {/* Background gradient orbs */}
+      <div className="absolute top-0 left-1/4 w-80 h-80 bg-platerly-green/5 rounded-full blur-[120px]" />
+      <div className="absolute bottom-1/3 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
+
+      <div className="w-full max-w-md relative z-10">
+        <div className="rounded-2xl border border-platerly-border bg-platerly-card/80 backdrop-blur-sm p-6 sm:p-8 shadow-xl">
           <header className="mb-6 sm:mb-8 text-center">
-            <div className="mx-auto mb-3 h-10 w-10 rounded-xl bg-emerald-500/15 ring-1 ring-emerald-500/30 flex items-center justify-center">
+            <div className={`mx-auto mb-4 h-12 w-12 rounded-xl flex items-center justify-center ${
+              status === "success"
+                ? "bg-platerly-green/20"
+                : status === "error"
+                ? "bg-red-500/20"
+                : "bg-platerly-green/20"
+            }`}>
               {status === "success" ? (
-                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <path className="text-emerald-400" d="M9 12l2 2 4-4" />
-                  <circle className="text-emerald-400" cx="12" cy="12" r="9" strokeOpacity="0.35" />
-                </svg>
+                <CheckCircle className="h-6 w-6 text-platerly-green" />
               ) : status === "error" ? (
-                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <path className="text-rose-400" d="M12 8v4m0 4h.01" />
-                  <circle className="text-rose-400" cx="12" cy="12" r="9" strokeOpacity="0.35" />
-                </svg>
+                <AlertCircle className="h-6 w-6 text-red-400" />
               ) : (
-                <svg className="h-6 w-6 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <circle className="opacity-20" cx="12" cy="12" r="10" />
-                  <path className="text-emerald-400" d="M4 12a8 8 0 018-8" />
-                </svg>
+                <Loader2 className="h-6 w-6 text-platerly-green animate-spin" />
               )}
             </div>
-            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Verify your email</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-platerly-text">
+              Verify your email
+            </h1>
           </header>
 
           {/* Message area */}
           <div className="space-y-3 text-center" aria-live="polite" role="status">
             {status === "verifying" && (
-              <p className="text-sm/6 text-neutral-300">Verifying your email… one sec.</p>
+              <p className="text-sm text-platerly-subtle">Verifying your email… one sec.</p>
             )}
             {status === "success" && (
-              <p className="text-sm/6 text-emerald-400">{message}</p>
+              <p className="text-sm text-platerly-green">{message}</p>
             )}
             {status === "error" && (
               <>
-                <p className="text-sm/6 text-rose-400">{message || "Invalid or expired token."}</p>
-                <p className="text-xs/6 text-neutral-400">You can request a new verification email and try again.</p>
+                <p className="text-sm text-red-400">{message || "Invalid or expired token."}</p>
+                <p className="text-xs text-platerly-subtle">You can request a new verification email and try again.</p>
               </>
             )}
           </div>
@@ -139,19 +142,20 @@ export default function VerifyEmail() {
             <div className="mt-6 sm:mt-8 grid grid-cols-1 gap-3">
               <Link
                 to="/verify/resend"
-                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/80 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
+                className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium bg-platerly-green text-platerly-dark hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-platerly-green/40 transition-all shadow-lg shadow-platerly-green/20"
               >
+                <Mail className="w-4 h-4" />
                 Resend verification email
               </Link>
               <Link
                 to="/login"
-                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium bg-neutral-800 text-neutral-100 hover:bg-neutral-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
+                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium bg-platerly-light text-platerly-text hover:bg-platerly-light/80 focus:outline-none focus:ring-2 focus:ring-platerly-green/40 transition-all"
               >
                 Back to login
               </Link>
               <Link
                 to="/"
-                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium border border-neutral-800 text-neutral-300 hover:bg-neutral-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
+                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium border border-platerly-border text-platerly-subtle hover:bg-platerly-light/50 hover:text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 transition-all"
               >
                 Go to Home
               </Link>
@@ -160,10 +164,10 @@ export default function VerifyEmail() {
 
           {/* Subtle footer helper */}
           <footer className="mt-6 sm:mt-8 text-center">
-            <p className="text-[11px] text-neutral-500">
+            <p className="text-[11px] text-platerly-muted">
               Having trouble? Contact support at
               {" "}
-              <a href="mailto:support@platerly.com" className="underline hover:text-neutral-300">
+              <a href="mailto:support@platerly.com" className="underline hover:text-platerly-subtle transition-colors">
                 support@platerly.com
               </a>
               .

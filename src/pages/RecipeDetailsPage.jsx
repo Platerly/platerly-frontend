@@ -1,12 +1,57 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import SaveToCookbookSection from '../pages/SaveToCookbookSection'
+import ConfirmDialog from '../components/common/ConfirmDialog'
+import CommentsSection from '../components/comments/CommentsSection'
 import { API_BASE_URL } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
+import { norm, variants, isSevere } from '../utils/allergenHelpers'
+import { logger } from '../utils/logger'
+import { toast } from 'react-hot-toast'
 import {
   MoreVertical, Pencil, Trash2, RefreshCw, BookmarkPlus,
-  AlertTriangle, Clock, Tag as TagIcon, Globe, BookOpenText, ListChecks
+  AlertTriangle, Clock, Tag as TagIcon, Globe, BookOpenText, ListChecks,
+  Plus, Minus, Share2, Mail, LinkIcon, X, Check
 } from 'lucide-react'
+
+// Social media brand icons
+const XIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+  </svg>
+)
+
+const FacebookIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+  </svg>
+)
+
+const PinterestIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.39 18.592.026 11.985.026L12.017 0z"/>
+  </svg>
+)
+
+const WhatsAppIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+)
+
+const LinkedInIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+  </svg>
+)
+
+const RedditIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
+  </svg>
+)
+import ShoppingListSection from '../components/recipe/ShoppingListSection'
+import RecipeLineage from '../components/recipe/RecipeLineage'
 
 const DIFFICULTY_MAP = { 0: 'Easy', 1: 'Medium', 2: 'Hard' }
 
@@ -32,14 +77,7 @@ const qtyTint = (s) => {
 }
 
 /* ---------- Helpers ---------- */
-const norm = (s) => String(s || '').toLowerCase().trim().replace(/\s+/g, ' ')
-const variants = (s) => {
-  const x = norm(s); if (!x) return []
-  const out = new Set([x])
-  x.endsWith('s') ? out.add(x.slice(0, -1)) : out.add(`${x}s`)
-  return [...out]
-}
-const isSevere = (s) => ['high', 'medium'].includes(String(s || '').toLowerCase())
+// Allergen helpers (norm, variants, isSevere) imported from utils/allergenHelpers.js
 
 function coerceTags(recipeObj, topLevel) {
   const arr =
@@ -61,6 +99,35 @@ const fmtMinutes = (m) => {
   if (h && mm) return `${h} hr ${mm} min`
   if (h) return `${h} hr`
   return `${mm} min`
+}
+
+/* ---------- Scale quantity helper ---------- */
+const scaleQuantity = (quantity, scale) => {
+  if (!quantity || scale === 1) return quantity
+  const qtyMatch = String(quantity).match(/^([\d.\/]+)\s*(.*)$/)
+  if (!qtyMatch) return quantity
+
+  const numPart = qtyMatch[1]
+  const unitPart = qtyMatch[2]
+
+  let num = 0
+  if (numPart.includes('/')) {
+    const [numer, denom] = numPart.split('/')
+    num = parseFloat(numer) / parseFloat(denom)
+  } else {
+    num = parseFloat(numPart)
+  }
+
+  if (isNaN(num)) return quantity
+
+  const scaled = num * scale
+  if (scaled === Math.floor(scaled)) return `${scaled} ${unitPart}`.trim()
+  if (scaled === 0.5) return `1/2 ${unitPart}`.trim()
+  if (scaled === 0.25) return `1/4 ${unitPart}`.trim()
+  if (scaled === 0.75) return `3/4 ${unitPart}`.trim()
+  if (Math.abs(scaled - 0.333) < 0.01) return `1/3 ${unitPart}`.trim()
+  if (Math.abs(scaled - 0.666) < 0.01) return `2/3 ${unitPart}`.trim()
+  return `${scaled.toFixed(2).replace(/\.?0+$/, '')} ${unitPart}`.trim()
 }
 const toMinutes = (v) => {
   if (typeof v === 'number' && !Number.isNaN(v)) return v
@@ -85,34 +152,6 @@ const Section = ({ icon: Icon, title, children }) => (
   </Card>
 )
 
-/* ---------- Confirm modal ---------- */
-function ConfirmModal({ open, title = 'Are you sure?', description, confirmText = 'Confirm', cancelText = 'Cancel', onConfirm, onCancel, danger }) {
-  if (!open) return null
-  return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel} />
-      <Card className="relative w-full sm:w-[420px] mx-3 mb-3 sm:mx-0 sm:mb-0">
-        <div className="px-5 py-4">
-          <h3 className="text-lg font-semibold">{title}</h3>
-          {description && <p className="mt-1.5 text-sm text-platerly-muted">{description}</p>}
-          <div className="mt-5 flex gap-2 justify-end">
-            <button
-              onClick={onCancel}
-              className="px-4 py-2 rounded-md border border-platerly-border text-platerly-text hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-platerly-accent/40">
-              {cancelText}
-            </button>
-            <button
-              onClick={onConfirm}
-              className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-platerly-accent/40 ${danger ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-platerly-accent text-black hover:brightness-110'
-                }`}>
-              {confirmText}
-            </button>
-          </div>
-        </div>
-      </Card>
-    </div>
-  )
-}
 
 const RecipeDetailsPage = () => {
   const { id } = useParams()
@@ -123,7 +162,6 @@ const RecipeDetailsPage = () => {
   const [remixMeta, setRemixMeta] = useState(null)
   const [topLevelForTags, setTopLevelForTags] = useState(null)
   const [comments, setComments] = useState([])
-  const [newComment, setNewComment] = useState('')
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [error, setError] = useState('')
@@ -134,6 +172,7 @@ const RecipeDetailsPage = () => {
   const [menuOpen, setMenuOpen] = useState(false)
   const [saveOpen, setSaveOpen] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [ingredientScale, setIngredientScale] = useState(1)
 
   const menuRef = useRef(null)
 
@@ -175,7 +214,7 @@ const RecipeDetailsPage = () => {
       setLoading(false)
     } catch (e) {
       if (!signal || !signal.aborted) {
-        console.error(e)
+        logger.error('Recipe operation failed', e)
         setError('Something went wrong loading this recipe.')
         setLoading(false)
       }
@@ -200,7 +239,7 @@ const RecipeDetailsPage = () => {
       setAllergenHits(Array.isArray(data) ? data : [])
     } catch (e) {
       if (!signal || !signal.aborted) {
-        console.error(e)
+        logger.error('Recipe operation failed', e)
         setAllergenHits([])
       }
     } finally {
@@ -225,6 +264,14 @@ const RecipeDetailsPage = () => {
 
     return () => ctl.abort()
   }, [id, token])
+
+  /* ---------- Track view for trending ---------- */
+  useEffect(() => {
+    if (!id || loading || notFound || error) return
+
+    // Fire and forget - don't await or handle errors
+    fetch(`${API_BASE_URL}/api/Recipe/${id}/view`, { method: 'POST' }).catch(() => {})
+  }, [id, loading, notFound, error])
 
   /* ---------- Derived ---------- */
   const hitSeverityByIngredientId = useMemo(() => {
@@ -306,6 +353,43 @@ const RecipeDetailsPage = () => {
   const goEdit = () => navigate(`/edit-recipe/${id}`)
   const goRemix = () => navigate(`/remix/${id}`)
 
+  // Share functionality
+  const [shareOpen, setShareOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const shareUrl = `${window.location.origin}/recipe/${id}`
+
+  const handleShare = () => {
+    setShareOpen(true)
+  }
+
+  const shareTo = (platform) => {
+    const text = `Check out this recipe: ${recipe?.title || 'Recipe'}`
+    const links = {
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(text)}`,
+      pinterest: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(shareUrl)}&description=${encodeURIComponent(text)}`,
+      whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + shareUrl)}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+      reddit: `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(recipe?.title || 'Recipe')}`,
+      email: `mailto:?subject=${encodeURIComponent('Check this recipe on Platerly')}&body=${encodeURIComponent(text + '\n\n' + shareUrl)}`
+    }
+    const u = links[platform]
+    if (u) window.open(u, '_blank', 'noopener,noreferrer')
+    setShareOpen(false)
+  }
+
+  const copyShareLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      toast.success('Link copied!')
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      toast.error('Failed to copy link')
+    }
+    setShareOpen(false)
+  }
+
   const doDelete = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
@@ -321,8 +405,8 @@ const RecipeDetailsPage = () => {
       let msg = ''; try { msg = await res.text() } catch { }
       throw new Error(`Delete failed (${res.status}): ${msg}`)
     } catch (e) {
-      console.error('Delete error:', e)
-      alert('Sorry, delete failed.')
+      logger.error('Delete failed', e)
+      toast.error('Sorry, delete failed.')
     }
   }
 
@@ -392,6 +476,9 @@ const RecipeDetailsPage = () => {
               )}
               <button onClick={goRemix} className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/5">
                 <RefreshCw className="w-4 h-4" /> Remix
+              </button>
+              <button onClick={handleShare} className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/5">
+                <Share2 className="w-4 h-4" /> Share
               </button>
             </div>
           )}
@@ -486,6 +573,15 @@ const RecipeDetailsPage = () => {
         </div>
       )}
 
+      {/* Recipe Lineage / Evolution */}
+      <div className="mt-6">
+        <RecipeLineage
+          recipeId={id}
+          isRemix={!!recipe?.parentRecipeId || !!remixMeta?.originalRecipeId}
+          remixCount={recipe?.remixCount || remixMeta?.remixCount || 0}
+        />
+      </div>
+
       {/* Allergy Alert */}
       {token && hasAnyAllergen && (
         <Card className="mt-6 border-red-500/60">
@@ -518,109 +614,220 @@ const RecipeDetailsPage = () => {
           <div className="text-platerly-text/95 whitespace-pre-line">{recipe?.instructions || 'No instructions provided.'}</div>
         </Section>
 
-        <Section icon={TagIcon} title="Ingredients">
-          <div className="flex flex-wrap gap-2.5">
-            {(recipe?.ingredients || []).map((ing, i) => {
-              // ✅ Primary: by IngredientId from /api/Allergy/hits
-              const idKey = String(ing?.id || ing?.ingredientId || '')
-              const sevFromHits = idKey ? (hitSeverityByIngredientId[idKey] || null) : null
-
-              // Optional fallback: legacy matchedAllergenSeverity name-based
-              const sevFallback = lookupSeverityFallback(ing?.name, ing)
-              const sev = sevFromHits || sevFallback
-
-              const visual = sev || 'safe'
-              const cls =
-                visual === 'high' ? SEVERITY_CLASS.high :
-                  visual === 'medium' ? SEVERITY_CLASS.medium :
-                    visual === 'low' ? SEVERITY_CLASS.low :
-                      SEVERITY_CLASS.safe
-
-              return (
-                <span
-                  key={i}
-                  className={`px-3 py-1.5 rounded-full text-sm border ${cls}`}
-                  title={sev ? `Severity: ${sev}` : undefined}
+        <Card>
+          <div className="px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between bg-white/5 border-b border-platerly-border/70">
+            <div className="flex items-center gap-2">
+              <TagIcon className="w-4 h-4 text-platerly-muted" aria-hidden />
+              <h2 className="text-base sm:text-lg font-semibold">Ingredients</h2>
+            </div>
+            {/* Scale Controls */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-platerly-subtle mr-1">Scale:</span>
+              <button
+                onClick={() => setIngredientScale(s => Math.max(0.5, s - 0.5))}
+                disabled={ingredientScale <= 0.5}
+                className="w-7 h-7 rounded-lg bg-platerly-card border border-platerly-border flex items-center justify-center hover:bg-platerly-light disabled:opacity-50 transition-colors"
+                aria-label="Decrease scale"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <span className="w-10 text-center text-sm font-medium text-platerly-text">
+                {ingredientScale}x
+              </span>
+              <button
+                onClick={() => setIngredientScale(s => Math.min(10, s + 0.5))}
+                disabled={ingredientScale >= 10}
+                className="w-7 h-7 rounded-lg bg-platerly-card border border-platerly-border flex items-center justify-center hover:bg-platerly-light disabled:opacity-50 transition-colors"
+                aria-label="Increase scale"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+              {ingredientScale !== 1 && (
+                <button
+                  onClick={() => setIngredientScale(1)}
+                  className="ml-1 text-xs text-platerly-subtle hover:text-platerly-green transition-colors"
                 >
-                  {(visual === 'high' || visual === 'medium') && <span className="mr-1">⚠</span>}
-                  {ing.quantity && <span className={`${qtyTint(visual)} font-semibold mr-1`}>{ing.quantity}</span>}
-                  <span>{ing.name}</span>
-                </span>
-              )
-            })}
+                  Reset
+                </button>
+              )}
+            </div>
           </div>
-        </Section>
+          <div className="px-4 sm:px-5 py-4">
+            <div className="flex flex-wrap gap-2.5">
+              {(recipe?.ingredients || []).map((ing, i) => {
+                // ✅ Primary: by IngredientId from /api/Allergy/hits
+                const idKey = String(ing?.id || ing?.ingredientId || '')
+                const sevFromHits = idKey ? (hitSeverityByIngredientId[idKey] || null) : null
+
+                // Optional fallback: legacy matchedAllergenSeverity name-based
+                const sevFallback = lookupSeverityFallback(ing?.name, ing)
+                const sev = sevFromHits || sevFallback
+
+                const visual = sev || 'safe'
+                const cls =
+                  visual === 'high' ? SEVERITY_CLASS.high :
+                    visual === 'medium' ? SEVERITY_CLASS.medium :
+                      visual === 'low' ? SEVERITY_CLASS.low :
+                        SEVERITY_CLASS.safe
+
+                const scaledQty = scaleQuantity(ing.quantity, ingredientScale)
+
+                return (
+                  <span
+                    key={i}
+                    className={`px-3 py-1.5 rounded-full text-sm border ${cls}`}
+                    title={sev ? `Severity: ${sev}` : undefined}
+                  >
+                    {(visual === 'high' || visual === 'medium') && <span className="mr-1">⚠</span>}
+                    {scaledQty && <span className={`${qtyTint(visual)} font-semibold mr-1`}>{scaledQty}</span>}
+                    <span>{ing.name}</span>
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+        </Card>
+
+        {/* Shopping List */}
+        <ShoppingListSection
+          ingredients={recipe?.ingredients || []}
+          servings={recipe?.servings || 1}
+          recipeTitle={recipe?.title || ''}
+          recipeId={id}
+        />
       </div>
 
       {/* Comments */}
-      {token && (
-        <div className="mt-10">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold">Comments</h3>
-            <span className="text-sm text-platerly-muted">({comments.length})</span>
-          </div>
+      <div className="mt-10">
+        <CommentsSection recipeId={id} initialComments={comments} />
+      </div>
 
-          <Card className="p-4">
-            <div className="space-y-3">
-              <textarea
-                rows={3}
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Write a comment…"
-                className="w-full bg-platerly-card border border-platerly-border text-platerly-text rounded-lg p-3"
-              />
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Delete recipe?"
+        description="This will hide the recipe for everyone else. You can't recover it here."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={doDelete}
+        tone="danger"
+      />
+
+      {/* Share Modal */}
+      {shareOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            onClick={() => setShareOpen(false)}
+          />
+          <div className="fixed inset-x-4 bottom-4 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 z-50 w-auto sm:w-80 rounded-2xl bg-platerly-card border border-platerly-border shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-platerly-border bg-platerly-light/30">
+              <h3 className="font-semibold text-platerly-text">Share Recipe</h3>
               <button
-                onClick={async () => {
-                  if (!newComment.trim()) return
-                  try {
-                    const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
-                      method: 'POST',
-                      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ recipeId: id, content: newComment }),
-                    })
-                    if (!res.ok) throw new Error('Failed to post comment')
-                    setNewComment('')
-                    const refreshed = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
-                      headers: token ? { Authorization: `Bearer ${token}` } : {}
-                    })
-                    const updated = await refreshed.json()
-                    setComments(Array.isArray(updated) ? updated : [])
-                  } catch (err) { console.error(err) }
-                }}
-                className="px-5 py-2 bg-platerly-accent text-black rounded-lg font-medium hover:brightness-110">
-                Post Comment
+                onClick={() => setShareOpen(false)}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light transition-colors"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {comments.length > 0 && (
-              <div className="mt-6 space-y-3">
-                {comments.map(comment => (
-                  <div key={comment.id} className="rounded-xl border border-platerly-border bg-white/5 p-3">
-                    <div className="flex justify-between items-center text-sm text-platerly-muted mb-1.5">
-                      <Link to={`/profile/${comment.username}`} className="font-medium hover:text-platerly-accent">
-                        @{comment.username}
-                      </Link>
-                      <span>{new Date(comment.createdAt).toLocaleString()}</span>
-                    </div>
-                    <p className="text-platerly-text/95">{comment.content}</p>
+            <div className="p-3">
+              {/* Social Grid */}
+              <div className="grid grid-cols-4 gap-2">
+                <button
+                  onClick={() => shareTo('twitter')}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  title="Share on X"
+                >
+                  <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <XIcon className="w-5 h-5 text-white" />
                   </div>
-                ))}
-              </div>
-            )}
-          </Card>
-        </div>
-      )}
+                  <span className="text-[11px] text-platerly-subtle">X</span>
+                </button>
 
-      <ConfirmModal
-        open={confirmOpen}
-        title="Delete recipe?"
-        description="This will hide the recipe for everyone else. You can’t recover it here."
-        confirmText="Delete"
-        cancelText="Cancel"
-        onCancel={() => setConfirmOpen(false)}
-        onConfirm={async () => { setConfirmOpen(false); await doDelete() }}
-        danger
-      />
+                <button
+                  onClick={() => shareTo('facebook')}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  title="Share on Facebook"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#1877F2] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <FacebookIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-[11px] text-platerly-subtle">Facebook</span>
+                </button>
+
+                <button
+                  onClick={() => shareTo('whatsapp')}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  title="Share on WhatsApp"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <WhatsAppIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-[11px] text-platerly-subtle">WhatsApp</span>
+                </button>
+
+                <button
+                  onClick={() => shareTo('pinterest')}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  title="Share on Pinterest"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#E60023] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <PinterestIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-[11px] text-platerly-subtle">Pinterest</span>
+                </button>
+
+                <button
+                  onClick={() => shareTo('linkedin')}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  title="Share on LinkedIn"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#0A66C2] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <LinkedInIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-[11px] text-platerly-subtle">LinkedIn</span>
+                </button>
+
+                <button
+                  onClick={() => shareTo('reddit')}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  title="Share on Reddit"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#FF4500] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <RedditIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-[11px] text-platerly-subtle">Reddit</span>
+                </button>
+
+                <button
+                  onClick={() => shareTo('email')}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  title="Share via Email"
+                >
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Mail className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-[11px] text-platerly-subtle">Email</span>
+                </button>
+
+                <button
+                  onClick={copyShareLink}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  title="Copy Link"
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform ${copied ? 'bg-platerly-green' : 'bg-platerly-light border border-platerly-border'}`}>
+                    {copied ? <Check className="w-5 h-5 text-white" /> : <LinkIcon className="w-5 h-5 text-platerly-text" />}
+                  </div>
+                  <span className="text-[11px] text-platerly-subtle">{copied ? 'Copied!' : 'Copy'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
     </div>
   )

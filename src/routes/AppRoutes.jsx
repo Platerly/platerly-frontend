@@ -1,77 +1,200 @@
+import { Suspense, lazy } from 'react'
 import { useRoutes } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
 import RequireAuth from '../components/RequireAuth'
-import Landing from '../pages/Landing'
-import Register from '../pages/Register'
-import Login from '../pages/Login'
-import VerifyEmail from '../pages/VerifyEmail'
-import Feed from '../pages/Feed'
-import CreateRecipe from '../pages/CreateRecipe'
-import RemixPage from '../pages/RemixPage'
-import RecipeDetailsPage from '../pages/RecipeDetailsPage'
-import CookbookPage from '../pages/CookbookPage'
-import CookbookDetailsPage from '../pages/CookbookDetailsPage'
-import AllergySettingsPage from '../pages/AllergySettingsTab'
-import MyProfileSettingsPage from '../pages/EditProfileTab'
-import UserProfilePage from '../pages/UserProfilePage'
-import SearchResultsPage from '../pages/SearchResultsPage'
-import ExploreChefsPage from '../pages/ExploreChefsPage'
-import SettingsPage from '../pages/SettingsPage'
-import ForgotPassword from '../pages/ForgotPassword'
-import ResetPassword from '../pages/ResetPassword'
-import EditRecipePage from '../pages/EditRecipePage'
-import TermsPage from '../pages/public/TermsPage'
-import PrivacyPage from '../pages/public/PrivacyPage'
-import GuidelinesPage from '../pages/public/GuidelinesPage'
-import AllergyDisclaimerPage from '../pages/public/AllergyDisclaimerPage'
-import RefundsPage from '../pages/public/RefundsPage'
-import ContactPage from '../pages/public/ContactPage'
-import NotFoundPage from '../pages/public/NotFoundPage'
-import FollowListPage from '../pages/FollowListPage'
-import AccountPage from '../components/account/AccountPage'
+import RequireAdmin from '../components/RequireAdmin'
+import AdminLayout from '../components/layout/AdminLayout'
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen bg-platerly-dark flex items-center justify-center">
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-10 h-10 border-3 border-platerly-accent border-t-transparent rounded-full animate-spin" />
+      <span className="text-platerly-muted text-sm">Loading...</span>
+    </div>
+  </div>
+)
+
+// Lazy-loaded pages for code-splitting
+// Auth pages (small, load quickly)
+const Landing = lazy(() => import('../pages/Landing'))
+const Register = lazy(() => import('../pages/Register'))
+const Login = lazy(() => import('../pages/Login'))
+const VerifyEmail = lazy(() => import('../pages/VerifyEmail'))
+const VerifyEmailChange = lazy(() => import('../pages/VerifyEmailChange'))
+const ResendVerification = lazy(() => import('../pages/ResendVerification'))
+const ForgotPassword = lazy(() => import('../pages/ForgotPassword'))
+const ResetPassword = lazy(() => import('../pages/ResetPassword'))
+const OnboardingPage = lazy(() => import('../pages/OnboardingPage'))
+
+// Main app pages
+const Feed = lazy(() => import('../pages/Feed'))
+const CreateRecipe = lazy(() => import('../pages/CreateRecipe'))
+const RemixPage = lazy(() => import('../pages/RemixPage'))
+const RecipeDetailsPage = lazy(() => import('../pages/RecipeDetailsPage'))
+const EditRecipePage = lazy(() => import('../pages/EditRecipePage'))
+
+// User pages
+const UserProfilePage = lazy(() => import('../pages/UserProfilePage'))
+const FollowListPage = lazy(() => import('../pages/FollowListPage'))
+const NotificationsPage = lazy(() => import('../pages/NotificationsPage'))
+
+// Cookbook pages
+const CookbookPage = lazy(() => import('../pages/CookbookPage'))
+const CookbookDetailsPage = lazy(() => import('../pages/CookbookDetailsPage'))
+const ExploreCookbooksPage = lazy(() => import('../pages/ExploreCookbooksPage'))
+
+// Shopping list
+const ShoppingListPage = lazy(() => import('../pages/ShoppingListPage'))
+
+// Meal planner
+const MealPlannerPage = lazy(() => import('../pages/MealPlannerPage'))
+
+// Settings pages
+const SettingsPage = lazy(() => import('../pages/SettingsPage'))
+const AllergySettingsPage = lazy(() => import('../pages/AllergySettingsTab'))
+const MyProfileSettingsPage = lazy(() => import('../pages/EditProfileTab'))
+const AccountPage = lazy(() => import('../components/account/AccountPage'))
+
+// Explore pages
+const SearchResultsPage = lazy(() => import('../pages/SearchResultsPage'))
+const ExploreChefsPage = lazy(() => import('../pages/ExploreChefsPage'))
+const TrendingPage = lazy(() => import('../pages/TrendingPage'))
+
+// Public/legal pages
+const TermsPage = lazy(() => import('../pages/public/TermsPage'))
+const PrivacyPage = lazy(() => import('../pages/public/PrivacyPage'))
+const GuidelinesPage = lazy(() => import('../pages/public/GuidelinesPage'))
+const AllergyDisclaimerPage = lazy(() => import('../pages/public/AllergyDisclaimerPage'))
+const RefundsPage = lazy(() => import('../pages/public/RefundsPage'))
+const ContactPage = lazy(() => import('../pages/public/ContactPage'))
+const NotFoundPage = lazy(() => import('../pages/public/NotFoundPage'))
+
+// Admin pages (only loaded when accessed)
+const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'))
+const ProhibitedIngredientsPage = lazy(() => import('../pages/admin/ProhibitedIngredientsPage'))
+const UserManagementPage = lazy(() => import('../pages/admin/UserManagementPage'))
+const AuditLogsPage = lazy(() => import('../pages/admin/AuditLogsPage'))
+
+// Wrap component with Suspense
+const withSuspense = (Component) => (
+  <Suspense fallback={<PageLoader />}>
+    <Component />
+  </Suspense>
+)
+
+// Wrap with Suspense and layout
+const withLayout = (Component, Layout = AppLayout) => (
+  <Suspense fallback={<PageLoader />}>
+    <Layout><Component /></Layout>
+  </Suspense>
+)
+
+// Wrap with Suspense, layout, and auth
+const withAuth = (Component, Layout = AppLayout) => (
+  <RequireAuth>
+    <Suspense fallback={<PageLoader />}>
+      <Layout><Component /></Layout>
+    </Suspense>
+  </RequireAuth>
+)
+
+// Wrap with Suspense, admin layout, and admin auth
+const withAdmin = (Component, superAdminOnly = false) => (
+  <RequireAdmin superAdminOnly={superAdminOnly}>
+    <Suspense fallback={<PageLoader />}>
+      <AdminLayout><Component /></AdminLayout>
+    </Suspense>
+  </RequireAdmin>
+)
 
 const AppRoutes = () =>
   useRoutes([
     // Marketing landing at root
-    { path: '/', element: <Landing /> },
+    { path: '/', element: withSuspense(Landing) },
 
     // Public auth routes
-    { path: '/register', element: <Register /> },
-    { path: '/login', element: <Login /> },
-    { path: '/verify-email', element: <VerifyEmail /> },
-    { path: '/reset-password', element: <ResetPassword /> },
-    { path: '/forgot-password', element: <ForgotPassword /> },
+    { path: '/register', element: withSuspense(Register) },
+    { path: '/login', element: withSuspense(Login) },
+    { path: '/verify-email', element: withSuspense(VerifyEmail) },
+    { path: '/verify-email-change', element: withSuspense(VerifyEmailChange) },
+    { path: '/verify/resend', element: withSuspense(ResendVerification) },
+    { path: '/reset-password', element: withSuspense(ResetPassword) },
+    { path: '/forgot-password', element: withSuspense(ForgotPassword) },
 
-    { path: '/terms', element: <TermsPage /> },
-    { path: '/privacy', element: <PrivacyPage /> },
-    { path: '/guidelines', element: <GuidelinesPage /> },
-    { path: '/disclaimer', element: <AllergyDisclaimerPage /> },
-    { path: '/refunds', element: <RefundsPage /> },
-    { path: '/contact', element: <ContactPage /> },
+    // Legal/public pages
+    { path: '/terms', element: withSuspense(TermsPage) },
+    { path: '/privacy', element: withSuspense(PrivacyPage) },
+    { path: '/guidelines', element: withSuspense(GuidelinesPage) },
+    { path: '/disclaimer', element: withSuspense(AllergyDisclaimerPage) },
+    { path: '/refunds', element: withSuspense(RefundsPage) },
+    { path: '/contact', element: withSuspense(ContactPage) },
 
-    // Protected
-    { path: '/create', element: <RequireAuth><AppLayout><CreateRecipe /></AppLayout></RequireAuth> },
-    { path: '/remix/:originalId', element: <RequireAuth><AppLayout><RemixPage /></AppLayout></RequireAuth> },
-    { path: '/cookbooks', element: <RequireAuth><AppLayout><CookbookPage /></AppLayout></RequireAuth> },
-    { path: '/cookbook/:id', element: <RequireAuth><AppLayout><CookbookDetailsPage /></AppLayout></RequireAuth> },
-    { path: '/settings', element: <RequireAuth><AppLayout><SettingsPage /></AppLayout></RequireAuth> },
-    { path: '/settings/allergies', element: <RequireAuth><AppLayout><AllergySettingsPage /></AppLayout></RequireAuth> },
-    { path: '/settings/profile', element: <RequireAuth><AppLayout><MyProfileSettingsPage /></AppLayout></RequireAuth> },
-    { path: '/edit-recipe/:id', element: <RequireAuth><AppLayout><EditRecipePage /></AppLayout></RequireAuth> },
-    { path: '/user/:username/followers', element: <RequireAuth><AppLayout><FollowListPage type="followers" /></AppLayout></RequireAuth> },
-    { path: '/user/:username/following', element: <RequireAuth><AppLayout><FollowListPage type="following" /></AppLayout></RequireAuth> },
-    { path: '/account', element: <RequireAuth><AppLayout><AccountPage /></AppLayout></RequireAuth> },
-    
-    // Public content
-    { path: '/feed', element: <AppLayout><Feed /></AppLayout>},
-    { path: '/recipe/:id', element: <AppLayout><RecipeDetailsPage /></AppLayout> },
-    { path: '/profile/:username', element: <AppLayout><UserProfilePage /></AppLayout> },
-    { path: '/search', element: <AppLayout><SearchResultsPage /></AppLayout> },
+    // Onboarding (protected but without layout)
+    { path: '/onboarding', element: (
+      <RequireAuth>
+        <Suspense fallback={<PageLoader />}>
+          <OnboardingPage />
+        </Suspense>
+      </RequireAuth>
+    )},
+
+    // Protected routes
+    { path: '/create', element: withAuth(CreateRecipe) },
+    { path: '/remix/:originalId', element: withAuth(RemixPage) },
+    { path: '/cookbooks', element: withAuth(CookbookPage) },
+    { path: '/cookbook/:id', element: withAuth(CookbookDetailsPage) },
+    { path: '/explore-cookbooks', element: withAuth(ExploreCookbooksPage) },
+    { path: '/shopping-list', element: withAuth(ShoppingListPage) },
+    { path: '/meal-planner', element: withAuth(MealPlannerPage) },
+    { path: '/settings', element: withAuth(SettingsPage) },
+    { path: '/settings/allergies', element: withAuth(AllergySettingsPage) },
+    { path: '/settings/profile', element: withAuth(MyProfileSettingsPage) },
+    { path: '/edit-recipe/:id', element: withAuth(EditRecipePage) },
+    {
+      path: '/user/:username/followers',
+      element: (
+        <RequireAuth>
+          <Suspense fallback={<PageLoader />}>
+            <AppLayout><FollowListPage type="followers" /></AppLayout>
+          </Suspense>
+        </RequireAuth>
+      )
+    },
+    {
+      path: '/user/:username/following',
+      element: (
+        <RequireAuth>
+          <Suspense fallback={<PageLoader />}>
+            <AppLayout><FollowListPage type="following" /></AppLayout>
+          </Suspense>
+        </RequireAuth>
+      )
+    },
+    { path: '/account', element: withAuth(AccountPage) },
+    { path: '/notifications', element: withAuth(NotificationsPage) },
+
+    // Public content (with layout but no auth required)
+    { path: '/feed', element: withLayout(Feed) },
+    { path: '/trending', element: withLayout(TrendingPage) },
+    { path: '/recipe/:id', element: withLayout(RecipeDetailsPage) },
+    { path: '/profile/:username', element: withLayout(UserProfilePage) },
+    { path: '/search', element: withLayout(SearchResultsPage) },
 
     // Optional protected explore
-    { path: '/explore-chefs', element: <RequireAuth><AppLayout><ExploreChefsPage /></AppLayout></RequireAuth> },
+    { path: '/explore-chefs', element: withAuth(ExploreChefsPage) },
 
-    { path: '*', element: <NotFoundPage /> },
+    // Admin routes (protected, no indexing, no analytics)
+    { path: '/admin', element: withAdmin(AdminDashboard) },
+    { path: '/admin/prohibited-ingredients', element: withAdmin(ProhibitedIngredientsPage) },
+    { path: '/admin/categories', element: withAdmin(ProhibitedIngredientsPage) },
+    { path: '/admin/ingredients', element: withAdmin(ProhibitedIngredientsPage) },
+    { path: '/admin/substitutions', element: withAdmin(ProhibitedIngredientsPage) },
+    { path: '/admin/users', element: withAdmin(UserManagementPage, true) },
+    { path: '/admin/audit-logs', element: withAdmin(AuditLogsPage, true) },
+
+    // 404 fallback
+    { path: '*', element: withSuspense(NotFoundPage) },
   ])
 
 export default AppRoutes

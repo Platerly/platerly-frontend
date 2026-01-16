@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { API_BASE_URL } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
 import { Upload, X } from 'lucide-react'
+import { parseApiError } from '../utils/parseApiError'
+import ProhibitedIngredientsError from '../components/ui/ProhibitedIngredientsError'
 
 /* ───────────────── Difficulty helpers ───────────────── */
 const DIFFICULTY_OPTIONS = ['Easy', 'Medium', 'Hard']
@@ -36,7 +38,7 @@ export default function EditRecipePage() {
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(null) // { message, violations } or null
 
   const [form, setForm] = useState({
     title: '',
@@ -66,7 +68,13 @@ export default function EditRecipePage() {
   const [currentImageUrl, setCurrentImageUrl] = useState('')
   const [file, setFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState('')
+  const [imageError, setImageError] = useState('')
   const inputRef = useRef(null)
+
+  // Image constraints
+  const MAX_IMAGE_SIZE_MB = 5
+  const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
+  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
   useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl) }, [previewUrl])
 
@@ -179,12 +187,29 @@ export default function EditRecipePage() {
   const onPickFile = (e) => {
     const f = e.target.files && e.target.files[0]
     if (!f) return
+
+    setImageError('') // Clear previous errors
+
+    // Validate file type
+    if (!ALLOWED_IMAGE_TYPES.includes(f.type)) {
+      setImageError('Please select a valid image (JPEG, PNG, WebP, or GIF)')
+      e.target.value = '' // Reset input
+      return
+    }
+
+    // Validate file size
+    if (f.size > MAX_IMAGE_SIZE_BYTES) {
+      setImageError(`Image is too large. Maximum size is ${MAX_IMAGE_SIZE_MB}MB. Your image is ${(f.size / 1024 / 1024).toFixed(1)}MB.`)
+      e.target.value = '' // Reset input
+      return
+    }
+
     if (previewUrl) URL.revokeObjectURL(previewUrl)
     setFile(f); setPreviewUrl(URL.createObjectURL(f))
   }
   const clearPickedFile = () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl)
-    setPreviewUrl(''); setFile(null); if (inputRef.current) inputRef.current.value = ''
+    setPreviewUrl(''); setFile(null); setImageError(''); if (inputRef.current) inputRef.current.value = ''
   }
 
   const onChange = (e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -201,7 +226,7 @@ export default function EditRecipePage() {
   /* ───────────────── Submit ───────────────── */
   const onSubmit = async (e) => {
     e.preventDefault()
-    setSaving(true); setError('')
+    setSaving(true); setError(null)
     try {
       // Merge tags into array (case-insensitive de-dup)
       const tagMap = new Map()
@@ -223,7 +248,11 @@ export default function EditRecipePage() {
       if (file) fd.append('Image', file, file.name)
 
       const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: fd })
-      if (!res.ok) { const text = await res.text().catch(() => ''); throw new Error(text || 'Failed to save changes') }
+      if (!res.ok) {
+        const text = await res.text().catch(() => '')
+        setError(parseApiError(text || 'Failed to save changes'))
+        return
+      }
 
       // 2) ingredients replacement
       const ingPayload = {
@@ -236,17 +265,21 @@ export default function EditRecipePage() {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(ingPayload)
       })
-      if (!res2.ok) { const text = await res2.text().catch(() => ''); throw new Error(text || 'Saved main details, but updating ingredients failed') }
+      if (!res2.ok) {
+        const text = await res2.text().catch(() => '')
+        setError(parseApiError(text || 'Saved main details, but updating ingredients failed'))
+        return
+      }
 
       navigate(`/recipe/${id}`)
     } catch (e) {
-      console.error(e); setError(e.message || 'Save failed')
+      console.error(e)
+      setError({ message: e.message || 'Save failed', violations: null })
     } finally { setSaving(false) }
   }
 
   /* ───────────────── UI ───────────────── */
   if (loading) return <div className="p-6 text-platerly-subtle">Loading…</div>
-  if (error)   return <div className="p-6 text-[15px] text-platerly-yellow">{error}</div>
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 text-platerly-text">
@@ -290,6 +323,10 @@ export default function EditRecipePage() {
           )}
         </div>
         <input ref={inputRef} type="file" accept="image/*" onChange={onPickFile} className="hidden" />
+        <p className="mt-1 text-xs text-platerly-subtle">Max size: {MAX_IMAGE_SIZE_MB}MB. Formats: JPEG, PNG, WebP, GIF</p>
+        {imageError && (
+          <p className="mt-2 text-sm text-red-400">{imageError}</p>
+        )}
       </div>
 
       <form onSubmit={onSubmit} className="space-y-6">
@@ -530,6 +567,15 @@ export default function EditRecipePage() {
             </select>
           </div>
         </div>
+
+        {/* Error display */}
+        {error && error.violations ? (
+          <ProhibitedIngredientsError message={error.message} violations={error.violations} />
+        ) : error ? (
+          <div className="flex items-center gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+            {error.message}
+          </div>
+        ) : null}
 
         {/* Desktop actions */}
         <div className="hidden md:flex justify-end gap-2">

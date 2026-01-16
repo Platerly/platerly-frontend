@@ -2,8 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { API_BASE_URL } from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
+import { usePremium } from '../../hooks/usePremium'
 import classNames from 'classnames'
-import { Filter, Search, TrendingUp, X, ChevronRight } from 'lucide-react'
+import { Filter, Search, TrendingUp, TrendingDown, X, ChevronRight, SlidersHorizontal, Flame, Heart, Wand2, Carrot, Lock, Sparkles } from 'lucide-react'
 
 /* ---------- small utils ---------- */
 const useAuthed = (user, token) =>
@@ -23,8 +24,22 @@ const Highlight = ({ text = '', query = '' }) => {
   )
 }
 
+const TrendIndicator = ({ delta }) => {
+  if (delta === 0 || delta === undefined || delta === null) return null
+  const isUp = delta > 0
+  return (
+    <span className={classNames(
+      'inline-flex items-center gap-0.5 text-xs font-medium',
+      isUp ? 'text-green-400' : 'text-red-400'
+    )}>
+      {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+      {Math.abs(delta)}
+    </span>
+  )
+}
+
 /* ---------- bottom sheet (mobile) ---------- */
-function BottomSheet({ open, onClose, title, children }) {
+function BottomSheet({ open, onClose, title, icon: Icon, children }) {
   const sheetRef = useRef(null)
 
   // lock scroll
@@ -46,19 +61,29 @@ function BottomSheet({ open, onClose, title, children }) {
   if (!open) return null
   return (
     <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div
         ref={sheetRef}
         role="dialog"
         aria-modal="true"
-        className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl border border-white/10 bg-platerly-dark p-4 shadow-2xl animate-[slide-up_180ms_ease-out]"
+        className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-3xl border-t border-platerly-border bg-platerly-card p-5 shadow-2xl animate-[slide-up_180ms_ease-out]"
       >
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-base font-semibold text-white">{title}</h3>
+        {/* Handle bar */}
+        <div className="w-10 h-1 rounded-full bg-platerly-border mx-auto mb-4" />
+
+        <div className="mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {Icon && (
+              <div className="w-10 h-10 rounded-xl bg-platerly-green/20 flex items-center justify-center">
+                <Icon className="w-5 h-5 text-platerly-green" />
+              </div>
+            )}
+            <h3 className="text-lg font-semibold text-platerly-text">{title}</h3>
+          </div>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-2 text-platerly-subtle hover:bg-white/5 hover:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500"
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-platerly-subtle hover:bg-platerly-light hover:text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -74,6 +99,7 @@ function BottomSheet({ open, onClose, title, children }) {
 /* ---------- main component ---------- */
 const RightColumn = () => {
   const { user, token } = useAuth()
+  const { isPremium } = usePremium()
   const authed = useAuthed(user, token)
 
   // quick search
@@ -86,6 +112,12 @@ const RightColumn = () => {
   const [trending, setTrending] = useState([])
   const [tLoading, setTLoading] = useState(true)
   const [tError, setTError] = useState(null)
+  const [trendingPeriod, setTrendingPeriod] = useState('week')
+
+  // trending ingredients (premium)
+  const [trendingIngredients, setTrendingIngredients] = useState([])
+  const [tiLoading, setTiLoading] = useState(false)
+  const [tiError, setTiError] = useState(null)
 
   // filters via URL
   const [sp] = useSearchParams()
@@ -112,10 +144,15 @@ const RightColumn = () => {
   const fetchSuggestions = async (text) => {
     setLoadingSearch(true)
     try {
-      const res = await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(text)}`)
+      const res = await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(text)}&pageSize=10`)
       if (!res.ok) throw new Error('Search failed')
       const data = await res.json()
-      setSuggestions(Array.isArray(data) ? data : [])
+      // API returns { users: [], recipes: [], ... } - combine into flat array
+      const users = Array.isArray(data.users) ? data.users : []
+      const recipes = Array.isArray(data.recipes) ? data.recipes : []
+      // Interleave users and recipes for better UX, limit to 8 total
+      const combined = [...users.slice(0, 4), ...recipes.slice(0, 4)]
+      setSuggestions(combined)
       setShowDropdown(true)
     } catch (e) {
       console.error(e)
@@ -161,7 +198,8 @@ const RightColumn = () => {
     ;(async () => {
       try {
         setTLoading(true)
-        const res = await fetch(`${API_BASE_URL}/api/feed/trending-top?limit=5`)
+        setTError(null)
+        const res = await fetch(`${API_BASE_URL}/api/feed/trending-top?limit=5&period=${trendingPeriod}`)
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
         if (mounted) setTrending(data.items ?? [])
@@ -173,16 +211,47 @@ const RightColumn = () => {
       }
     })()
     return () => { mounted = false }
-  }, [])
+  }, [trendingPeriod])
+
+  /* ---------- trending ingredients (premium) ---------- */
+  useEffect(() => {
+    if (!isPremium || !token) return
+    let mounted = true
+    ;(async () => {
+      try {
+        setTiLoading(true)
+        setTiError(null)
+        const res = await fetch(`${API_BASE_URL}/api/feed/trending-ingredients?limit=8`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (!res.ok) {
+          if (res.status === 402) {
+            setTiError('Premium required')
+          } else {
+            throw new Error(`HTTP ${res.status}`)
+          }
+          return
+        }
+        const data = await res.json()
+        if (mounted) setTrendingIngredients(data.items ?? [])
+      } catch (err) {
+        console.error(err)
+        if (mounted) setTiError('Failed to load')
+      } finally {
+        if (mounted) setTiLoading(false)
+      }
+    })()
+    return () => { mounted = false }
+  }, [isPremium, token])
 
   /* ---------- shared UI blocks ---------- */
   const SearchBox = (
     <form onSubmit={handleSearchSubmit} className="relative" role="search">
-      <div className="flex items-center gap-2 rounded-full border border-platerly-border bg-platerly-card px-3 py-2">
-        <Search className="h-4 w-4 text-platerly-subtle" />
+      <div className="flex items-center gap-3 rounded-xl border border-platerly-border bg-platerly-light/50 px-4 py-3 transition-all duration-200 focus-within:border-platerly-green/40 focus-within:ring-2 focus-within:ring-platerly-green/20 focus-within:bg-platerly-light">
+        <Search className="h-5 w-5 text-platerly-subtle shrink-0" />
         <input
           type="text"
-          placeholder="Search recipes or users"
+          placeholder="Search recipes or users..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query && setShowDropdown(true)}
@@ -193,32 +262,50 @@ const RightColumn = () => {
       </div>
       {showDropdown && (
         <div
-          className="absolute top-11 left-0 right-0 z-50 max-h-72 overflow-y-auto rounded-lg border border-platerly-border bg-platerly-card shadow-lg"
+          className="absolute top-14 left-0 right-0 z-50 max-h-80 overflow-y-auto rounded-xl border border-platerly-border bg-platerly-card shadow-xl shadow-black/20"
           role="listbox"
         >
           {loadingSearch ? (
-            <p className="p-4 text-center text-platerly-subtle">Searching…</p>
+            <div className="p-6 text-center">
+              <div className="w-6 h-6 border-2 border-platerly-green/30 border-t-platerly-green rounded-full animate-spin mx-auto mb-2" />
+              <p className="text-sm text-platerly-subtle">Searching...</p>
+            </div>
           ) : suggestions.length === 0 ? (
-            <p className="p-4 text-center text-platerly-subtle">No results</p>
+            <div className="p-6 text-center">
+              <Search className="w-8 h-8 text-platerly-subtle mx-auto mb-2" />
+              <p className="text-sm text-platerly-subtle">No results found</p>
+            </div>
           ) : (
-            <ul>
+            <ul className="py-2">
               {suggestions.map((item, idx) => (
                 <li key={idx}>
                   <button
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleSelect(item)}
-                    className="block w-full px-4 py-2 text-left text-sm hover:bg-platerly-green/10"
+                    className="flex items-center gap-3 w-full px-4 py-3 text-left text-sm hover:bg-platerly-green/10 transition-colors"
                     role="option"
                   >
                     {item.type === 'user' ? (
-                      <span className="text-platerly-text">
-                        👤 @<Highlight text={item.username} query={query} />{' '}
-                        <span className="text-platerly-subtle">— {item.displayName}</span>
-                      </span>
+                      <>
+                        <div className="w-8 h-8 rounded-lg bg-platerly-light flex items-center justify-center text-platerly-subtle">
+                          👤
+                        </div>
+                        <div>
+                          <div className="text-platerly-text font-medium">
+                            @<Highlight text={item.username} query={query} />
+                          </div>
+                          <div className="text-xs text-platerly-subtle">{item.displayName}</div>
+                        </div>
+                      </>
                     ) : (
-                      <span className="text-platerly-text">
-                        🍽️ <Highlight text={item.title} query={query} />
-                      </span>
+                      <>
+                        <div className="w-8 h-8 rounded-lg bg-platerly-light flex items-center justify-center text-platerly-subtle">
+                          🍽️
+                        </div>
+                        <div className="text-platerly-text font-medium">
+                          <Highlight text={item.title} query={query} />
+                        </div>
+                      </>
                     )}
                   </button>
                 </li>
@@ -231,15 +318,22 @@ const RightColumn = () => {
   )
 
   const Filters = authed && (
-    <div className="rounded-xl border border-platerly-border bg-platerly-card/60 backdrop-blur-sm p-4">
-      <h3 className="mb-3 text-sm font-semibold tracking-wide text-platerly-subtle">Refine feed</h3>
-      <div className="space-y-3 text-sm">
+    <div className="rounded-2xl border border-platerly-border bg-platerly-card/60 backdrop-blur-sm p-5">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-9 h-9 rounded-xl bg-platerly-green/15 flex items-center justify-center">
+          <SlidersHorizontal className="w-4 h-4 text-platerly-green" />
+        </div>
+        <h3 className="text-sm font-semibold text-platerly-text">Refine Feed</h3>
+      </div>
+
+      <div className="space-y-4 text-sm">
         <div>
-          <label className="mb-1 block text-xs text-platerly-subtle">Difficulty</label>
+          <label className="mb-1.5 block text-xs font-medium text-platerly-subtle">Difficulty</label>
           <select
             value={difficulty}
             onChange={handleDifficulty}
-            className="w-full rounded-lg border border-platerly-border bg-platerly-card px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full rounded-xl border border-platerly-border bg-platerly-light px-3 py-2.5 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green/50 transition-all"
           >
             <option value="any">Any</option>
             <option value="easy">Easy</option>
@@ -249,121 +343,274 @@ const RightColumn = () => {
         </div>
 
         <div>
-          <label className="mb-1 block text-xs text-platerly-subtle">Tags (comma-separated)</label>
+          <label className="mb-1.5 block text-xs font-medium text-platerly-subtle">Tags (comma-separated)</label>
           <input
             type="text"
             value={tags}
             onChange={handleTags}
             placeholder="vegan, low nickel"
-            className="w-full rounded-lg border border-platerly-border bg-platerly-card px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full rounded-xl border border-platerly-border bg-platerly-light px-3 py-2.5 text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green/50 transition-all"
           />
         </div>
 
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={requireAllTags} onChange={handleRequireAll} />
-          <span>Require all tags</span>
-        </label>
+        <div className="space-y-2.5 pt-1">
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <input type="checkbox" checked={requireAllTags} onChange={handleRequireAll} className="w-4 h-4 rounded border-platerly-border text-platerly-green focus:ring-platerly-green/40" />
+            <span className="text-platerly-text/90 group-hover:text-platerly-text transition-colors">Require all tags</span>
+          </label>
 
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={hideRemixes} onChange={handleHideRemixes} />
-          <span>Hide remixes</span>
-        </label>
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <input type="checkbox" checked={hideRemixes} onChange={handleHideRemixes} className="w-4 h-4 rounded border-platerly-border text-platerly-green focus:ring-platerly-green/40" />
+            <span className="text-platerly-text/90 group-hover:text-platerly-text transition-colors">Hide remixes</span>
+          </label>
 
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={hideMyAllergens} onChange={handleHideAllergens} />
-          <span>Hide my allergens</span>
-        </label>
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <input type="checkbox" checked={hideMyAllergens} onChange={handleHideAllergens} className="w-4 h-4 rounded border-platerly-border text-platerly-green focus:ring-platerly-green/40" />
+            <span className="text-platerly-text/90 group-hover:text-platerly-text transition-colors">Hide my allergens</span>
+          </label>
+        </div>
       </div>
     </div>
   )
 
+  const periodLabels = { today: 'Today', week: 'Week', month: 'Month' }
+
   const Trending = (
-  <div className="rounded-xl border border-platerly-border bg-platerly-card/60 backdrop-blur-sm p-4">
-    <div className="mb-3 flex items-center justify-between">
-      <h3 className="flex items-center gap-2 text-sm font-semibold tracking-wide text-orange-400">
-        <TrendingUp className="h-4 w-4 stroke-orange-400" />
-        <span>Trending</span>
-      </h3>
+    <div className="rounded-2xl border border-platerly-border bg-platerly-card/60 backdrop-blur-sm p-5">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-9 h-9 rounded-xl bg-orange-500/15 flex items-center justify-center">
+          <Flame className="w-4 h-4 text-orange-400" />
+        </div>
+        <h3 className="text-sm font-semibold text-platerly-text">Trending Now</h3>
+      </div>
 
-      {/* <button
-        onClick={() => navigate('/feed?sort=trending')}
-        className="inline-flex items-center gap-1 text-xs font-semibold text-orange-400 hover:text-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-400/40 rounded"
-        aria-label="See all trending"
-      >
-        See all
-        <ChevronRight className="h-3.5 w-3.5" />
-      </button> */}
+      {/* Period Tabs */}
+      <div className="flex gap-1 mb-4">
+        {['today', 'week', 'month'].map((p) => (
+          <button
+            key={p}
+            onClick={() => setTrendingPeriod(p)}
+            className={classNames(
+              'flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors',
+              trendingPeriod === p
+                ? 'bg-platerly-green text-platerly-dark'
+                : 'bg-platerly-light text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light/80'
+            )}
+          >
+            {periodLabels[p]}
+          </button>
+        ))}
+      </div>
+
+      {tLoading && (
+        <ul className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <li key={i} className="animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="h-14 w-14 rounded-xl bg-platerly-light shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-3/4 rounded-lg bg-platerly-light" />
+                  <div className="h-3 w-1/2 rounded-lg bg-platerly-light/70" />
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {!tLoading && tError && (
+        <div className="text-sm text-red-400 bg-red-500/10 rounded-xl px-4 py-3 border border-red-500/20">
+          {tError}
+        </div>
+      )}
+
+      {!tLoading && !tError && (
+        <>
+          <ul className="space-y-2">
+            {trending.map((it) => (
+              <li key={it.id}>
+                <button
+                  onClick={() => navigate(`/recipe/${it.id}`)}
+                  className="group w-full text-left p-2 -mx-2 rounded-xl hover:bg-platerly-light/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    {/* thumb */}
+                    <div className="relative h-14 w-14 overflow-hidden rounded-xl border border-platerly-border shrink-0 group-hover:border-platerly-green/30 transition-colors">
+                      {it.imageUrl ? (
+                        <img
+                          src={it.imageUrl}
+                          alt={it.title}
+                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-platerly-light flex items-center justify-center">
+                          <Flame className="w-5 h-5 text-platerly-subtle" />
+                        </div>
+                      )}
+                      <span className="absolute left-1 top-1 rounded-md bg-gradient-to-r from-orange-500 to-amber-500 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
+                        #{it.rank}
+                      </span>
+                    </div>
+
+                    {/* text */}
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-semibold text-platerly-text group-hover:text-platerly-green transition-colors">
+                        {it.title}
+                      </div>
+                      <div className="mt-0.5 text-xs text-platerly-subtle">
+                        by <span className="font-medium text-platerly-text/80">{it.username}</span>
+                      </div>
+                      {/* Engagement metrics */}
+                      <div className="mt-1 flex items-center gap-3 text-xs text-platerly-subtle">
+                        {it.likeCount > 0 && (
+                          <span className="flex items-center gap-1">
+                            <Heart className="w-3 h-3" />
+                            {it.likeCount}
+                          </span>
+                        )}
+                        {it.remixCount > 0 && (
+                          <span className="flex items-center gap-1">
+                            <Wand2 className="w-3 h-3" />
+                            {it.remixCount}
+                          </span>
+                        )}
+                        <TrendIndicator delta={it.rankDelta} />
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <button
+            onClick={() => navigate('/trending')}
+            className="w-full mt-4 py-2 text-sm font-medium text-platerly-subtle hover:text-orange-400 transition-colors flex items-center justify-center gap-1.5"
+          >
+            View all trending
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </>
+      )}
     </div>
+  )
 
+  // Trending Ingredients (Premium Feature)
+  const TrendingIngredients = authed && (
+    <div className="rounded-2xl border border-platerly-border bg-platerly-card/60 backdrop-blur-sm p-5 relative overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+          <Carrot className="w-4 h-4 text-emerald-400" />
+        </div>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-platerly-text">Trending Ingredients</h3>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-[10px] font-bold text-amber-400 border border-amber-500/20">
+            <Sparkles className="w-2.5 h-2.5" />
+            PRO
+          </span>
+        </div>
+      </div>
 
-    {tLoading && (
-      <ul className="space-y-3">
-        {[...Array(5)].map((_, i) => (
-          <li key={i} className="animate-pulse">
-            <div className="grid grid-cols-[64px_1fr] items-center gap-3">
-              <div className="h-12 w-16 rounded-md bg-white/10" />
-              <div className="space-y-2">
-                <div className="h-3 w-3/4 rounded bg-white/10" />
-                <div className="h-3 w-1/3 rounded bg-white/10" />
-              </div>
+      {isPremium ? (
+        // Premium user content
+        <>
+          {tiLoading && (
+            <div className="space-y-2">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="animate-pulse flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-platerly-light" />
+                  <div className="flex-1 h-4 rounded bg-platerly-light" />
+                </div>
+              ))}
             </div>
-          </li>
-        ))}
-      </ul>
-    )}
-
-    {!tLoading && tError && <div className="text-xs text-red-300">{tError}</div>}
-
-    {!tLoading && !tError && (
-      <ul className="space-y-3">
-        {trending.map((it) => (
-          <li key={it.id}>
-            <button
-              onClick={() => navigate(`/recipe/${it.id}`)}
-              className="group w-full text-left"
-            >
-              <div className="grid grid-cols-[64px_1fr] items-center gap-3">
-                {/* thumb */}
-                <div className="relative h-12 w-16 overflow-hidden rounded-md ring-1 ring-white/10">
-                  <img
-                    src={it.imageUrl}
-                    alt={it.title}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                  <span className="absolute left-1 top-1 rounded-md bg-orange-500/90 px-1.5 py-0.5 text-[10px] font-bold text-white shadow">
-                    #{it.rank}
-                  </span>
-                </div>
-
-                {/* text */}
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-medium group-hover:underline">
-                    {it.title}
+          )}
+          {!tiLoading && tiError && (
+            <div className="text-sm text-red-400 bg-red-500/10 rounded-xl px-4 py-3 border border-red-500/20">
+              {tiError}
+            </div>
+          )}
+          {!tiLoading && !tiError && trendingIngredients.length > 0 && (
+            <ul className="space-y-2">
+              {trendingIngredients.map((ing, idx) => (
+                <li key={idx} className="flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-platerly-light/50 transition-colors">
+                  <div className="w-8 h-8 rounded-lg bg-platerly-light flex items-center justify-center text-lg">
+                    🥬
                   </div>
-                  <div className="mt-0.5 text-xs text-platerly-subtle">
-                    by <span className="font-medium text-platerly-text/90">{it.username}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-platerly-text truncate capitalize">
+                      {ing.ingredient}
+                    </div>
+                    <div className="text-xs text-platerly-subtle">
+                      {ing.recipeCount} recipe{ing.recipeCount !== 1 ? 's' : ''}
+                    </div>
                   </div>
-                </div>
-              </div>
-            </button>
-          </li>
-        ))}
-      </ul>
-    )}
-  </div>
-)
+                  {ing.growthPercent > 0 && (
+                    <span className="text-xs font-medium text-green-400 flex items-center gap-0.5">
+                      <TrendingUp className="w-3 h-3" />
+                      {Math.round(ing.growthPercent)}%
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          {!tiLoading && !tiError && trendingIngredients.length === 0 && (
+            <p className="text-sm text-platerly-subtle text-center py-4">No trending ingredients data available.</p>
+          )}
+        </>
+      ) : (
+        // Non-premium blur + CTA
+        <>
+          {/* Blurred preview */}
+          <div className="relative">
+            <div className="blur-sm pointer-events-none select-none">
+              <ul className="space-y-2 opacity-60">
+                {['Avocado', 'Kimchi', 'Tahini', 'Miso', 'Sriracha'].map((name, i) => (
+                  <li key={i} className="flex items-center gap-3 p-2">
+                    <div className="w-8 h-8 rounded-lg bg-platerly-light flex items-center justify-center text-lg">🥬</div>
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-platerly-text">{name}</div>
+                      <div className="text-xs text-platerly-subtle">{Math.floor(Math.random() * 50 + 10)} recipes</div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Overlay CTA */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-platerly-card/80 rounded-xl">
+              <Lock className="w-8 h-8 text-platerly-subtle mb-3" />
+              <p className="text-sm font-medium text-platerly-text mb-1">Premium Feature</p>
+              <p className="text-xs text-platerly-subtle text-center mb-3 px-4">
+                See what ingredients are trending in recipes
+              </p>
+              <button
+                onClick={() => navigate('/settings?tab=subscription')}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold hover:brightness-110 transition-all"
+              >
+                <Sparkles className="w-4 h-4" />
+                Upgrade to Pro
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
 
 
   /* ---------- render ---------- */
   return (
     <>
       {/* Desktop right rail */}
-      <aside className="bg-platerly-light text-platerly-text fixed right-0 top-0 hidden h-screen w-[320px] overflow-y-auto border-l border-platerly-border px-6 py-8 lg:block">
-        <div className="space-y-6">
+      <aside className="bg-platerly-card/50 backdrop-blur-sm text-platerly-text fixed right-0 top-0 hidden h-screen w-[320px] overflow-y-auto border-l border-platerly-border px-5 py-8 lg:block">
+        <div className="space-y-5">
           {SearchBox}
           {Filters}
           {Trending}
+          {TrendingIngredients}
         </div>
       </aside>
 
@@ -372,18 +619,19 @@ const RightColumn = () => {
         {/* FAB */}
         <button
           onClick={() => setOpenSheet(true)}
-          className="fixed bottom-4 right-4 inline-flex items-center gap-2 rounded-full bg-green-500 px-4 py-3 text-sm font-semibold text-white shadow-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+          className="fixed bottom-20 right-4 inline-flex items-center gap-2 rounded-xl bg-platerly-green px-5 py-3.5 text-sm font-semibold text-platerly-dark shadow-lg shadow-platerly-green/25 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-platerly-green/50 focus:ring-offset-2 focus:ring-offset-platerly-dark transition-all duration-200 active:scale-95"
           aria-label="Open explore panel"
         >
-          <Filter className="h-4 w-4" />
+          <Search className="h-4 w-4" />
           Explore
         </button>
 
-        <BottomSheet open={openSheet} onClose={() => setOpenSheet(false)} title="Explore">
-          <div className="space-y-6">
+        <BottomSheet open={openSheet} onClose={() => setOpenSheet(false)} title="Explore" icon={Search}>
+          <div className="space-y-5">
             {SearchBox}
             {Filters}
             {Trending}
+            {TrendingIngredients}
           </div>
         </BottomSheet>
       </div>

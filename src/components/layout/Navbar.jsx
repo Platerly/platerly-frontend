@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import classNames from 'classnames'
 import { useAuth } from '../../context/AuthContext'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, Plus, LogOut } from 'lucide-react'
 import { API_BASE_URL } from '../../utils/api'
 
 const Navbar = () => {
@@ -50,15 +50,17 @@ const Navbar = () => {
 
   const LinkClass = ({ isActive }) =>
     classNames(
-      'px-2 py-1 rounded-md transition-colors',
-      isActive ? 'text-white bg-white/5' : 'text-platerly-subtle hover:text-white'
+      'px-3 py-1.5 rounded-lg transition-all duration-200',
+      isActive
+        ? 'text-platerly-green bg-platerly-green/10 font-medium'
+        : 'text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light/50'
     )
 
   return (
     <header
       className={classNames(
-        'sticky top-0 z-50 border-b border-white/10',
-        'bg-platerly-dark/80 backdrop-blur supports-[backdrop-filter]:bg-platerly-dark/70',
+        'sticky top-0 z-50 border-b border-platerly-border',
+        'bg-platerly-dark/80 backdrop-blur-md supports-[backdrop-filter]:bg-platerly-dark/70',
         'text-sm',
         'pt-[env(safe-area-inset-top)]'
       )}
@@ -69,18 +71,18 @@ const Navbar = () => {
           {/* Left: Logo */}
           <Link
             to={logoTarget}
-            className="text-xl font-semibold tracking-tight text-white hover:text-green-400 focus:outline-none focus:ring-2 focus:ring-green-400 rounded-md"
+            className="text-xl font-semibold tracking-tight text-platerly-text hover:text-platerly-green focus:outline-none focus:ring-2 focus:ring-platerly-green/40 rounded-md transition-colors"
             aria-label="Platerly Home"
             title={`Go to ${authed ? '/feed' : '/login'}`}
           >
-            Platerly
+            <span className="text-platerly-green">Platerly</span>
           </Link>
 
           {/* Right: Desktop nav */}
           {!isLandingPage && (
-            <div className="hidden sm:flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-3">
               <nav aria-label="Primary">
-                <ul className="flex items-center gap-2">
+                <ul className="flex items-center gap-1">
                   {(authed ? authedLinks : guestLinks).map(({ name, path }) => (
                     <li key={path}>
                       <NavLink to={path} className={LinkClass}>
@@ -92,21 +94,23 @@ const Navbar = () => {
               </nav>
 
               {authed ? (
-                <>
+                <div className="flex items-center gap-2 ml-2">
                   <Link
                     to="/create"
-                    className="rounded-lg bg-green-500 px-3 py-1.5 font-medium text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-platerly-green px-4 py-2 font-medium text-platerly-dark hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-platerly-green/40 shadow-lg shadow-platerly-green/20 transition-all"
                   >
+                    <Plus className="w-4 h-4" />
                     Create
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="rounded-lg px-3 py-1.5 text-red-400 hover:text-red-300 hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-60"
+                    className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 focus:outline-none focus:ring-2 focus:ring-red-400/40 disabled:opacity-60 transition-all"
                     disabled={loading || loggingOut}
                   >
+                    <LogOut className="w-4 h-4" />
                     {loggingOut ? 'Logging out…' : 'Log Out'}
                   </button>
-                </>
+                </div>
               ) : null}
             </div>
           )}
@@ -115,7 +119,7 @@ const Navbar = () => {
           {!isLandingPage && (
             <button
               onClick={() => setOpen(v => !v)}
-              className="sm:hidden inline-flex items-center justify-center rounded-md p-2 text-platerly-subtle hover:text-white hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-green-400"
+              className="sm:hidden inline-flex items-center justify-center rounded-xl p-2 text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light/50 focus:outline-none focus:ring-2 focus:ring-platerly-green/40 transition-colors"
               aria-label="Toggle navigation menu"
               aria-expanded={open}
             >
@@ -127,7 +131,7 @@ const Navbar = () => {
 
       {/* Mobile drawer */}
       {!isLandingPage && open && (
-        <div className="sm:hidden border-t border-white/10 bg-platerly-dark">
+        <div className="sm:hidden border-t border-platerly-border bg-platerly-dark">
           <div className="mx-auto max-w-6xl px-4 py-3">
             <nav aria-label="Mobile navigation">
               <ul className="flex flex-col gap-1">
@@ -137,8 +141,10 @@ const Navbar = () => {
                       to={path}
                       className={({ isActive }) =>
                         classNames(
-                          'block w-full rounded-md px-3 py-2',
-                          isActive ? 'text-white bg-white/5' : 'text-platerly-subtle hover:text-white hover:bg-white/5'
+                          'block w-full rounded-xl px-3 py-2.5 transition-colors',
+                          isActive
+                            ? 'text-platerly-green bg-platerly-green/10 font-medium'
+                            : 'text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light/50'
                         )
                       }
                     >
@@ -153,15 +159,17 @@ const Navbar = () => {
               <div className="mt-3 flex items-center gap-2">
                 <Link
                   to="/create"
-                  className="flex-1 rounded-lg bg-green-500 px-3 py-2 text-center font-medium text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-platerly-green px-3 py-2.5 text-center font-medium text-platerly-dark hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-platerly-green/40 shadow-lg shadow-platerly-green/20 transition-all"
                 >
+                  <Plus className="w-4 h-4" />
                   Create
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex-1 rounded-lg px-3 py-2 text-center text-red-400 hover:text-red-300 hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-60"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-center text-red-400 hover:text-red-300 hover:bg-red-500/10 focus:outline-none focus:ring-2 focus:ring-red-400/40 disabled:opacity-60 transition-all"
                   disabled={loading || loggingOut}
                 >
+                  <LogOut className="w-4 h-4" />
                   {loggingOut ? 'Logging out…' : 'Log Out'}
                 </button>
               </div>

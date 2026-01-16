@@ -5,6 +5,14 @@ import ReactGA from "react-ga4";
 export function AnalyticsTracker() {
   const location = useLocation();
   useEffect(() => {
+    // Skip analytics for admin routes to prevent exposure
+    if (location.pathname.startsWith("/admin")) {
+      return;
+    }
+    // Also check the global admin mode flag
+    if (window.__PLATERLY_ADMIN_MODE__) {
+      return;
+    }
     if (import.meta.env.VITE_ENV === "production") {
       ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
     }

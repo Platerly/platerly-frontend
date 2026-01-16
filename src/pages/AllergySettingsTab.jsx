@@ -3,8 +3,8 @@ import axios from "axios";
 import { API_BASE_URL } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
-
-const norm = (s) => (s || "").toString().trim().toLowerCase();
+import { norm } from "../utils/allergenHelpers";
+import { logger } from "../utils/logger";
 
 export default function AllergySettingsTab() {
   const { token } = useAuth();
@@ -43,7 +43,7 @@ export default function AllergySettingsTab() {
             : []
         );
       } catch (e) {
-        console.error("Failed to load allergy data", e);
+        logger.error("Failed to load allergy data", e);
         if (!cancelled) {
           setErr("Failed to load allergies. Please try again.");
           toast.error("Could not load allergies.");
@@ -102,7 +102,7 @@ export default function AllergySettingsTab() {
 
       toast.success("Allergy preferences saved!");
     } catch (e) {
-      console.error("Failed to update allergies", e);
+      logger.error("Failed to update allergies", e);
       toast.error("Failed to save preferences.");
     } finally {
       setSaving(false);

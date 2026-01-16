@@ -2,8 +2,15 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
+import SocialLoginButtons from '../components/auth/SocialLoginButtons'
 import { useAuth } from '../context/AuthContext'
 import { API_BASE_URL } from '../utils/api'
+
+// Check if user needs onboarding (OAuth users with email-based username)
+const needsOnboarding = (user) => {
+  if (!user?.username) return false
+  return user.username.includes('@')
+}
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -110,9 +117,13 @@ const Register = () => {
   }
 
   return (
-    <div className="min-h-[100svh] bg-platerly-dark text-platerly-text flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md">
-        <div className="bg-platerly-card border border-platerly-border rounded-2xl shadow-xl/50 shadow-black/10 backdrop-blur-sm p-6 sm:p-8">
+    <div className="min-h-[100svh] bg-platerly-dark text-platerly-text flex items-center justify-center px-4 py-10 relative overflow-hidden">
+      {/* Background gradient orbs */}
+      <div className="absolute top-1/4 -right-32 w-80 h-80 bg-platerly-green/10 rounded-full blur-[120px]" />
+      <div className="absolute bottom-1/4 -left-32 w-80 h-80 bg-emerald-500/10 rounded-full blur-[120px]" />
+
+      <div className="w-full max-w-md relative z-10">
+        <div className="bg-platerly-card/80 backdrop-blur-md border border-platerly-border rounded-2xl shadow-2xl shadow-black/20 p-6 sm:p-8">
           <div className="text-center mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Create your <span className="text-platerly-accent">Platerly</span> account
@@ -120,10 +131,27 @@ const Register = () => {
             <p className="text-sm text-platerly-muted mt-2">It’s quick and free.</p>
           </div>
 
+          {/* Social Login */}
+          <SocialLoginButtons
+            onSuccess={(data) => {
+              if (data?.token && data?.user) {
+                login({ token: data.token, user: data.user, remember: true })
+                // OAuth users need onboarding to set proper username
+                if (needsOnboarding(data.user)) {
+                  navigate('/onboarding', { replace: true })
+                } else {
+                  navigate(redirectPath, { replace: true })
+                }
+              }
+            }}
+            onError={(msg) => setErrors((s) => ({ ...s, social: msg }))}
+            disabled={loading}
+          />
+
           {/* top-level form error (if any field sets one we surface first) */}
           {Object.keys(errors).length > 0 && (
             <div role="alert" aria-live="assertive" className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 text-red-300 px-3 py-2 text-sm">
-              Please fix the highlighted fields.
+              {errors.social || 'Please fix the highlighted fields.'}
             </div>
           )}
 

@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ChefHat, Users, ArrowRight } from 'lucide-react'
 import { API_BASE_URL } from '../utils/api'
+import Button from '../components/ui/Button'
 
 const SkeletonCard = () => (
-  <div className="bg-platerly-card border border-platerly-light rounded-xl p-4 shadow">
-    <div className="animate-pulse">
-      <div className="w-16 h-16 rounded-full bg-platerly-light/50 mb-3" />
-      <div className="h-4 bg-platerly-light/60 rounded w-3/5 mb-2" />
-      <div className="h-3 bg-platerly-light/40 rounded w-2/5 mb-3" />
-      <div className="h-3 bg-platerly-light/30 rounded w-full mb-1" />
-      <div className="h-3 bg-platerly-light/30 rounded w-4/5" />
+  <div className="bg-platerly-card border border-platerly-border rounded-2xl p-5 animate-pulse">
+    <div className="flex items-center gap-4 mb-4">
+      <div className="w-16 h-16 rounded-full bg-platerly-light" />
+      <div className="flex-1 space-y-2">
+        <div className="h-5 bg-platerly-light rounded-lg w-3/4" />
+        <div className="h-4 bg-platerly-light/70 rounded-lg w-1/2" />
+      </div>
+    </div>
+    <div className="space-y-2">
+      <div className="h-3 bg-platerly-light/50 rounded w-full" />
+      <div className="h-3 bg-platerly-light/50 rounded w-4/5" />
     </div>
   </div>
 )
@@ -48,82 +54,99 @@ const ExploreChefsPage = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 text-platerly-text">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold">🍽️ Explore Chefs</h1>
-      </div>
+    <div className="min-h-screen bg-platerly-dark text-platerly-text relative overflow-hidden">
+      {/* Background gradient orbs */}
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-platerly-green/5 rounded-full blur-[128px]" />
+      <div className="absolute bottom-1/4 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
 
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-xl bg-platerly-green/20 flex items-center justify-center">
+              <Users className="w-5 h-5 text-platerly-green" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold">Explore Chefs</h1>
+          </div>
+          <p className="text-platerly-subtle">Discover talented home cooks and follow their culinary journey</p>
         </div>
-      ) : error ? (
-        <div className="rounded-xl border border-platerly-light bg-platerly-card p-6">
-          <p className="text-platerly-subtle"> {error} </p>
-          <button
-            onClick={() => { setLoading(true); setError(''); window.location.reload() }}
-            className="mt-4 inline-flex items-center rounded-md bg-platerly-green text-platerly-dark px-4 py-2 hover:opacity-90"
-          >
-            Try again
-          </button>
-        </div>
-      ) : users.length === 0 ? (
-        <div className="rounded-xl border border-platerly-light bg-platerly-card p-6">
-          <p className="text-platerly-subtle">No public profiles available yet.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {users.map((user) => {
-            const username = user.username || 'user'
-            const displayName = user.displayName || username
-            const bio = user.bio || ''
-            const avatar = user.profileImageUrl || '/default-avatar.svg'
 
-            return (
-              <div
-                key={username}
-                role="button"
-                tabIndex={0}
-                onClick={() => navigate(`/profile/${username}`)}
-                onKeyDown={(e) => onCardKeyDown(e, username)}
-                className="cursor-pointer bg-platerly-card border border-platerly-light rounded-xl p-4 shadow transition
-                           focus:outline-none focus:ring-2 focus:ring-platerly-green/40
-                           md:hover:shadow-md md:hover:-translate-y-0.5 md:transition-transform"
-                aria-label={`Open profile for ${displayName}`}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <img
-                    src={avatar}
-                    alt={`${displayName} avatar`}
-                    loading="lazy"
-                    className="w-16 h-16 rounded-full object-cover ring-2 ring-platerly-light"
-                  />
-                  <div className="min-w-0">
-                    <h2 className="text-lg font-semibold truncate">{displayName}</h2>
-                    <p className="text-sm text-platerly-subtle truncate">@{username}</p>
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        ) : error ? (
+          <div className="rounded-2xl border border-platerly-border bg-platerly-card p-8 text-center max-w-md mx-auto">
+            <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+              <ChefHat className="w-7 h-7 text-red-400" />
+            </div>
+            <p className="text-platerly-subtle mb-4">{error}</p>
+            <Button
+              onClick={() => { setLoading(true); setError(''); window.location.reload() }}
+              variant="secondary"
+            >
+              Try again
+            </Button>
+          </div>
+        ) : users.length === 0 ? (
+          <div className="rounded-2xl border border-platerly-border bg-platerly-card p-8 text-center max-w-md mx-auto">
+            <div className="w-14 h-14 rounded-2xl bg-platerly-light flex items-center justify-center mx-auto mb-4">
+              <ChefHat className="w-7 h-7 text-platerly-subtle" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">No chefs yet</h3>
+            <p className="text-platerly-subtle">Public profiles will appear here once available.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {users.map((user) => {
+              const username = user.username || 'user'
+              const displayName = user.displayName || username
+              const bio = user.bio || ''
+              const avatar = user.profileImageUrl || '/default-avatar.svg'
+
+              return (
+                <article
+                  key={username}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate(`/profile/${username}`)}
+                  onKeyDown={(e) => onCardKeyDown(e, username)}
+                  className="group cursor-pointer bg-platerly-card border border-platerly-border rounded-2xl p-5
+                             transition-all duration-200
+                             hover:border-platerly-green/30 hover:shadow-xl hover:shadow-platerly-green/5 hover:scale-[1.02]
+                             focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:ring-offset-2 focus:ring-offset-platerly-dark
+                             active:scale-[0.99]"
+                  aria-label={`Open profile for ${displayName}`}
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <img
+                      src={avatar}
+                      alt={`${displayName} avatar`}
+                      loading="lazy"
+                      className="w-14 h-14 rounded-full object-cover ring-2 ring-platerly-border group-hover:ring-platerly-green/30 transition-all"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-lg font-semibold truncate group-hover:text-platerly-green transition-colors">{displayName}</h2>
+                      <p className="text-sm text-platerly-subtle truncate">@{username}</p>
+                    </div>
                   </div>
-                </div>
 
-                {bio ? (
-                  <p className="text-sm text-platerly-subtle/90 line-clamp-2">
-                    {bio}
-                  </p>
-                ) : (
-                  <p className="text-sm text-platerly-subtle/70 italic">No bio yet.</p>
-                )}
+                  {bio ? (
+                    <p className="text-sm text-platerly-subtle line-clamp-2 mb-4">{bio}</p>
+                  ) : (
+                    <p className="text-sm text-platerly-subtle/60 italic mb-4">No bio yet.</p>
+                  )}
 
-                {/* footer (optional future: counts/follow button) */}
-                {/* <div className="mt-4 flex items-center justify-between">
-                  <span className="text-xs text-platerly-subtle">123 followers</span>
-                  <button className="text-sm px-3 py-1.5 rounded-md border border-platerly-light hover:bg-platerly-light/40">
-                    Follow
-                  </button>
-                </div> */}
-              </div>
-            )
-          })}
-        </div>
-      )}
+                  <div className="flex items-center justify-end text-sm text-platerly-subtle group-hover:text-platerly-green transition-colors">
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity">View profile</span>
+                    <ArrowRight className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

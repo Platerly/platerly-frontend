@@ -3,6 +3,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { NotificationsProvider } from './context/NotificationsContext'
 import AppRoutes from './routes/AppRoutes'
 import './index.css'
 import { Toaster } from 'react-hot-toast'
@@ -24,11 +25,13 @@ if (import.meta.env.VITE_GA_ID && import.meta.env.VITE_ENV === "production") {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-        <SoftWallRoot />
-        <Toaster position="top-right" reverseOrder={false} />
-      </BrowserRouter>
+      <NotificationsProvider>
+        <BrowserRouter>
+          <AppRoutes />
+          <SoftWallRoot />
+          <Toaster position="top-right" reverseOrder={false} />
+        </BrowserRouter>
+      </NotificationsProvider>
     </AuthProvider>
   </React.StrictMode>
 )

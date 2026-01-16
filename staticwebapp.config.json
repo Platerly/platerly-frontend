@@ -4,22 +4,10 @@
     "exclude": [
       "/api/*",
       "/assets/*",
-      "/static/*",
-      "/s/*",
-      "/og/*"
+      "/static/*"
     ]
   },
   "routes": [
-    {
-      "route": "/s/*",
-      "serve": "/api/share/recipe/*",
-      "statusCode": 200
-    },
-    {
-      "route": "/og/recipe/*",
-      "serve": "/api/share/og/recipe/*",
-      "statusCode": 200
-    },
     {
       "route": "/sitemap.xml",
       "redirect": "https://platerly-api-g9htcadmbda6h8ej.canadacentral-01.azurewebsites.net/sitemap.xml",

@@ -44,10 +44,10 @@ html, body {
   /* Chips (e.g., Sensitivity options) */
   .pl-chip {
     @apply inline-flex items-center gap-2 rounded-full px-3 py-1
-           bg-emerald-900/20 text-emerald-200 ring-1 ring-emerald-700/40;
+           bg-platerly-green/10 text-platerly-green ring-1 ring-platerly-green/30;
   }
   .pl-chip-muted {
-    @apply bg-white/5 text-platerly-text ring-1 ring-platerly-border;
+    @apply bg-platerly-light text-platerly-subtle ring-1 ring-platerly-border;
   }
   .pl-chip-active {
     @apply bg-platerly-green/15 text-platerly-text ring-1 ring-platerly-green/40;

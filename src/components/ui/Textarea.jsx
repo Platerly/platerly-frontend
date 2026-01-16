@@ -6,7 +6,6 @@ import classNames from 'classnames'
  * - Prevents iOS zoom-on-focus (16px base font)
  * - Auto-grows to fit content
  * - Accessible labels and error states
- * - Works in light and dark mode
  */
 
 const Textarea = ({
@@ -38,10 +37,10 @@ const Textarea = ({
       {label && (
         <label
           htmlFor={name}
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          className="block text-sm font-medium text-platerly-text/80 mb-1"
         >
           {label}
-          {required && <span className="text-red-500 ml-0.5">*</span>}
+          {required && <span className="text-red-400 ml-0.5">*</span>}
         </label>
       )}
 
@@ -57,10 +56,10 @@ const Textarea = ({
         rows={rows}
         className={classNames(
           'w-full text-[16px] sm:text-sm', // prevents iOS zoom
-          'px-4 py-3 rounded-lg border shadow-sm resize-none transition-all duration-200',
-          'bg-white dark:bg-neutral-800 text-gray-900 dark:text-white',
-          'border-gray-300 dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500',
-          'placeholder-gray-400 dark:placeholder-neutral-500',
+          'px-4 py-3 rounded-xl border shadow-sm resize-none transition-all duration-200',
+          'bg-platerly-card text-platerly-text',
+          'border-platerly-border focus:outline-none focus:ring-2 focus:ring-platerly-green/50 focus:border-platerly-green',
+          'placeholder-platerly-subtle',
           'leading-relaxed',
           disabled && 'opacity-50 cursor-not-allowed',
           error && 'border-red-500 focus:ring-red-500 focus:border-red-500',
@@ -69,7 +68,7 @@ const Textarea = ({
         {...props}
       />
 
-      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
     </div>
   )
 }

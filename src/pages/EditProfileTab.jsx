@@ -4,6 +4,8 @@ import Input from '../components/ui/Input'
 import Textarea from '../components/ui/Textarea'
 import Button from '../components/ui/Button'
 import { useAuth } from '../context/AuthContext'
+import { logger } from '../utils/logger'
+import { Camera, User } from 'lucide-react'
 
 const MAX_IMG_MB = 5
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
@@ -20,7 +22,7 @@ const EditProfileTab = () => {
   const [loading, setLoading] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [errorText, setErrorText] = useState('')
-  const { token } = useAuth()
+  const { token, updateUser } = useAuth()
 
   const authHeader = useMemo(() => (token ? { Authorization: `Bearer ${token}` } : {}), [token])
   const fileInputRef = useRef(null)
@@ -40,7 +42,7 @@ const EditProfileTab = () => {
         })
         setPreview(data.profileImageUrl || '')
       } catch (err) {
-        console.error(err)
+        logger.error(err)
         if (isMounted) setErrorText('Could not load your profile. Please try again.')
       }
     }
@@ -131,13 +133,19 @@ const EditProfileTab = () => {
       }
 
       setForm((prev) => ({ ...prev, profileImageUrl: imageUrl }))
+      // Sync changes to AuthContext so navbar/other components reflect updates immediately
+      updateUser({
+        displayName: form.displayName,
+        bio: form.bio,
+        profileImageUrl: imageUrl
+      })
       setSuccessMessage('Profile updated!')
       setFile(null)
       if (fileInputRef.current) fileInputRef.current.value = ''
       // auto-dismiss success after 3s
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (err) {
-      console.error(err)
+      logger.error(err)
       setErrorText(err.message || 'Something went wrong while saving.')
     } finally {
       setLoading(false)
@@ -145,9 +153,14 @@ const EditProfileTab = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 text-white">
-      <div className="bg-neutral-900/70 border border-neutral-800 rounded-2xl p-4 sm:p-6 space-y-6">
-        <h2 className="text-xl sm:text-2xl font-bold">Edit Profile</h2>
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 text-platerly-text">
+      <div className="bg-platerly-card/80 backdrop-blur-sm border border-platerly-border rounded-2xl p-4 sm:p-6 space-y-6">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-platerly-green/20 flex items-center justify-center">
+            <User className="w-5 h-5 text-platerly-green" />
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-platerly-text">Edit Profile</h2>
+        </div>
 
         {errorText && (
           <div className="text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl p-3">
@@ -155,37 +168,45 @@ const EditProfileTab = () => {
           </div>
         )}
         {successMessage && (
-          <div className="text-sm text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
+          <div className="text-sm text-platerly-green bg-platerly-green/10 border border-platerly-green/20 rounded-xl p-3">
             {successMessage}
           </div>
         )}
 
         <div className="flex items-center gap-4">
-          <div className="shrink-0">
+          <div className="shrink-0 relative group">
             {preview ? (
               <img
                 src={preview}
                 alt="Profile preview"
-                className="h-24 w-24 sm:h-28 sm:w-28 object-cover rounded-full border border-neutral-800"
+                className="h-24 w-24 sm:h-28 sm:w-28 object-cover rounded-2xl border-2 border-platerly-border group-hover:border-platerly-green/30 transition-colors"
                 loading="lazy"
               />
             ) : (
-              <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-full bg-neutral-800 border border-neutral-800 grid place-items-center text-neutral-400">
-                No photo
+              <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl bg-platerly-light border-2 border-platerly-border group-hover:border-platerly-green/30 transition-colors grid place-items-center text-platerly-subtle">
+                <User className="w-10 h-10" />
               </div>
             )}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-platerly-green text-platerly-dark flex items-center justify-center shadow-lg shadow-platerly-green/20 hover:opacity-90 transition-opacity"
+              aria-label="Change profile picture"
+            >
+              <Camera className="w-4 h-4" />
+            </button>
           </div>
 
           <div className="flex-1">
-            <label className="block text-sm font-medium text-neutral-300 mb-1">Profile Picture</label>
+            <label className="block text-sm font-medium text-platerly-text mb-1">Profile Picture</label>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              className="block w-full text-sm text-neutral-300 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700"
+              className="block w-full text-sm text-platerly-subtle file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-platerly-green file:text-platerly-dark hover:file:opacity-90 file:transition-opacity file:cursor-pointer"
             />
-            <p className="mt-1 text-xs text-neutral-500">JPG/PNG/WebP, up to {MAX_IMG_MB} MB.</p>
+            <p className="mt-1 text-xs text-platerly-muted">JPG/PNG/WebP, up to {MAX_IMG_MB} MB.</p>
           </div>
         </div>
 
@@ -210,7 +231,7 @@ const EditProfileTab = () => {
           <Button size="lg" onClick={handleSave} disabled={loading} className="min-h-[44px]">
             {loading ? 'Saving…' : 'Save Changes'}
           </Button>
-          {loading && <span className="text-sm text-neutral-400" aria-live="polite">Updating…</span>}
+          {loading && <span className="text-sm text-platerly-subtle" aria-live="polite">Updating…</span>}
         </div>
       </div>
     </div>

@@ -64,17 +64,17 @@ const Input = forwardRef(function Input(
       {label && (
         <label
           htmlFor={id}
-          className="block text-sm font-medium text-gray-300 mb-1"
+          className="block text-sm font-medium text-platerly-text/80 mb-1"
         >
           {label}
-          {required && <span className="text-red-500 ml-0.5">*</span>}
+          {required && <span className="text-red-400 ml-0.5">*</span>}
         </label>
       )}
 
       <div className="relative">
         {/* Left icon slot */}
         {leftIcon ? (
-          <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
+          <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-platerly-subtle">
             {leftIcon}
           </span>
         ) : null}
@@ -94,9 +94,9 @@ const Input = forwardRef(function Input(
           aria-invalid={!!error}
           aria-describedby={describedByIds.join(" ") || undefined}
           className={classNames(
-            "w-full rounded-md border shadow-sm transition-colors duration-200",
-            "bg-neutral-900 text-white placeholder:text-gray-500",
-            "border-platerly-border focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500",
+            "w-full rounded-xl border shadow-sm transition-colors duration-200",
+            "bg-platerly-card text-platerly-text placeholder:text-platerly-subtle",
+            "border-platerly-border focus:outline-none focus:ring-2 focus:ring-platerly-green/50 focus:border-platerly-green",
             "disabled:opacity-50 disabled:cursor-not-allowed",
             error && "border-red-500 focus:ring-red-500 focus:border-red-500",
             sizeStyles[size],
@@ -123,7 +123,7 @@ const Input = forwardRef(function Input(
                   props.onChange(synthetic);
                 }
               }}
-              className="px-2 py-1 rounded-md text-gray-300 hover:bg-emerald-900/30 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="px-2 py-1 rounded-md text-platerly-subtle hover:bg-platerly-green/20 focus:outline-none focus:ring-2 focus:ring-platerly-green/50"
               aria-label="Clear input"
               tabIndex={0}
             >
@@ -136,7 +136,7 @@ const Input = forwardRef(function Input(
             <button
               type="button"
               onClick={() => setReveal((v) => !v)}
-              className="px-2 py-1 rounded-md text-gray-300 hover:bg-emerald-900/30 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="px-2 py-1 rounded-md text-platerly-subtle hover:bg-platerly-green/20 focus:outline-none focus:ring-2 focus:ring-platerly-green/50"
               aria-label={reveal ? "Hide password" : "Show password"}
               tabIndex={0}
             >
@@ -146,7 +146,7 @@ const Input = forwardRef(function Input(
 
           {/* Custom right icon (click-through by default) */}
           {rightIcon ? (
-            <span className="text-gray-400">{rightIcon}</span>
+            <span className="text-platerly-subtle">{rightIcon}</span>
           ) : null}
         </div>
       </div>
@@ -157,7 +157,7 @@ const Input = forwardRef(function Input(
           {error}
         </p>
       ) : hint ? (
-        <p id={`${id}-hint`} className="mt-1 text-xs text-gray-400">
+        <p id={`${id}-hint`} className="mt-1 text-xs text-platerly-subtle">
           {hint}
         </p>
       ) : null}

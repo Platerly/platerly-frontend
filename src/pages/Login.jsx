@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
+import SocialLoginButtons from '../components/auth/SocialLoginButtons'
 import { API_BASE_URL } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
 
@@ -16,13 +17,20 @@ const useRedirectPath = () => {
   }, [location.search])
 }
 
+// Check if user needs onboarding (OAuth users with email-based username)
+const needsOnboarding = (user) => {
+  if (!user?.username) return false
+  // OAuth users often have email as username - they need to set a proper username
+  return user.username.includes('@')
+}
+
 const Login = () => {
   const { login } = useAuth()
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPw, setShowPw] = useState(false)
-  const [remember, setRemember] = useState(true) // premium apps default to remembering
+  const [remember, setRemember] = useState(false) // default unchecked for security
 
   const navigate = useNavigate()
   const redirectPath = useRedirectPath()
@@ -71,10 +79,14 @@ const Login = () => {
 
 
   return (
-    <div className="min-h-[100svh] bg-platerly-dark text-platerly-text flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md">
+    <div className="min-h-[100svh] bg-platerly-dark text-platerly-text flex items-center justify-center px-4 py-10 relative overflow-hidden">
+      {/* Background gradient orbs */}
+      <div className="absolute top-1/4 -left-32 w-80 h-80 bg-platerly-green/10 rounded-full blur-[120px]" />
+      <div className="absolute bottom-1/4 -right-32 w-80 h-80 bg-emerald-500/10 rounded-full blur-[120px]" />
+
+      <div className="w-full max-w-md relative z-10">
         {/* Card */}
-        <div className="bg-platerly-card border border-platerly-border rounded-2xl shadow-xl/50 shadow-black/10 backdrop-blur-sm p-6 sm:p-8">
+        <div className="bg-platerly-card/80 backdrop-blur-md border border-platerly-border rounded-2xl shadow-2xl shadow-black/20 p-6 sm:p-8">
           {/* Header */}
           <div className="text-center mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
@@ -84,6 +96,23 @@ const Login = () => {
               Welcome back! Please enter your details.
             </p>
           </div>
+
+          {/* Social Login */}
+          <SocialLoginButtons
+            onSuccess={(data) => {
+              if (data?.token && data?.user) {
+                login({ token: data.token, user: data.user, remember: true })
+                // Redirect OAuth users with email usernames to onboarding
+                if (needsOnboarding(data.user)) {
+                  navigate('/onboarding', { replace: true })
+                } else {
+                  navigate(redirectPath, { replace: true })
+                }
+              }
+            }}
+            onError={(msg) => setError(msg)}
+            disabled={loading}
+          />
 
           {/* Error */}
           {error && (

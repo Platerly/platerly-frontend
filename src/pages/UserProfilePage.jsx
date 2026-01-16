@@ -1,9 +1,25 @@
 // src/pages/UserProfilePage.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
+import DOMPurify from "dompurify";
+import {
+  MapPin,
+  Link as LinkIcon,
+  Users,
+  UserPlus,
+  UserMinus,
+  ImagePlus,
+  ChefHat,
+  BookOpen,
+  Settings,
+  AlertCircle,
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/fetchWithAuth";
 import { API_BASE_URL } from "../utils/api";
+import { logger } from "../utils/logger";
+import { toast } from "react-hot-toast";
+import Button from "../components/ui/Button";
 import CookbookCard from "../components/ui/CookbookCard";
 
 /* ---------- helpers ---------- */
@@ -34,19 +50,34 @@ function autolinkBio(text = "") {
 const withScheme = (u) => (!u ? "" : /^https?:\/\//i.test(u) ? u : `https://${u}`);
 
 const Skeleton = () => (
-  <div className="mx-auto max-w-5xl animate-pulse">
-    <div className="h-48 md:h-56 bg-platerly-light rounded-b-2xl" />
-    <div className="px-4 md:px-6 -mt-10 flex gap-4 items-end">
-      <div className="w-24 h-24 rounded-2xl bg-platerly-card border-4 border-platerly-dark" />
-      <div className="h-6 w-48 bg-platerly-card rounded" />
+  <div className="min-h-screen bg-platerly-dark">
+    <div className="mx-auto max-w-5xl animate-pulse">
+      <div className="h-48 md:h-56 bg-platerly-light rounded-b-3xl" />
+      <div className="px-4 md:px-6 -mt-12 flex gap-4 items-end">
+        <div className="w-28 h-28 rounded-2xl bg-platerly-card border-4 border-platerly-dark" />
+        <div className="flex-1 pb-2 space-y-2">
+          <div className="h-7 w-48 bg-platerly-card rounded-lg" />
+          <div className="h-4 w-32 bg-platerly-card/70 rounded-lg" />
+        </div>
+      </div>
+      <div className="px-4 md:px-6 mt-6 space-y-4">
+        <div className="flex gap-4">
+          <div className="h-10 w-24 bg-platerly-card rounded-xl" />
+          <div className="h-10 w-24 bg-platerly-card rounded-xl" />
+        </div>
+        <div className="h-16 w-full bg-platerly-card rounded-xl" />
+      </div>
     </div>
   </div>
 );
 
-const EmptyState = ({ title, subtitle }) => (
-  <div className="py-12 text-center">
-    <h3 className="font-semibold text-platerly-text">{title}</h3>
-    <p className="text-sm text-platerly-muted mt-1">{subtitle}</p>
+const EmptyState = ({ icon: Icon, title, subtitle }) => (
+  <div className="py-16 text-center">
+    <div className="w-16 h-16 rounded-2xl bg-platerly-light flex items-center justify-center mx-auto mb-4">
+      <Icon className="w-8 h-8 text-platerly-subtle" />
+    </div>
+    <h3 className="text-lg font-semibold text-platerly-text">{title}</h3>
+    <p className="text-sm text-platerly-subtle mt-1 max-w-sm mx-auto">{subtitle}</p>
   </div>
 );
 
@@ -198,7 +229,7 @@ const UserProfilePage = () => {
         setFollowing(followingRes.ok ? await followingRes.json() : []);
       } catch (e) {
         if (ac.signal.aborted) return;
-        console.error(e);
+        logger.error('Profile operation failed', e);
         setError("Failed to load profile.");
       } finally {
         if (!ac.signal.aborted) setLoading(false);
@@ -285,8 +316,8 @@ const UserProfilePage = () => {
       const data = await res.json();
       setProfile((p) => ({ ...p, bannerImageUrl: data.imageUrl }));
     } catch (err) {
-      console.error(err);
-      alert("Banner upload failed");
+      logger.error('Profile error', err);
+      toast.error("Banner upload failed");
     } finally {
       setUploadingBanner(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -303,122 +334,195 @@ const UserProfilePage = () => {
   }, [profile]);
 
   if (authLoading || loading) return <Skeleton />;
-  if (error) return <div className="max-w-5xl mx-auto px-4 md:px-6 py-16 text-red-300">{error}</div>;
-  if (!profile) return <div className="max-w-5xl mx-auto px-4 md:px-6 py-16 text-center">User not found.</div>;
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-platerly-dark flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-red-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-platerly-text mb-2">Something went wrong</h2>
+          <p className="text-platerly-subtle">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-platerly-dark flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-2xl bg-platerly-light flex items-center justify-center mx-auto mb-4">
+            <Users className="w-8 h-8 text-platerly-subtle" />
+          </div>
+          <h2 className="text-xl font-semibold text-platerly-text mb-2">User not found</h2>
+          <p className="text-platerly-subtle">This profile doesn't exist or has been removed.</p>
+        </div>
+      </div>
+    );
+  }
 
   /* ---------- render ---------- */
   return (
-    <div className="min-h-screen text-platerly-text">
-      <div className="mx-auto max-w-5xl">
+    <div className="min-h-screen bg-platerly-dark text-platerly-text relative overflow-hidden">
+      {/* Background gradient orbs */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-platerly-green/5 rounded-full blur-[128px]" />
+      <div className="absolute bottom-1/3 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
+
+      <div className="relative z-10 mx-auto max-w-5xl pb-12">
         {/* Banner */}
-        <div className="relative h-44 md:h-56 rounded-b-2xl overflow-hidden bg-platerly-light z-0">
-          {profile.bannerImageUrl && (
+        <div className="relative h-48 md:h-64 rounded-b-3xl overflow-hidden bg-gradient-to-br from-platerly-light to-platerly-card">
+          {profile.bannerImageUrl ? (
             <img src={profile.bannerImageUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-platerly-green/10 via-platerly-light to-platerly-card" />
           )}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-platerly-dark/60 via-transparent to-black/10" />
+
+          {/* Settings link for own profile */}
+          {isOwnProfile && (
+            <Link
+              to="/settings"
+              className="absolute top-4 right-4 p-2.5 rounded-xl bg-platerly-dark/50 backdrop-blur border border-white/10 text-platerly-text hover:bg-platerly-dark/70 transition"
+            >
+              <Settings className="w-5 h-5" />
+            </Link>
+          )}
         </div>
 
-        {/* Row 1: avatar + name + actions */}
-        <div className="px-4 md:px-6 -mt-8 flex items-end gap-4">
-          {profile.profileImageUrl ? (
-            <img
-              src={profile.profileImageUrl}
-              alt={`${profile.username} avatar`}
-              loading="lazy"
-              className="z-20 w-24 h-24 rounded-2xl border-4 border-platerly-dark object-cover shadow-[0_10px_30px_-10px_rgba(34,197,94,0.35)]"
-            />
-          ) : (
-            <div className="w-24 h-24 rounded-2xl border-4 border-platerly-dark bg-platerly-card grid place-content-center text-2xl font-bold text-platerly-cream">
-              {profile.username[0]?.toUpperCase() ?? "U"}
-            </div>
-          )}
-
-          <div className="pb-2">
-            <h1 className="text-xl md:text-2xl font-semibold text-platerly-text">
-              {profile.displayName || profile.username}
-            </h1>
-            <div className="text-sm text-platerly-muted">@{profile.username}</div>
-          </div>
-
-          {/* Actions */}
-          <div className="ml-auto pb-2 flex items-center gap-2">
-            {/* ✅ Follow/Unfollow for other users */}
-            {!isOwnProfile && token ? (
-              <button
-                onClick={onToggleFollow}
-                disabled={followBusy}
-                className={[
-                  "px-4 py-2 rounded-xl text-sm border transition focus:outline-none focus:ring-2 focus:ring-platerly-green/40",
-                  isFollowing
-                    ? "bg-transparent border-platerly-light text-platerly-subtle md:hover:bg-platerly-light/30"
-                    : "bg-platerly-green text-platerly-dark border-transparent md:hover:opacity-90",
-                  followBusy ? "opacity-60 cursor-not-allowed" : "",
-                ].join(" ")}
-              >
-                {followBusy ? "…" : isFollowing ? "Unfollow" : "Follow"}
-              </button>
-            ) : null}
-
-            {/* Banner button only for own profile */}
-            {isOwnProfile && (
-              <>
-                <button
-                  onClick={() => fileRef.current?.click()}
-                  className="px-4 py-2 rounded-xl bg-platerly-card hover:bg-platerly-light border border-platerly-border text-sm text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
-                  disabled={uploadingBanner}
-                  aria-label="Change banner image"
-                >
-                  {uploadingBanner ? "Uploading..." : "Change banner"}
-                </button>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => onBannerFile(e.target.files?.[0])}
+        {/* Profile Header Card */}
+        <div className="px-4 md:px-6 -mt-16 relative z-20">
+          <div className="bg-platerly-card/80 backdrop-blur-md border border-platerly-border rounded-2xl p-5 sm:p-6 shadow-xl">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+              {/* Avatar */}
+              {profile.profileImageUrl ? (
+                <img
+                  src={profile.profileImageUrl}
+                  alt={`${profile.username} avatar`}
+                  loading="lazy"
+                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-4 border-platerly-card object-cover shadow-xl shadow-platerly-green/10 -mt-16 sm:-mt-20"
                 />
-              </>
+              ) : (
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-4 border-platerly-card bg-gradient-to-br from-platerly-green/20 to-platerly-light grid place-content-center text-3xl font-bold text-platerly-text -mt-16 sm:-mt-20 shadow-xl">
+                  {profile.username[0]?.toUpperCase() ?? "U"}
+                </div>
+              )}
+
+              {/* Name & Username */}
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-bold text-platerly-text truncate">
+                  {profile.displayName || profile.username}
+                </h1>
+                <div className="text-platerly-subtle">@{profile.username}</div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-2 sm:ml-auto">
+                {!isOwnProfile && token ? (
+                  <Button
+                    onClick={onToggleFollow}
+                    disabled={followBusy}
+                    variant={isFollowing ? "secondary" : "primary"}
+                    loading={followBusy}
+                  >
+                    {isFollowing ? (
+                      <>
+                        <UserMinus className="w-4 h-4" />
+                        Unfollow
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-4 h-4" />
+                        Follow
+                      </>
+                    )}
+                  </Button>
+                ) : null}
+
+                {isOwnProfile && (
+                  <>
+                    <Button
+                      onClick={() => fileRef.current?.click()}
+                      variant="secondary"
+                      loading={uploadingBanner}
+                    >
+                      <ImagePlus className="w-4 h-4" />
+                      {uploadingBanner ? "Uploading..." : "Edit Banner"}
+                    </Button>
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => onBannerFile(e.target.files?.[0])}
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Stats Row */}
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <Link
+                to={`/user/${profile.username}/followers`}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-platerly-light hover:bg-platerly-light/80 border border-platerly-border hover:border-platerly-green/30 transition"
+              >
+                <Users className="w-4 h-4 text-platerly-green" />
+                <span className="font-semibold">{followerCount}</span>
+                <span className="text-platerly-subtle">Followers</span>
+              </Link>
+              <Link
+                to={`/user/${profile.username}/following`}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-platerly-light hover:bg-platerly-light/80 border border-platerly-border hover:border-platerly-green/30 transition"
+              >
+                <UserPlus className="w-4 h-4 text-platerly-subtle" />
+                <span className="font-semibold">{followingCount}</span>
+                <span className="text-platerly-subtle">Following</span>
+              </Link>
+
+              {profile.location && (
+                <div className="inline-flex items-center gap-2 px-3 py-2 text-sm text-platerly-subtle">
+                  <MapPin className="w-4 h-4" />
+                  {profile.location}
+                </div>
+              )}
+
+              {profile.websiteUrl && (
+                <a
+                  href={withScheme(profile.websiteUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm text-platerly-green hover:underline"
+                >
+                  <LinkIcon className="w-4 h-4" />
+                  {websiteShort}
+                </a>
+              )}
+            </div>
+
+            {/* Bio */}
+            {profile.bio && (
+              <div
+                className="mt-4 pt-4 border-t border-platerly-border text-platerly-text/90 text-sm leading-relaxed"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(autolinkBio(profile.bio), {
+                    ALLOWED_TAGS: ["a", "br"],
+                    ALLOWED_ATTR: ["href", "target", "rel", "class"],
+                  }),
+                }}
+              />
             )}
           </div>
         </div>
 
-        {/* Meta row */}
-        <div className="px-4 md:px-6 mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-          {profile.location && <span className="text-platerly-muted">{profile.location}</span>}
-          {profile.websiteUrl && (
-            <a
-              className="underline text-platerly-cream/90 hover:text-platerly-cream"
-              href={withScheme(profile.websiteUrl)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {websiteShort}
-            </a>
-          )}
-
-          <Link to={`/user/${profile.username}/followers`} className="underline-offset-2 hover:underline text-platerly-text">
-            <b>{followerCount}</b> Followers
-          </Link>
-          <Link to={`/user/${profile.username}/following`} className="underline-offset-2 hover:underline text-platerly-text">
-            <b>{followingCount}</b> Following
-          </Link>
-        </div>
-
-        {/* Bio */}
-        {profile.bio && (
-          <div
-            className="px-4 md:px-6 mt-3 text-platerly-cream/95 text-sm leading-6"
-            dangerouslySetInnerHTML={{ __html: autolinkBio(profile.bio) }}
-          />
-        )}
-
         {/* Tabs */}
-        <div className="px-4 md:px-6 mt-6 border-b border-platerly-border">
+        <div className="px-4 md:px-6 mt-8 border-b border-platerly-border pb-4">
           <nav className="flex gap-2" role="tablist" aria-label="Profile content tabs">
             {[
-              { k: "recipes", label: "Recipes" },
-              { k: "cookbooks", label: "Cookbooks" },
-            ].map(({ k, label }) => {
+              { k: "recipes", label: "Recipes", icon: ChefHat },
+              { k: "cookbooks", label: "Cookbooks", icon: BookOpen },
+            ].map(({ k, label, icon: Icon }) => {
               const active = tab === k;
               return (
                 <button
@@ -426,13 +530,14 @@ const UserProfilePage = () => {
                   role="tab"
                   aria-selected={active}
                   className={[
-                    "px-3 py-1.5 rounded-full text-sm transition",
+                    "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-platerly-green/50",
                     active
-                      ? "bg-platerly-green text-black font-semibold shadow-sm"
-                      : "text-platerly-muted hover:text-platerly-text hover:bg-platerly-card",
+                      ? "bg-platerly-green text-platerly-dark shadow-lg shadow-platerly-green/20"
+                      : "bg-platerly-card border border-platerly-border text-platerly-text/80 hover:bg-platerly-light hover:border-platerly-green/30",
                   ].join(" ")}
                   onClick={() => setTab(k)}
                 >
+                  <Icon className="w-4 h-4" />
                   {label}
                 </button>
               );
@@ -444,30 +549,37 @@ const UserProfilePage = () => {
         <div className="px-4 md:px-6 py-6">
           {tab === "recipes" ? (
             recipes?.length ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {recipes.map((r) => (
                   <Link
                     key={r.recipeId || r.id}
                     to={`/recipe/${r.recipeId || r.id}`}
-                    className="group rounded-2xl overflow-hidden border border-platerly-border bg-platerly-card shadow transition hover:shadow-[0_12px_30px_-12px_rgba(34,197,94,0.35)] hover:-translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
+                    className="group rounded-2xl overflow-hidden border border-platerly-border bg-platerly-card shadow-lg transition-all duration-200
+                               hover:border-platerly-green/30 hover:shadow-xl hover:shadow-platerly-green/10 hover:scale-[1.02]
+                               focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:ring-offset-2 focus:ring-offset-platerly-dark
+                               active:scale-[0.99]"
                   >
                     <div className="relative w-full aspect-[4/3] bg-platerly-light overflow-hidden">
-                      {r.imageUrl && (
+                      {r.imageUrl ? (
                         <img
                           src={r.imageUrl}
                           alt=""
                           loading="lazy"
-                          className="w-full h-full object-cover transition duration-300 group-hover:scale-[1.015]"
+                          className="w-full h-full object-cover transition duration-300 group-hover:scale-105"
                         />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-platerly-green/5 to-platerly-light">
+                          <ChefHat className="w-12 h-12 text-platerly-subtle" />
+                        </div>
                       )}
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent" />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent" />
                     </div>
-                    <div className="p-3">
-                      <div className="font-medium text-platerly-text line-clamp-1 group-hover:underline">
+                    <div className="p-4">
+                      <div className="font-semibold text-platerly-text line-clamp-1 group-hover:text-platerly-green transition-colors">
                         {r.title}
                       </div>
                       {r.description && (
-                        <div className="text-xs text-platerly-muted line-clamp-2 mt-1">
+                        <div className="text-sm text-platerly-subtle line-clamp-2 mt-1.5">
                           {r.description}
                         </div>
                       )}
@@ -476,7 +588,7 @@ const UserProfilePage = () => {
                 ))}
               </div>
             ) : (
-              <EmptyState title="No recipes yet" subtitle="When they post, you’ll see them here." />
+              <EmptyState icon={ChefHat} title="No recipes yet" subtitle="When they post, you'll see them here." />
             )
           ) : cookbooks?.length ? (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -493,7 +605,7 @@ const UserProfilePage = () => {
               ))}
             </div>
           ) : (
-            <EmptyState title="No cookbooks yet" subtitle="Cookbooks they create will show up here." />
+            <EmptyState icon={BookOpen} title="No cookbooks yet" subtitle="Cookbooks they create will show up here." />
           )}
         </div>
       </div>

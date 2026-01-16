@@ -8,14 +8,8 @@ import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { API_BASE_URL } from "../../utils/api";
 import { useAuth } from "../../context/AuthContext";
-
-/* ---------- utils ---------- */
-const fmtDate = (isoLike) => {
-  if (!isoLike) return "—";
-  const d = new Date(isoLike);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric" });
-};
+import { formatDate } from "../../utils/formatDate";
+import { logger } from "../../utils/logger";
 
 const cx = (...xs) => xs.filter(Boolean).join(" ");
 
@@ -104,7 +98,7 @@ export default function BillingPanel() {
       const data = await res.json();
       setStatus(mapStatus(data));
     } catch (e) {
-      console.error(e);
+      logger.error("Billing error", e);
 
       if (!didToastBillingFailRef.current) {
         didToastBillingFailRef.current = true;
@@ -174,7 +168,7 @@ export default function BillingPanel() {
       const { url } = await res.json();
       window.location.href = url;
     } catch (e) {
-      console.error(e);
+      logger.error("Billing error", e);
       toast.error("Could not start checkout.");
     } finally {
       setBusy(false);
@@ -194,7 +188,7 @@ export default function BillingPanel() {
       const { url } = await res.json();
       window.location.href = url;
     } catch (e) {
-      console.error(e);
+      logger.error("Billing error", e);
       toast.error("Could not open billing portal.");
     } finally {
       setBusy(false);
@@ -242,7 +236,7 @@ export default function BillingPanel() {
                     <span className="opacity-70 mr-2">
                       {cancelAtPeriodEnd ? "Ends on:" : "Renews on:"}
                     </span>
-                    <span>{fmtDate(currentPeriodEnd)}</span>
+                    <span>{formatDate(currentPeriodEnd)}</span>
                   </div>
                 </>
               ) : (

@@ -2,6 +2,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { API_BASE_URL } from "../../utils/api";
 import { apiFetch } from "../../utils/fetchWithAuth";
 import { useAuth } from "../../context/AuthContext";
@@ -11,13 +12,7 @@ const placeholder =
   "data:image/svg+xml;utf8," +
   encodeURIComponent(
     `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'>
-       <defs>
-         <linearGradient id='g' x1='0' x2='1'>
-           <stop offset='0%' stop-color='#0b1220'/>
-           <stop offset='100%' stop-color='#0f172a'/>
-         </linearGradient>
-       </defs>
-       <rect width='100%' height='100%' fill='url(#g)'/>
+       <rect width='100%' height='100%' fill='#1a2332'/>
        <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle'
              fill='#7a889a' font-size='18' font-family='system-ui, -apple-system, Segoe UI, Roboto, sans-serif'>
          No image
@@ -96,15 +91,16 @@ const CookbookRecipeCard = ({ recipe = {}, cookbookId, onRemove }) => {
   return (
     <article
       className={[
-        "group relative rounded-2xl",
-        "border border-platerly-border bg-platerly-card shadow-md",
-        "hover:bg-platerly-elev hover:shadow-lg transition",
-        "overflow-hidden min-h-[44px]",
+        "group relative rounded-2xl overflow-hidden",
+        "border border-platerly-border bg-platerly-card",
+        "hover:border-platerly-green/30 hover:shadow-lg hover:shadow-platerly-green/5",
+        "transition-all duration-200",
+        "min-h-[44px]",
       ].join(" ")}
     >
       {/* Media (clickable) */}
       <div
-        className="relative w-full aspect-[4/3] bg-neutral-900 cursor-pointer"
+        className="relative w-full aspect-[4/3] bg-platerly-light cursor-pointer"
         onClick={goToRecipe}
         tabIndex={0}
         onKeyDown={handleKeyOpen}
@@ -114,14 +110,14 @@ const CookbookRecipeCard = ({ recipe = {}, cookbookId, onRemove }) => {
         <img
           src={img}
           alt={title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
           decoding="async"
         />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-transparent" />
 
         {/* Remove button (ConfirmDialog trigger) */}
-        <div className="absolute top-2 right-2 z-10">
+        <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
           <ConfirmDialog
             title="Remove this recipe?"
             description="It will be removed from this cookbook. The original recipe stays intact."
@@ -133,23 +129,22 @@ const CookbookRecipeCard = ({ recipe = {}, cookbookId, onRemove }) => {
                 await removeRecipeFromCookbook();
               } catch (err) {
                 console.error("Remove failed:", err);
-                alert(err?.message || "Failed to remove recipe from cookbook.");
+                toast.error(err?.message || "Failed to remove recipe from cookbook.");
               }
             }}
             trigger={
               <button
                 type="button"
-                onClick={(e) => e.stopPropagation()} // prevent media click
+                onClick={(e) => e.stopPropagation()}
                 onMouseDown={(e) => e.stopPropagation()}
                 onKeyDown={(e) => e.stopPropagation()}
-
                 title="Remove from cookbook"
                 aria-label="Remove from cookbook"
-                className="inline-flex items-center justify-center rounded-full h-10 w-10 min-h-[44px] min-w-[44px]
+                className="inline-flex items-center justify-center rounded-xl h-9 w-9 min-h-[44px] min-w-[44px]
                            bg-red-600/90 text-white hover:bg-red-600 backdrop-blur border border-white/10 shadow-lg
-                           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             }
           />
@@ -157,9 +152,9 @@ const CookbookRecipeCard = ({ recipe = {}, cookbookId, onRemove }) => {
       </div>
 
       {/* Content (title is clickable, body text is not) */}
-      <div className="p-3 sm:p-4">
+      <div className="p-4">
         <h2
-          className="text-base sm:text-lg font-semibold text-white mb-1 line-clamp-2 cursor-pointer"
+          className="text-base font-semibold text-platerly-text mb-1 line-clamp-2 cursor-pointer group-hover:text-platerly-green transition-colors"
           onClick={goToRecipe}
           tabIndex={0}
           onKeyDown={handleKeyOpen}
@@ -169,9 +164,9 @@ const CookbookRecipeCard = ({ recipe = {}, cookbookId, onRemove }) => {
           {title}
         </h2>
         {desc ? (
-          <p className="text-sm text-platerly-subtle line-clamp-3">{desc}</p>
+          <p className="text-sm text-platerly-subtle line-clamp-2">{desc}</p>
         ) : (
-          <p className="text-sm text-platerly-subtle italic">No description</p>
+          <p className="text-sm text-platerly-subtle/60 italic">No description</p>
         )}
       </div>
     </article>

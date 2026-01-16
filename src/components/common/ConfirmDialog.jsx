@@ -12,7 +12,13 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog"
 import Button from "../ui/Button"
+import { logger } from "../../utils/logger"
 
+/**
+ * Confirm dialog with two modes:
+ * 1. Trigger mode (default): Pass a `trigger` element, dialog opens when clicked
+ * 2. Controlled mode: Pass `open` and `onOpenChange` props to control visibility
+ */
 const ConfirmDialog = ({
   title = "Are you sure?",
   description = "This action cannot be undone.",
@@ -21,48 +27,50 @@ const ConfirmDialog = ({
   tone = "danger",
   icon,
   onConfirm,          // () => void | Promise<void>
+  onCancel,           // () => void (for controlled mode)
   disabled = false,
-  trigger,            // your button/icon
+  trigger,            // Trigger element (for trigger mode)
+  open,               // Controlled open state (for controlled mode)
+  onOpenChange,       // Controlled state handler (for controlled mode)
 }) => {
   const isDanger = tone === "danger"
   const Icon = icon ? () => icon : isDanger ? Trash2 : AlertTriangle
+  const isControlled = open !== undefined
 
-  // IMPORTANT:
-  // - Do NOT control open state; let Radix handle open/close.
-  // - Only stop bubbling on the dialog CONTENT bubble phase,
-  //   so clicks don’t reach the clickable card, but Radix still sees them.
   const stopBubble = (e) => e.stopPropagation?.()
 
   const handleConfirmClick = async (e) => {
-    // Let Radix close the dialog via <AlertDialogAction/> default behavior.
-    // We just run the user’s onConfirm; if it throws, the dialog will already be closing,
-    // which is acceptable for this destructive action UX.
     try {
       await onConfirm?.()
     } catch (err) {
-      // optional: surface error via toast if you have one
-      console.error("ConfirmDialog onConfirm error:", err)
+      logger.error("ConfirmDialog onConfirm error:", err)
     }
   }
 
+  const handleCancel = () => {
+    onCancel?.()
+    onOpenChange?.(false)
+  }
+
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        {trigger ?? (
-          <Button
-            variant={isDanger ? "destructive" : "default"}
-            disabled={disabled}
-            className={isDanger ? "bg-red-600 hover:bg-red-700" : "bg-emerald-600 hover:bg-emerald-700"}
-          >
-            {isDanger ? <Trash2 className="mr-2 h-4 w-4" /> : <AlertTriangle className="mr-2 h-4 w-4" />}
-            {confirmLabel}
-          </Button>
-        )}
-      </AlertDialogTrigger>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      {!isControlled && (
+        <AlertDialogTrigger asChild>
+          {trigger ?? (
+            <Button
+              variant={isDanger ? "destructive" : "default"}
+              disabled={disabled}
+              className={isDanger ? "bg-red-600 hover:bg-red-700" : "bg-emerald-600 hover:bg-emerald-700"}
+            >
+              {isDanger ? <Trash2 className="mr-2 h-4 w-4" /> : <AlertTriangle className="mr-2 h-4 w-4" />}
+              {confirmLabel}
+            </Button>
+          )}
+        </AlertDialogTrigger>
+      )}
 
       <AlertDialogContent
         className="border border-platerly-border bg-platerly-card text-platerly-text"
-        // Stop React synthetic bubbling from reaching clickable parents (card/image/title).
         onClick={stopBubble}
         onMouseDown={stopBubble}
         onPointerDown={stopBubble}
@@ -81,7 +89,10 @@ const ConfirmDialog = ({
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel className="border-platerly-border bg-transparent text-platerly-text hover:bg-platerly-light">
+          <AlertDialogCancel
+            onClick={handleCancel}
+            className="border-platerly-border bg-transparent text-platerly-text hover:bg-platerly-light"
+          >
             {cancelLabel}
           </AlertDialogCancel>
 

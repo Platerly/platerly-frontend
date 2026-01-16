@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import RecipeCard from '../components/ui/RecipeCard'
 import { useAuth } from '../context/AuthContext'
 import { useApi } from '../utils/fetchWithAuth'
+import { norm, variants, isSevere } from '../utils/allergenHelpers'
+import { logger } from '../utils/logger'
 
 const SkeletonPost = () => (
   <div className="rounded-xl bg-platerly-card border border-platerly-light p-4 animate-pulse">
@@ -74,7 +76,7 @@ const Feed = () => {
         setUserAllergies(Array.isArray(data) ? data.map(n => (n || '').toLowerCase()) : [])
       }
     } catch (err) {
-      console.error('Failed to fetch allergies:', err)
+      logger.error('Failed to fetch allergies', err)
     }
   }
 
@@ -87,7 +89,7 @@ const Feed = () => {
         setCurrentUserId(data?.id || null)
       }
     } catch (err) {
-      console.error('Failed to fetch current user:', err)
+      logger.error('Failed to fetch current user', err)
     }
   }
 
@@ -102,7 +104,7 @@ const Feed = () => {
       const data = await res.json()
       setRecipes(Array.isArray(data) ? data : [])
     } catch (err) {
-      console.error(err)
+      logger.error('Feed fetch failed', err)
       setError('Could not load feed.')
       setRecipes([])
     } finally {
@@ -110,19 +112,7 @@ const Feed = () => {
     }
   }
 
-  // ---------- helpers for allergen filtering ----------
-  const norm = (s) => String(s || '').toLowerCase().trim().replace(/\s+/g, ' ')
-  const variants = (s) => {
-    const x = norm(s); if (!x) return []
-    const out = new Set([x])
-    if (x.endsWith('s')) out.add(x.slice(0, -1))
-    else out.add(`${x}s`)
-    return Array.from(out)
-  }
-  const isSevere = (s) => {
-    const x = String(s || '').toLowerCase()
-    return x === 'high' || x === 'medium'
-  }
+  // Allergen helpers imported from utils/allergenHelpers.js
 
   const getIngredientNames = (r) => {
     if (Array.isArray(r.ingredientNames)) return r.ingredientNames

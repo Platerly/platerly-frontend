@@ -66,7 +66,7 @@ export default function AccountPage() {
             and more powerful recipe tools.
           </p>
           <Link
-            to="/billing"
+            to="/settings?tab=subscription"
             className="block text-center bg-platerly-green hover:bg-platerly-green/90 transition text-white font-medium px-4 py-2 rounded-md"
           >
             Upgrade to Premium

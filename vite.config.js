@@ -19,4 +19,20 @@ export default defineConfig({
   build: {
     sourcemap: true, // Needed so Sentry can map minified code to original files
   },
+  server: {
+    proxy: {
+      // Proxy share URLs to backend API for OG meta tags
+      '/api/share': {
+        target: 'https://localhost:7142',
+        changeOrigin: true,
+        secure: false, // Allow self-signed certs in dev
+      },
+      // Proxy OG image routes
+      '/og': {
+        target: 'https://localhost:7142',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })

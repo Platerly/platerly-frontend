@@ -110,7 +110,7 @@ export function useApi() {
 /** Named export for non-React modules (refresh via backend refresh endpoint) */
 async function refreshOutsideReact() {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+    const res = await fetch(`${API_BASE_URL}/api/Auth/refresh`, {
       method: 'POST',
       credentials: 'include',
       // refresh cookie (HttpOnly) is sent by the browser

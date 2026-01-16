@@ -2,6 +2,27 @@ User-agent: *
 Disallow: /settings
 Disallow: /api/
 Disallow: /billing
+Disallow: /admin
+Disallow: /admin/
 Allow: /
+
+# Block common bots from admin area
+User-agent: Googlebot
+Disallow: /admin
+
+User-agent: Bingbot
+Disallow: /admin
+
+User-agent: Slurp
+Disallow: /admin
+
+User-agent: DuckDuckBot
+Disallow: /admin
+
+User-agent: Baiduspider
+Disallow: /admin
+
+User-agent: YandexBot
+Disallow: /admin
 
 Sitemap: https://www.platerly.com/sitemap.xml

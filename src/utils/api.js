@@ -67,7 +67,7 @@ async function request(path, { method = 'GET', body, includeCredentials = false,
 
 // Auth (use credentials: include for login so refresh cookie can be set cross-site)
 export function login(email, password) {
-  return request('/api/auth/login', {
+  return request('/api/Auth/login', {
     method: 'POST',
     body: { email, password },
     includeCredentials: true

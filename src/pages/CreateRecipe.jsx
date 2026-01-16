@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ChefHat, Plus, X, Check, Clock, Flame } from 'lucide-react'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
 import Textarea from '../components/ui/Textarea'
-import { useNavigate } from 'react-router-dom'
 import { API_BASE_URL } from "../utils/api";
 import { useAuth } from '../context/AuthContext'
+import { logger } from '../utils/logger'
+import { parseApiError } from '../utils/parseApiError'
+import ProhibitedIngredientsError from '../components/ui/ProhibitedIngredientsError'
 
 // Single-select groups (all required: exactly one each)
 const TAG_GROUPS = [
@@ -34,8 +38,14 @@ const CreateRecipe = () => {
   const [extraTags, setExtraTags] = useState([])
 
   const [previewUrl, setPreviewUrl] = useState(null)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(null) // { message, violations }
+  const [imageError, setImageError] = useState('') // image-specific validation errors
   const [loading, setLoading] = useState(false)
+
+  // Image constraints
+  const MAX_IMAGE_SIZE_MB = 5
+  const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
+  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
   const navigate = useNavigate()
   const { token } = useAuth()
 
@@ -47,8 +57,24 @@ const CreateRecipe = () => {
     const { name, value, files } = e.target
     if (name === 'imageFile') {
       const file = files?.[0]
+      setImageError('') // Clear previous image errors
+
       if (file) {
-        setForm((prev) => ({ ...prev, imageFile: file }))
+        // Validate file type
+        if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+          setImageError('Please select a valid image (JPEG, PNG, WebP, or GIF)')
+          e.target.value = '' // Reset input
+          return
+        }
+
+        // Validate file size
+        if (file.size > MAX_IMAGE_SIZE_BYTES) {
+          setImageError(`Image is too large. Maximum size is ${MAX_IMAGE_SIZE_MB}MB. Your image is ${(file.size / 1024 / 1024).toFixed(1)}MB.`)
+          e.target.value = '' // Reset input
+          return
+        }
+
+        setForm((prev) => ({ ...prev, imageFile: file, imageUrl: '', imageBlobName: '' }))
         const url = URL.createObjectURL(file)
         setPreviewUrl((old) => { if (old) URL.revokeObjectURL(old); return url })
       }
@@ -122,7 +148,7 @@ const CreateRecipe = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError(''); setLoading(true)
+    setError(null); setLoading(true)
     try {
       const missingSingles = Object.entries(selectedGroups).filter(([, v]) => !v)
       if (missingSingles.length > 0) throw new Error('Please select one option for Course, Diet, Style, and Healthiness.')
@@ -162,35 +188,56 @@ const CreateRecipe = () => {
       })
       if (!res.ok) {
         const txt = await res.text().catch(() => '')
-        throw new Error(txt || 'Recipe creation failed')
+        const parsed = parseApiError(txt)
+        setError(parsed)
+        return
       }
       const created = await res.json()
       navigate(`/recipe/${created.id}`)
     } catch (err) {
-      console.error(err); setError(err.message || 'Something went wrong')
+      logger.error(err)
+      setError({ message: err.message || 'Something went wrong', violations: null })
     } finally { setLoading(false) }
   }
 
   useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl) }, [previewUrl])
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      <div className="pl-card p-5 sm:p-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-platerly-text">
-          Create a New Recipe
-        </h1>
+    <div className="min-h-screen bg-platerly-dark text-platerly-text relative overflow-hidden">
+      {/* Background gradient orbs */}
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-platerly-green/5 rounded-full blur-[128px]" />
+      <div className="absolute bottom-1/3 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
 
-        {/* Required tags progress */}
-        <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
-          <span className="rounded-full bg-emerald-900/20 text-emerald-200 ring-1 ring-emerald-700/40 px-2 py-0.5">
-            Required tags: <strong className="ml-1">{singlesChosen}/{singlesNeeded} single-select</strong>
-          </span>
-          <span className={`rounded-full px-2 py-0.5 ring-1 ${hasSensitivity
-              ? 'bg-emerald-900/20 text-emerald-200 ring-emerald-700/40'
-              : 'bg-white/5 text-platerly-text ring-platerly-border'}`}>
-            {hasSensitivity ? 'Sensitivity ✓' : 'Sensitivity required'}
-          </span>
-        </div>
+      <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="bg-platerly-card/80 backdrop-blur-sm border border-platerly-border rounded-2xl shadow-2xl p-5 sm:p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="w-14 h-14 rounded-2xl bg-platerly-green/20 flex items-center justify-center mx-auto mb-4">
+              <ChefHat className="w-7 h-7 text-platerly-green" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold">Create a New Recipe</h1>
+            <p className="text-platerly-subtle mt-2">Share your culinary creation with the community</p>
+          </div>
+
+          {/* Required tags progress */}
+          <div className="mb-6 flex flex-wrap items-center gap-2 text-xs">
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 ring-1 ${
+              singlesComplete
+                ? 'bg-platerly-green/10 text-platerly-green ring-platerly-green/30'
+                : 'bg-platerly-light text-platerly-subtle ring-platerly-border'
+            }`}>
+              {singlesComplete && <Check className="w-3.5 h-3.5" />}
+              Required tags: <strong className="ml-1">{singlesChosen}/{singlesNeeded}</strong>
+            </span>
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 ring-1 ${
+              hasSensitivity
+                ? 'bg-platerly-green/10 text-platerly-green ring-platerly-green/30'
+                : 'bg-platerly-light text-platerly-subtle ring-platerly-border'
+            }`}>
+              {hasSensitivity && <Check className="w-3.5 h-3.5" />}
+              {hasSensitivity ? 'Sensitivity' : 'Sensitivity required'}
+            </span>
+          </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* If your Input/Textarea components accept className, pass pl-field; otherwise swap to native inputs */}
@@ -253,9 +300,9 @@ const CreateRecipe = () => {
                     }
                   }}
                   disabled={form.ingredients.length === 1}
-                  className={`sm:col-span-1 h-[42px] rounded-lg border border-transparent text-red-300 hover:text-red-200 hover:bg-red-500/10 text-sm transition ${form.ingredients.length === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`sm:col-span-1 h-[42px] rounded-xl border border-platerly-border text-red-400 hover:text-red-300 hover:bg-red-500/10 hover:border-red-500/30 transition ${form.ingredients.length === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                   aria-label="Remove ingredient">
-                  ✕
+                  <X className="w-4 h-4 mx-auto" />
                 </button>
               </div>
             ))}
@@ -264,8 +311,9 @@ const CreateRecipe = () => {
               onClick={() =>
                 setForm((prev) => ({ ...prev, ingredients: [...(prev.ingredients || []), { name: '', quantity: '' }] }))
               }
-              className="mt-2 px-3 py-1.5 rounded-full text-sm bg-platerly-green text-black hover:brightness-110 ring-1 ring-platerly-green/40">
-              + Add Ingredient
+              className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-platerly-green/10 text-platerly-green border border-platerly-green/30 hover:bg-platerly-green/20 transition">
+              <Plus className="w-4 h-4" />
+              Add Ingredient
             </button>
           </div>
 
@@ -321,11 +369,13 @@ const CreateRecipe = () => {
             <label className="pl-label mb-1 block">Extra Tags (optional)</label>
 
             {extraTags.length > 0 && (
-              <div className="mb-2 flex flex-wrap gap-2">
+              <div className="mb-3 flex flex-wrap gap-2">
                 {extraTags.map(tag => (
-                  <span key={tag} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-900/20 text-emerald-200 ring-1 ring-emerald-700/40 text-sm">
+                  <span key={tag} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-platerly-green/10 text-platerly-green ring-1 ring-platerly-green/30 text-sm font-medium">
                     {tag}
-                    <button type="button" onClick={() => removeExtraTag(tag)} className="text-platerly-muted hover:text-platerly-text" aria-label={`Remove ${tag}`}>×</button>
+                    <button type="button" onClick={() => removeExtraTag(tag)} className="text-platerly-green/60 hover:text-platerly-green transition" aria-label={`Remove ${tag}`}>
+                      <X className="w-3.5 h-3.5" />
+                    </button>
                   </span>
                 ))}
               </div>
@@ -392,30 +442,35 @@ const CreateRecipe = () => {
               className="block w-full text-sm text-platerly-text file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-platerly-green file:text-black hover:file:brightness-110"
               required
             />
-            {previewUrl && (
-              <>
-                <img src={previewUrl} alt="Preview" className="mt-4 w-full h-56 object-cover rounded-lg border border-platerly-border shadow-sm" />
-                {form.imageBlobName && (
-                  <p className="mt-2 text-xs text-platerly-muted">
-                    uploaded ✓ <code>{form.imageBlobName}</code>
-                  </p>
-                )}
-              </>
+            <p className="mt-1 text-xs text-platerly-subtle">Max size: {MAX_IMAGE_SIZE_MB}MB. Formats: JPEG, PNG, WebP, GIF</p>
+            {imageError && (
+              <p className="mt-2 text-sm text-red-400">{imageError}</p>
+            )}
+            {previewUrl && !imageError && (
+              <img src={previewUrl} alt="Preview" className="mt-4 w-full h-56 object-cover rounded-lg border border-platerly-border shadow-sm" />
             )}
           </div>
 
-          {error && <p className="text-red-300 text-sm">{error}</p>}
+          {error && error.violations ? (
+            <ProhibitedIngredientsError message={error.message} violations={error.violations} />
+          ) : error ? (
+            <div className="flex items-center gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+              {error.message}
+            </div>
+          ) : null}
 
-          <Button type="submit" size="lg" className="pl-btn-primary w-full mt-2 !bg-platerly-green !text-black !border-0" disabled={!canSubmit}>
+          <Button type="submit" size="lg" fullWidth disabled={!canSubmit} loading={loading}>
+            <ChefHat className="w-5 h-5" />
             {loading ? 'Publishing…' : 'Post Recipe'}
           </Button>
 
           {!canSubmit && (
-            <p className="mt-2 text-xs text-platerly-muted text-center">
+            <p className="mt-3 text-xs text-platerly-subtle text-center">
               Select one option for <strong>Course</strong>, <strong>Diet</strong>, <strong>Style</strong>, <strong>Healthiness</strong>, and at least one <strong>Sensitivity</strong>.
             </p>
           )}
         </form>
+        </div>
       </div>
     </div>
   )

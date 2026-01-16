@@ -2,6 +2,7 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { forgotPassword } from "../utils/api";
 import { useNavigate, Link } from "react-router-dom";
+import logger from "../utils/logger";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -21,7 +22,7 @@ export default function ForgotPassword() {
         toast.error(data.message || "Error sending reset email.");
       }
     } catch (err) {
-      console.error(err);
+      logger.error("Forgot password request failed", err);
       toast.error("Something went wrong.");
     } finally {
       setLoading(false);

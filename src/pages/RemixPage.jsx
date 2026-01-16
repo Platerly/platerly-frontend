@@ -1,7 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { RefreshCw, Plus, X, Check, Clock, Flame } from 'lucide-react'
+import { toast } from 'react-hot-toast'
 import { API_BASE_URL } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
+import Button from '../components/ui/Button'
+import { logger } from '../utils/logger'
+import { parseApiError } from '../utils/parseApiError'
+import ProhibitedIngredientsError from '../components/ui/ProhibitedIngredientsError'
 
 // --- Same taxonomy as CreateRecipe ---
 const TAG_GROUPS = [
@@ -34,6 +40,12 @@ const RemixPage = () => {
   const [imageUrl, setImageUrl] = useState('')
   const [imageBlobName, setImageBlobName] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [imageError, setImageError] = useState('')
+
+  // Image constraints
+  const MAX_IMAGE_SIZE_MB = 5
+  const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
+  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
   // Ingredients
   const [ingredients, setIngredients] = useState([{ name: '', quantity: '' }])
@@ -56,7 +68,7 @@ const RemixPage = () => {
   const [extraTags, setExtraTags] = useState([]) // chips
 
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(null) // { message, violations } or null
 
   const setGroupIfMatch = (groupKey, valueLower, original) => {
     const group = TAG_GROUPS.find(g => g.key === groupKey)
@@ -124,8 +136,8 @@ const RemixPage = () => {
         setExtraTags(leftovers)
         setLoading(false)
       } catch (e) {
-        console.error(e)
-        setError(e?.message || 'Failed to load original recipe')
+        logger.error(e)
+        setError({ message: e?.message || 'Failed to load original recipe', violations: null })
         setLoading(false)
       }
     }
@@ -145,6 +157,23 @@ const RemixPage = () => {
   const handleImageUpload = async (e) => {
     const file = e.target.files && e.target.files[0]
     if (!file) return
+
+    setImageError('') // Clear previous errors
+
+    // Validate file type
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setImageError('Please select a valid image (JPEG, PNG, WebP, or GIF)')
+      e.target.value = '' // Reset input
+      return
+    }
+
+    // Validate file size
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      setImageError(`Image is too large. Maximum size is ${MAX_IMAGE_SIZE_MB}MB. Your image is ${(file.size / 1024 / 1024).toFixed(1)}MB.`)
+      e.target.value = '' // Reset input
+      return
+    }
+
     setUploading(true)
     try {
       const fd = new FormData()
@@ -159,8 +188,8 @@ const RemixPage = () => {
       setImageUrl(data.imageUrl)
       setImageBlobName(data.imageBlobName || data.blobName)
     } catch (e) {
-      console.error(e)
-      alert('Image upload failed.')
+      logger.error(e)
+      setImageError('Image upload failed. Please try again.')
     } finally {
       setUploading(false)
     }
@@ -233,9 +262,10 @@ const RemixPage = () => {
   }
 
   const handleSubmit = async () => {
+    setError(null)
     try {
       if (!canSubmit) {
-        alert('Please complete all required fields and tags before posting the remix.')
+        toast.error('Please complete all required fields and tags before posting the remix.')
         return
       }
 
@@ -271,37 +301,68 @@ const RemixPage = () => {
       })
       if (!response.ok) {
         const txt = await response.text().catch(() => '')
-        throw new Error(txt || 'Remix creation failed')
+        const parsed = parseApiError(txt || 'Remix creation failed')
+        setError(parsed)
+        // Show toast for non-violation errors
+        if (!parsed.violations) {
+          toast.error(parsed.message)
+        }
+        return
       }
 
       navigate('/feed')
     } catch (e) {
-      console.error(e)
-      alert(e?.message || 'Failed to post remix.')
+      logger.error(e)
+      setError({ message: e?.message || 'Failed to post remix.', violations: null })
+      toast.error(e?.message || 'Failed to post remix.')
     }
   }
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 text-platerly-muted">
-        Loading original recipe…
+      <div className="min-h-screen bg-platerly-dark flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 text-platerly-green animate-spin mx-auto mb-4" />
+          <p className="text-platerly-subtle">Loading original recipe…</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-[100svh] bg-platerly-dark text-platerly-text">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <div className="bg-platerly-card border border-platerly-border rounded-2xl shadow-xl/50 p-5 sm:p-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6">Remix Recipe</h1>
+    <div className="min-h-screen bg-platerly-dark text-platerly-text relative overflow-hidden">
+      {/* Background gradient orbs */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-platerly-green/5 rounded-full blur-[128px]" />
+      <div className="absolute bottom-1/3 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
 
-          {/* Required tags progress (match CreateRecipe) */}
-          <div className="mb-4 flex flex-wrap items-center gap-2 text-[11px] sm:text-xs">
-            <span className="rounded-full bg-emerald-900/30 border border-emerald-600/30 px-2 py-0.5 text-emerald-200">
-              Required tags: <strong className="ml-1">{singlesChosen}/{singlesNeeded} single-select</strong>
+      <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="bg-platerly-card/80 backdrop-blur-sm border border-platerly-border rounded-2xl shadow-2xl p-5 sm:p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="w-14 h-14 rounded-2xl bg-platerly-green/20 flex items-center justify-center mx-auto mb-4">
+              <RefreshCw className="w-7 h-7 text-platerly-green" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold">Remix Recipe</h1>
+            <p className="text-platerly-subtle mt-2">Put your own spin on this recipe</p>
+          </div>
+
+          {/* Required tags progress */}
+          <div className="mb-6 flex flex-wrap items-center gap-2 text-xs">
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 ring-1 ${
+              singlesComplete
+                ? 'bg-platerly-green/10 text-platerly-green ring-platerly-green/30'
+                : 'bg-platerly-light text-platerly-subtle ring-platerly-border'
+            }`}>
+              {singlesComplete && <Check className="w-3.5 h-3.5" />}
+              Required tags: <strong className="ml-1">{singlesChosen}/{singlesNeeded}</strong>
             </span>
-            <span className={`rounded-full px-2 py-0.5 border ${hasSensitivity ? 'bg-emerald-900/30 border-emerald-600/30 text-emerald-200' : 'bg-white/5 border-platerly-border text-platerly-muted'}`}>
-              {hasSensitivity ? 'Sensitivity ✓' : 'Sensitivity required'}
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 ring-1 ${
+              hasSensitivity
+                ? 'bg-platerly-green/10 text-platerly-green ring-platerly-green/30'
+                : 'bg-platerly-light text-platerly-subtle ring-platerly-border'
+            }`}>
+              {hasSensitivity && <Check className="w-3.5 h-3.5" />}
+              {hasSensitivity ? 'Sensitivity' : 'Sensitivity required'}
             </span>
           </div>
 
@@ -309,13 +370,13 @@ const RemixPage = () => {
             {/* Title / Region / Description / Instructions */}
             <div>
               <label className="block text-sm font-medium text-platerly-muted mb-2">
-                Recipe Title <span className="text-red-500">*</span>
+                Recipe Title <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 border border-platerly-border rounded-lg text-platerly-text placeholder:text-platerly-muted"
+                className="w-full px-4 py-3 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
                 required
               />
             </div>
@@ -326,32 +387,32 @@ const RemixPage = () => {
                 type="text"
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 border border-platerly-border rounded-lg text-platerly-text placeholder:text-platerly-muted"
+                className="w-full px-4 py-3 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-platerly-muted mb-2">
-                Description <span className="text-red-500">*</span>
+                Description <span className="text-red-400">*</span>
               </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="w-full px-4 py-3 bg-white/5 border border-platerly-border rounded-lg text-platerly-text placeholder:text-platerly-muted resize-none"
+                className="w-full px-4 py-3 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text placeholder:text-platerly-subtle resize-y focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
                 required
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-platerly-muted mb-2">
-                Instructions <span className="text-red-500">*</span>
+                Instructions <span className="text-red-400">*</span>
               </label>
               <textarea
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
                 rows={4}
-                className="w-full px-4 py-3 bg-white/5 border border-platerly-border rounded-lg text-platerly-text placeholder:text-platerly-muted resize-none"
+                className="w-full px-4 py-3 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text placeholder:text-platerly-subtle resize-y focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
                 required
               />
             </div>
@@ -370,7 +431,7 @@ const RemixPage = () => {
                       updated[index].name = e.target.value
                       setIngredients(updated)
                     }}
-                    className="flex-1 px-3 py-2 bg-white/5 border border-platerly-border text-platerly-text rounded"
+                    className="flex-1 px-4 py-2.5 bg-platerly-light border border-platerly-border text-platerly-text placeholder:text-platerly-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
                   />
                   <input
                     type="text"
@@ -381,7 +442,7 @@ const RemixPage = () => {
                       updated[index].quantity = e.target.value
                       setIngredients(updated)
                     }}
-                    className="sm:w-1/3 px-3 py-2 bg-white/5 border border-platerly-border text-platerly-text rounded"
+                    className="sm:w-1/3 px-4 py-2.5 bg-platerly-light border border-platerly-border text-platerly-text placeholder:text-platerly-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
                   />
                   <button
                     type="button"
@@ -392,18 +453,19 @@ const RemixPage = () => {
                       setIngredients(updated)
                     }}
                     disabled={ingredients.length === 1}
-                    className={`text-red-400 hover:text-red-500 sm:self-center ${ingredients.length === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`w-10 h-10 rounded-xl border border-platerly-border text-red-400 hover:text-red-300 hover:bg-red-500/10 hover:border-red-500/30 transition flex items-center justify-center sm:self-center ${ingredients.length === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    ✕
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               ))}
               <button
                 type="button"
                 onClick={() => setIngredients(prev => [...prev, { name: '', quantity: '' }])}
-                className="mt-2 px-3 py-1 rounded-full text-sm bg-platerly-accent text-black hover:brightness-110"
+                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-platerly-green/10 text-platerly-green border border-platerly-green/30 hover:bg-platerly-green/20 transition"
               >
-                + Add Ingredient
+                <Plus className="w-4 h-4" />
+                Add Ingredient
               </button>
             </div>
 
@@ -411,13 +473,13 @@ const RemixPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {TAG_GROUPS.map(group => (
                 <div key={group.key}>
-                  <label className="block text-sm font-medium text-platerly-muted mb-1">
+                  <label className="block text-sm font-medium text-platerly-muted mb-2">
                     {group.label} <span className="text-red-400">*</span>
                   </label>
                   <select
                     value={selectedGroups[group.key]}
                     onChange={(e) => handleGroupChange(group.key, e.target.value)}
-                    className={`w-full bg-white/5 border rounded-lg px-4 py-2 text-platerly-text ${selectedGroups[group.key] ? 'border-platerly-border' : 'border-red-500/40'}`}
+                    className={`w-full bg-platerly-light border rounded-xl px-4 py-2.5 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition ${selectedGroups[group.key] ? 'border-platerly-border' : 'border-red-500/40'}`}
                   >
                     <option value="">{group.placeholder}</option>
                     {group.options.map(opt => (
@@ -430,48 +492,52 @@ const RemixPage = () => {
 
             {/* Sensitivity (multi, required) */}
             <div>
-              <label className="block text-sm font-medium text-platerly-muted mb-1">
+              <label className="block text-sm font-medium text-platerly-muted mb-2">
                 Sensitivity <span className="text-red-400">*</span>
               </label>
               <div className="flex flex-wrap gap-2">
                 {SENSITIVITY_OPTIONS.map(opt => (
                   <label
                     key={opt}
-                    className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${selectedSensitivities.includes(opt) ? 'border-emerald-500 bg-emerald-900/30' : 'border-platerly-border bg-white/5'}`}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl cursor-pointer select-none transition ${
+                      selectedSensitivities.includes(opt)
+                        ? 'bg-platerly-green/15 text-platerly-text ring-1 ring-platerly-green/40'
+                        : 'bg-platerly-light text-platerly-subtle ring-1 ring-platerly-border hover:ring-platerly-green/30'
+                    }`}
                   >
                     <input
                       type="checkbox"
                       checked={selectedSensitivities.includes(opt)}
                       onChange={() => toggleSensitivity(opt)}
-                      className="accent-emerald-600"
+                      className="accent-platerly-green"
                     />
-                    <span className="text-sm text-platerly-text">{opt}</span>
+                    <span className="text-sm">{opt}</span>
                   </label>
                 ))}
               </div>
-              <p className="mt-1 text-xs text-platerly-muted">Pick one or more.</p>
+              <p className="mt-2 text-xs text-platerly-subtle">Pick one or more.</p>
             </div>
 
-            {/* NEW: Extra tags with autocomplete + chips */}
+            {/* Extra tags with autocomplete + chips */}
             <div>
-              <label className="block text-sm font-medium text-platerly-muted mb-1">Extra Tags (optional)</label>
+              <label className="block text-sm font-medium text-platerly-muted mb-2">Extra Tags (optional)</label>
 
               {/* chips */}
               {extraTags.length > 0 && (
-                <div className="mb-2 flex flex-wrap gap-2">
+                <div className="mb-3 flex flex-wrap gap-2">
                   {extraTags.map(tag => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-platerly-border bg-white/5 text-platerly-text text-sm"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-platerly-green/10 text-platerly-green ring-1 ring-platerly-green/30 text-sm font-medium"
                     >
                       {tag}
                       <button
                         type="button"
                         onClick={() => removeExtraTag(tag)}
-                        className="text-platerly-muted hover:text-red-400"
+                        className="text-platerly-green/60 hover:text-platerly-green transition"
                         aria-label={`Remove ${tag}`}
                       >
-                        ×
+                        <X className="w-3.5 h-3.5" />
                       </button>
                     </span>
                   ))}
@@ -485,13 +551,13 @@ const RemixPage = () => {
                 onChange={(e) => setTagQuery(e.target.value)}
                 onKeyDown={handleExtraTagKeyDown}
                 placeholder="Type to search tags… press Enter to add"
-                className="w-full rounded-lg bg-white/5 border border-platerly-border px-3 py-2 text-sm text-platerly-text placeholder:text-platerly-muted"
+                className="w-full rounded-xl bg-platerly-light border border-platerly-border px-4 py-2.5 text-sm text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
               />
 
               {/* suggestions */}
-              {tagLoading && <div className="text-xs text-platerly-muted mt-1">Searching…</div>}
+              {tagLoading && <div className="text-xs text-platerly-subtle mt-2">Searching…</div>}
               {!tagLoading && !!tagSuggestions.length && (
-                <ul className="mt-2 max-h-56 overflow-auto rounded-lg border border-platerly-border bg-platerly-card/90 backdrop-blur">
+                <ul className="mt-2 max-h-56 overflow-auto rounded-xl border border-platerly-border bg-platerly-card/95 backdrop-blur shadow-lg">
                   {tagSuggestions.map(s => {
                     const disabled = extraTags.some(t => t.toLowerCase() === s.name.toLowerCase())
                     return (
@@ -501,9 +567,9 @@ const RemixPage = () => {
                           disabled={disabled}
                           onClick={() => addExtraTag(s.name)}
                           title={`${s.usageCount ?? 0} uses`}
-                          className={`w-full text-left px-3 py-2 text-sm hover:bg-white/5 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          className={`w-full text-left px-4 py-2.5 text-sm hover:bg-platerly-light transition ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                         >
-                          {s.name} <span className="text-platerly-muted">({s.usageCount ?? 0})</span>
+                          {s.name} <span className="text-platerly-subtle">({s.usageCount ?? 0})</span>
                         </button>
                       </li>
                     )
@@ -515,22 +581,28 @@ const RemixPage = () => {
             {/* Times + Difficulty */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-platerly-muted mb-2">Prep Time (mins)</label>
+                <label className="block text-sm font-medium text-platerly-muted mb-2">
+                  <Clock className="w-4 h-4 inline mr-1" />
+                  Prep Time (mins)
+                </label>
                 <input
                   type="number"
                   value={prepTime}
                   onChange={(e) => setPrepTime(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-platerly-border rounded-lg text-platerly-text"
+                  className="w-full px-4 py-2.5 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
                   min="0"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-platerly-muted mb-2">Cook Time (mins)</label>
+                <label className="block text-sm font-medium text-platerly-muted mb-2">
+                  <Flame className="w-4 h-4 inline mr-1" />
+                  Cook Time (mins)
+                </label>
                 <input
                   type="number"
                   value={cookTime}
                   onChange={(e) => setCookTime(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-platerly-border rounded-lg text-platerly-text"
+                  className="w-full px-4 py-2.5 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
                   min="0"
                 />
               </div>
@@ -539,7 +611,7 @@ const RemixPage = () => {
                 <select
                   value={difficulty}
                   onChange={(e) => setDifficulty(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-platerly-border rounded-lg text-platerly-text"
+                  className="w-full px-4 py-2.5 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
                 >
                   <option value="Easy">Easy</option>
                   <option value="Medium">Medium</option>
@@ -556,32 +628,44 @@ const RemixPage = () => {
                 accept="image/*"
                 onChange={handleImageUpload}
                 disabled={uploading}
-                className="block w-full text-sm text-platerly-text file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-platerly-accent file:text-black hover:file:brightness-110 disabled:file:opacity-60"
+                className="block w-full text-sm text-platerly-text file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-platerly-green file:text-platerly-dark hover:file:bg-platerly-green/90 disabled:file:opacity-60 transition"
               />
-              {imageUrl && (
+              <p className="mt-1 text-xs text-platerly-subtle">Max size: {MAX_IMAGE_SIZE_MB}MB. Formats: JPEG, PNG, WebP, GIF</p>
+              {imageError && (
+                <p className="mt-2 text-sm text-red-400">{imageError}</p>
+              )}
+              {imageUrl && !imageError && (
                 <img
                   src={imageUrl}
                   alt="Preview"
-                  className="mt-4 w-full h-56 object-cover rounded-lg border border-platerly-border shadow-sm"
+                  className="mt-4 w-full h-56 object-cover rounded-xl border border-platerly-border shadow-lg"
                 />
               )}
             </div>
 
             {/* Submit */}
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+            {error && error.violations ? (
+              <ProhibitedIngredientsError message={error.message} violations={error.violations} />
+            ) : error ? (
+              <div className="flex items-center gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                {error.message}
+              </div>
+            ) : null}
 
             <div className="pt-2">
-              <button
+              <Button
+                type="button"
                 onClick={handleSubmit}
                 disabled={!canSubmit}
-                className={`w-full px-6 py-3 rounded-lg font-semibold transition ${
-                  canSubmit ? 'bg-platerly-accent text-black hover:brightness-110' : 'bg-platerly-accent/40 text-black/60 cursor-not-allowed'
-                }`}
+                loading={uploading}
+                size="lg"
+                fullWidth
               >
+                <RefreshCw className="w-5 h-5" />
                 Post Remix
-              </button>
+              </Button>
               {!canSubmit && (
-                <p className="mt-2 text-xs text-platerly-muted text-center">
+                <p className="mt-3 text-xs text-platerly-subtle text-center">
                   Select one option for <strong>Course</strong>, <strong>Diet</strong>, <strong>Style</strong>, <strong>Healthiness</strong>, and at least one <strong>Sensitivity</strong>.
                 </p>
               )}

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { UserPlus, UserMinus } from "lucide-react";
 import { API_BASE_URL } from "../../utils/api";
 import { useAuth } from "../../context/AuthContext";
+import { logger } from "../../utils/logger";
 
 const FollowButton = ({
   targetUserId,
@@ -14,8 +16,13 @@ const FollowButton = ({
 
   const handleToggleFollow = async () => {
     if (!token || !targetUserId || loading) return;
+
+    // Optimistic update - change UI immediately
+    const wasFollowing = isFollowing;
+    setIsFollowing(!wasFollowing);
     setLoading(true);
-    const method = isFollowing ? "DELETE" : "POST";
+
+    const method = wasFollowing ? "DELETE" : "POST";
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/User/${targetUserId}/follow`, {
@@ -23,25 +30,30 @@ const FollowButton = ({
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res.ok) throw new Error("Follow/unfollow failed");
-      setIsFollowing(!isFollowing);
+      if (!res.ok) {
+        // Revert on failure
+        setIsFollowing(wasFollowing);
+        throw new Error("Follow/unfollow failed");
+      }
     } catch (err) {
-      console.error(err);
+      // Revert on error
+      setIsFollowing(wasFollowing);
+      logger.error('Follow toggle failed', err);
     } finally {
       setLoading(false);
     }
   };
 
   const baseStyles =
-    "inline-flex items-center justify-center rounded-full font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 select-none min-h-[44px]";
+    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-platerly-dark select-none min-h-[44px]";
 
   const variants = {
     outline: isFollowing
-      ? "text-platerly-subtle border border-platerly-border bg-transparent hover:text-white hover:border-white/50 focus:ring-emerald-500"
-      : "text-emerald-400 border border-emerald-500 hover:bg-emerald-900/30 focus:ring-emerald-500",
+      ? "text-platerly-subtle border border-platerly-border bg-transparent hover:text-platerly-text hover:border-platerly-green/30 hover:bg-platerly-light/50 focus:ring-platerly-green/50"
+      : "text-platerly-green border border-platerly-green/50 hover:bg-platerly-green/10 focus:ring-platerly-green/50",
     solid: isFollowing
-      ? "bg-platerly-border text-platerly-subtle hover:bg-platerly-border/70 focus:ring-emerald-500"
-      : "bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500",
+      ? "bg-platerly-light text-platerly-subtle border border-platerly-border hover:bg-platerly-light/70 hover:border-platerly-green/30 focus:ring-platerly-green/50"
+      : "bg-platerly-green text-platerly-dark border border-transparent hover:brightness-110 focus:ring-platerly-green/50",
   };
 
   return (
@@ -56,13 +68,13 @@ const FollowButton = ({
       className={[
         baseStyles,
         variants[variant],
-        fullWidth ? "w-full" : "px-4 sm:px-5 py-1.5 text-sm",
+        fullWidth ? "w-full" : "px-4 sm:px-5 py-2 text-sm",
         loading && "opacity-60 cursor-not-allowed",
       ].join(" ")}
     >
       {loading ? (
         <svg
-          className="animate-spin -ml-1 mr-2 h-4 w-4 text-current"
+          className="animate-spin h-4 w-4 text-current"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -81,7 +93,11 @@ const FollowButton = ({
             d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"
           />
         </svg>
-      ) : null}
+      ) : isFollowing ? (
+        <UserMinus className="w-4 h-4" />
+      ) : (
+        <UserPlus className="w-4 h-4" />
+      )}
       {isFollowing ? "Following" : "Follow"}
     </button>
   );
