@@ -38,15 +38,23 @@ module.exports = async function (context, req) {
     const apiUrl = `https://${BACKEND_BASE}/api/Recipe/${id}`;
     context.log("Fetching from:", apiUrl);
 
-    const r = await fetch(apiUrl);
+    const r = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Platerly-ShareBot/1.0'
+      }
+    });
     context.log("API response status:", r.status);
 
     if (!r.ok) {
-      context.log.warn(`Recipe fetch failed ${r.status} ${apiUrl}`);
+      let errorBody = "";
+      try { errorBody = await r.text(); } catch (e) {}
+      context.log.warn(`Recipe fetch failed ${r.status} ${apiUrl}`, errorBody);
       context.res = {
         status: 404,
         headers: { "Content-Type": "text/html; charset=utf-8" },
-        body: `Recipe not found (API returned ${r.status})`
+        body: `Recipe not found (API returned ${r.status}). Details: ${errorBody.slice(0, 200)}`
       };
       return;
     }

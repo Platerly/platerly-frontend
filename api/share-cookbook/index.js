@@ -30,13 +30,21 @@ module.exports = async function (context, req) {
     const apiUrl = `https://${BACKEND_BASE}/api/Cookbook/${id}`;
     context.log("Fetching from:", apiUrl);
 
-    const r = await fetch(apiUrl);
+    const r = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Platerly-ShareBot/1.0'
+      }
+    });
     if (!r.ok) {
-      context.log.warn(`Cookbook fetch failed ${r.status} ${apiUrl}`);
+      let errorBody = "";
+      try { errorBody = await r.text(); } catch (e) {}
+      context.log.warn(`Cookbook fetch failed ${r.status} ${apiUrl}`, errorBody);
       context.res = {
         status: 404,
         headers: { "Content-Type": "text/html; charset=utf-8" },
-        body: "Cookbook not found or is private"
+        body: `Cookbook not found (API returned ${r.status}). Details: ${errorBody.slice(0, 200)}`
       };
       return;
     }
