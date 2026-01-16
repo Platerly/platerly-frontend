@@ -99,13 +99,17 @@ module.exports = async function (context, req) {
 <meta property="og:title" content="${E(title)}">
 <meta property="og:description" content="${E(desc)}">
 <meta property="og:url" content="${canonicalUrl}">
-<meta property="og:image" content="${shareImage}">
+<meta property="og:image" content="${E(shareImage)}">
+<meta property="og:image:secure_url" content="${E(shareImage)}">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="${E(title)} on ${site}">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${E(title)}">
 <meta name="twitter:description" content="${E(desc)}">
-<meta name="twitter:image" content="${shareImage}">
+<meta name="twitter:image" content="${E(shareImage)}">
 <meta name="twitter:url" content="${canonicalUrl}">
 <meta name="twitter:domain" content="platerly.com">
 <meta name="twitter:site" content="@platerlyinc">
