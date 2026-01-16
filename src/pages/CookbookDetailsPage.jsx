@@ -494,8 +494,8 @@ const CookbookDetailsPage = () => {
 
   const getShareUrl = () => {
     if (typeof window === "undefined") return "";
-    // Use /share/ prefix so social media crawlers get OG meta tags
-    return `${window.location.origin}/share/cookbook/${id}`;
+    // Use /api/share/ so social media crawlers get OG meta tags
+    return `${window.location.origin}/api/share/cookbook/${id}`;
   };
 
   const copyShareLink = async () => {

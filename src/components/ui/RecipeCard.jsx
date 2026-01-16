@@ -85,8 +85,8 @@ const RecipeCard = ({
   const { token } = useAuth()
 
   const safeImg = imageUrl || '/placeholder.png'
-  // Use /share/ prefix so social media crawlers get OG meta tags
-  const shareUrl = `${window.location.origin}/share/recipe/${id}`
+  // Use /api/share/ so social media crawlers get OG meta tags
+  const shareUrl = `${window.location.origin}/api/share/recipe/${id}`
 
   // --- Tag normalization + prioritization ---
   const rawTags = Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',') : [])

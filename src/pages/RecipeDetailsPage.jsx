@@ -356,8 +356,8 @@ const RecipeDetailsPage = () => {
   // Share functionality
   const [shareOpen, setShareOpen] = useState(false)
   const [copied, setCopied] = useState(false)
-  // Use /share/ prefix so social media crawlers get OG meta tags
-  const shareUrl = `${window.location.origin}/share/recipe/${id}`
+  // Use /api/share/ so social media crawlers get OG meta tags
+  const shareUrl = `${window.location.origin}/api/share/recipe/${id}`
 
   const handleShare = () => {
     setShareOpen(true)

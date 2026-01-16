@@ -4,8 +4,7 @@
     "exclude": [
       "/api/*",
       "/assets/*",
-      "/static/*",
-      "/share/*"
+      "/static/*"
     ]
   },
   "routes": [
@@ -13,22 +12,6 @@
       "route": "/sitemap.xml",
       "redirect": "https://platerly-api-g9htcadmbda6h8ej.canadacentral-01.azurewebsites.net/sitemap.xml",
       "statusCode": 301
-    },
-    {
-      "route": "/share/recipe/*",
-      "rewrite": "/api/share/recipe/{*}"
-    },
-    {
-      "route": "/share/cookbook/*",
-      "rewrite": "/api/share/cookbook/{*}"
-    },
-    {
-      "route": "/og/recipe/*",
-      "rewrite": "/api/share/og/recipe/{*}"
-    },
-    {
-      "route": "/og/cookbook/*",
-      "rewrite": "/api/share/og/cookbook/{*}"
     }
   ],
   "responseOverrides": {
