@@ -94,7 +94,7 @@ const Landing = () => {
             <FeatureCard
               icon={Shield}
               title="Allergy Protection"
-              description="AI-powered ingredient analysis flags potential allergens in every recipe."
+              description="Ingredient analysis flags potential allergens in every recipe."
             />
             <FeatureCard
               icon={ChefHat}
