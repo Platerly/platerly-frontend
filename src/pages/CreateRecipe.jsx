@@ -26,8 +26,10 @@ const CreateRecipe = () => {
     title: '', description: '', instructions: '', region: '',
     ingredients: [{ name: '', quantity: '' }],
     imageFile: null, imageUrl: '', imageBlobName: '',
-    prepTime: '', cookTime: '', difficulty: 'Easy',
+    prepTime: '', cookTime: '', difficulty: 'Easy', type: 'Meal',
   })
+
+  const RECIPE_TYPES = ['Meal', 'Shake', 'Dessert', 'Snack', 'Appetizer', 'Side', 'Beverage']
 
   const [selectedGroups, setSelectedGroups] = useState({ course:'', diet:'', style:'', health:'' })
   const [selectedSensitivities, setSelectedSensitivities] = useState([])
@@ -178,7 +180,8 @@ const CreateRecipe = () => {
         tags,
         prepTimeMinutes: Number(form.prepTime) || 0,
         cookTimeMinutes: Number(form.cookTime) || 0,
-        difficulty: form.difficulty
+        difficulty: form.difficulty,
+        type: form.type
       }
 
       const res = await fetch(`${API_BASE_URL}/api/Recipe`, {
@@ -424,14 +427,22 @@ const CreateRecipe = () => {
             </div>
           </div>
 
-          {/* Difficulty */}
-          <div>
-            <label className="pl-label mb-1 block">Difficulty</label>
-            <select name="difficulty" value={form.difficulty} onChange={handleChange} className="pl-select">
-              <option value="Easy">Easy</option>
-              <option value="Medium">Medium</option>
-              <option value="Hard">Hard</option>
-            </select>
+          {/* Difficulty & Type */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="pl-label mb-1 block">Difficulty</label>
+              <select name="difficulty" value={form.difficulty} onChange={handleChange} className="pl-select">
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+            </div>
+            <div>
+              <label className="pl-label mb-1 block">Recipe Type</label>
+              <select name="type" value={form.type} onChange={handleChange} className="pl-select">
+                {RECIPE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
           </div>
 
           {/* Image */}

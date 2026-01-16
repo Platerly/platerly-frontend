@@ -38,10 +38,13 @@ const Feed = () => {
   const tab = authed && rawTab === 'following' ? 'following' : 'explore'
 
   const difficulty = (sp.get('difficulty') || '').trim()
+  const recipeType = (sp.get('recipeType') || '').trim()
   const tagsQs = (sp.get('tags') || '').trim()
   const requireAllTags = sp.get('requireAllTags') === 'true'
   const hideRemixes = sp.get('hideRemixes') === 'true'
   const hideMyAllergens = sp.get('hideMyAllergens') === 'true'
+
+  const RECIPE_TYPES = ['', 'Meal', 'Shake', 'Dessert', 'Snack', 'Appetizer', 'Side', 'Beverage']
 
   const tags = useMemo(() => {
     if (!tagsQs) return []
@@ -68,6 +71,7 @@ const Feed = () => {
     params.set('page', String(pageNum))
     params.set('pageSize', String(PAGE_SIZE))
     if (difficulty) params.set('difficulty', difficulty)
+    if (recipeType) params.set('recipeType', recipeType)
     if (tagsQs) params.set('tags', tagsQs)
     if (requireAllTags) params.set('requireAllTags', 'true')
     if (hideRemixes) params.set('hideRemixes', 'true')
@@ -143,7 +147,7 @@ const Feed = () => {
     const nextPage = page + 1
     setPage(nextPage)
     fetchFeed(nextPage, true)
-  }, [page, loadingMore, hasMore, tab, difficulty, tagsQs, requireAllTags, hideRemixes, hideMyAllergens])
+  }, [page, loadingMore, hasMore, tab, difficulty, recipeType, tagsQs, requireAllTags, hideRemixes, hideMyAllergens])
 
   // Allergen helpers imported from utils/allergenHelpers.js
 
@@ -201,7 +205,7 @@ const Feed = () => {
   useEffect(() => {
     setPage(1)
     setHasMore(true)
-  }, [tab, difficulty, tagsQs, requireAllTags, hideRemixes, hideMyAllergens])
+  }, [tab, difficulty, recipeType, tagsQs, requireAllTags, hideRemixes, hideMyAllergens])
 
   // Main effect
   useEffect(() => {
@@ -225,6 +229,7 @@ const Feed = () => {
   }, [
     tab,
     difficulty,
+    recipeType,
     tagsQs,
     requireAllTags,
     hideRemixes,
@@ -280,6 +285,24 @@ const Feed = () => {
               Following
             </button>
           )}
+        </div>
+      </div>
+
+      {/* Recipe type filter */}
+      <div className="max-w-4xl mx-auto px-4 pt-4">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {RECIPE_TYPES.map(type => (
+            <button
+              key={type || 'all'}
+              onClick={() => updateParams({ recipeType: type || undefined })}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition
+                ${recipeType === type || (!recipeType && !type)
+                  ? 'bg-platerly-green text-platerly-dark'
+                  : 'bg-platerly-card text-platerly-subtle hover:bg-platerly-light'}`}
+            >
+              {type || 'All'}
+            </button>
+          ))}
         </div>
       </div>
 
