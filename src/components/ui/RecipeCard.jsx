@@ -64,6 +64,7 @@ const severityTextClass = (severity) => {
 
 const RecipeCard = ({
   id, author, title, description, imageUrl,
+  photoCredit, photoCreditUrl,
   likes = 0, isLiked = false,
   reposts = 0, isRepostedByCurrentUser = false,
   ingredientNames = [],
@@ -305,6 +306,26 @@ const RecipeCard = ({
           <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
             <Flame className="w-3.5 h-3.5" />
             {trendingRank ? `#${trendingRank}` : 'Trending'}
+          </div>
+        )}
+        {/* Photo Credit */}
+        {photoCredit && (
+          <div className="absolute bottom-2 right-2">
+            {photoCreditUrl ? (
+              <a
+                href={photoCreditUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-[10px] text-white/70 hover:text-white bg-black/40 px-1.5 py-0.5 rounded backdrop-blur-sm transition-colors"
+              >
+                Photo by {photoCredit} on Pexels
+              </a>
+            ) : (
+              <span className="text-[10px] text-white/70 bg-black/40 px-1.5 py-0.5 rounded backdrop-blur-sm">
+                Photo by {photoCredit} on Pexels
+              </span>
+            )}
           </div>
         )}
       </div>

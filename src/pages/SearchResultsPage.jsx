@@ -410,6 +410,8 @@ const SearchResultsPage = () => {
                       title={item.title}
                       description={item.description}
                       imageUrl={item.imageUrl}
+                      photoCredit={item.photoCredit}
+                      photoCreditUrl={item.photoCreditUrl}
                       likes={item.likes}
                       ingredients={item.ingredients}
                       userAllergies={[]}

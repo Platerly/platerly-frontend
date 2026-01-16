@@ -452,6 +452,26 @@ const RecipeDetailsPage = () => {
           <div className="absolute inset-0 ring-1 ring-inset ring-white/5" />
         </div>
 
+        {/* Photo Credit */}
+        {recipe?.photoCredit && (
+          <div className="absolute bottom-3 right-3 z-30">
+            {recipe.photoCreditUrl ? (
+              <a
+                href={recipe.photoCreditUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-white/70 hover:text-white bg-black/50 px-2 py-1 rounded-lg backdrop-blur-sm transition-colors"
+              >
+                Photo by {recipe.photoCredit} on Pexels
+              </a>
+            ) : (
+              <span className="text-xs text-white/70 bg-black/50 px-2 py-1 rounded-lg backdrop-blur-sm">
+                Photo by {recipe.photoCredit} on Pexels
+              </span>
+            )}
+          </div>
+        )}
+
         {/* kebab */}
         <div ref={menuRef} className="absolute top-2 sm:top-3 right-2 sm:right-3 z-40">
           <button

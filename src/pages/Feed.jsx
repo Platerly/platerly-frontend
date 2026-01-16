@@ -268,6 +268,8 @@ const Feed = () => {
               title={recipe.title}
               description={recipe.description}
               imageUrl={recipe.imageUrl}
+              photoCredit={recipe.photoCredit}
+              photoCreditUrl={recipe.photoCreditUrl}
               likes={recipe.likes}
               isLiked={recipe.isLikedByCurrentUser}
               reposts={recipe.repostCount}
