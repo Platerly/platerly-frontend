@@ -27,18 +27,26 @@ const RemixPage = () => {
   const navigate = useNavigate()
   const { token } = useAuth()
 
-  // Scalars
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [instructions, setInstructions] = useState('')
-  const [region, setRegion] = useState('')
-  const [difficulty, setDifficulty] = useState('Easy')
-  const [prepTime, setPrepTime] = useState('')
-  const [cookTime, setCookTime] = useState('')
+  // Form state (consolidated to prevent re-render issues)
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    instructions: '',
+    region: '',
+    difficulty: 'Easy',
+    prepTime: '',
+    cookTime: '',
+    type: 'Meal',
+    imageUrl: '',
+    imageBlobName: '',
+  })
 
-  // Image
-  const [imageUrl, setImageUrl] = useState('')
-  const [imageBlobName, setImageBlobName] = useState('')
+  const handleFormChange = (e) => {
+    const { name, value } = e.target
+    setForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  // Image upload state
   const [uploading, setUploading] = useState(false)
   const [imageError, setImageError] = useState('')
 
@@ -90,14 +98,18 @@ const RemixPage = () => {
         const payload = await res.json()
         const recipe = payload.recipe || payload // fallback
 
-        setTitle(recipe.title || '')
-        setDescription(recipe.description || '')
-        setInstructions(recipe.instructions || '')
-        setRegion(recipe.region || '')
-        setDifficulty(recipe.difficulty || 'Easy')
-        setPrepTime(String(recipe.prepTimeMinutes ?? ''))
-        setCookTime(String(recipe.cookTimeMinutes ?? ''))
-        setImageUrl(recipe.imageUrl || '')
+        setForm({
+          title: recipe.title || '',
+          description: recipe.description || '',
+          instructions: recipe.instructions || '',
+          region: recipe.region || '',
+          difficulty: recipe.difficulty || 'Easy',
+          prepTime: String(recipe.prepTimeMinutes ?? ''),
+          cookTime: String(recipe.cookTimeMinutes ?? ''),
+          type: recipe.type || 'Meal',
+          imageUrl: recipe.imageUrl || '',
+          imageBlobName: '',
+        })
 
         const ing = (recipe.ingredients || []).map(i => ({
           name: i.name || '',
@@ -185,8 +197,11 @@ const RemixPage = () => {
       })
       if (!res.ok) throw new Error('Image upload failed')
       const data = await res.json()
-      setImageUrl(data.imageUrl)
-      setImageBlobName(data.imageBlobName || data.blobName)
+      setForm(prev => ({
+        ...prev,
+        imageUrl: data.imageUrl,
+        imageBlobName: data.imageBlobName || data.blobName
+      }))
     } catch (e) {
       logger.error(e)
       setImageError('Image upload failed. Please try again.')
@@ -200,8 +215,8 @@ const RemixPage = () => {
   const singlesChosen = Object.values(selectedGroups).filter(Boolean).length
   const singlesComplete = singlesChosen === singlesNeeded
   const hasSensitivity = selectedSensitivities.length > 0
-  const hasBasics = title.trim() && instructions.trim()
-  const hasImageReady = !!imageUrl // remix can reuse original; upload optional
+  const hasBasics = form.title.trim() && form.instructions.trim()
+  const hasImageReady = !!form.imageUrl // remix can reuse original; upload optional
   const canSubmit = useMemo(
     () => singlesComplete && hasSensitivity && hasBasics && hasImageReady && !uploading && !loading,
     [singlesComplete, hasSensitivity, hasBasics, hasImageReady, uploading, loading]
@@ -281,17 +296,17 @@ const RemixPage = () => {
       const tags = Array.from(tagMap.values())
 
       const payload = {
-        title,
-        description,
-        instructions,
-        region,
-        imageUrl,
-        imageBlobName,
+        title: form.title,
+        description: form.description,
+        instructions: form.instructions,
+        region: form.region,
+        imageUrl: form.imageUrl,
+        imageBlobName: form.imageBlobName,
         ingredients,
         tags,                               // array expected by Remix endpoint (CreateRecipeDto)
-        prepTimeMinutes: Number(prepTime) || 0,
-        cookTimeMinutes: Number(cookTime) || 0,
-        difficulty
+        prepTimeMinutes: Number(form.prepTime) || 0,
+        cookTimeMinutes: Number(form.cookTime) || 0,
+        difficulty: form.difficulty
       }
 
       const response = await fetch(`${API_BASE_URL}/api/Recipe/${originalId}/remix`, {
@@ -374,8 +389,9 @@ const RemixPage = () => {
               </label>
               <input
                 type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                name="title"
+                value={form.title}
+                onChange={handleFormChange}
                 className="w-full px-4 py-3 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
                 required
               />
@@ -385,8 +401,9 @@ const RemixPage = () => {
               <label className="block text-sm font-medium text-platerly-muted mb-2">Region or Cuisine</label>
               <input
                 type="text"
-                value={region}
-                onChange={(e) => setRegion(e.target.value)}
+                name="region"
+                value={form.region}
+                onChange={handleFormChange}
                 className="w-full px-4 py-3 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
               />
             </div>
@@ -396,8 +413,9 @@ const RemixPage = () => {
                 Description <span className="text-red-400">*</span>
               </label>
               <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                name="description"
+                value={form.description}
+                onChange={handleFormChange}
                 rows={3}
                 className="w-full px-4 py-3 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text placeholder:text-platerly-subtle resize-y focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
                 required
@@ -409,8 +427,9 @@ const RemixPage = () => {
                 Instructions <span className="text-red-400">*</span>
               </label>
               <textarea
-                value={instructions}
-                onChange={(e) => setInstructions(e.target.value)}
+                name="instructions"
+                value={form.instructions}
+                onChange={handleFormChange}
                 rows={4}
                 className="w-full px-4 py-3 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text placeholder:text-platerly-subtle resize-y focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
                 required
@@ -587,8 +606,9 @@ const RemixPage = () => {
                 </label>
                 <input
                   type="number"
-                  value={prepTime}
-                  onChange={(e) => setPrepTime(e.target.value)}
+                  name="prepTime"
+                  value={form.prepTime}
+                  onChange={handleFormChange}
                   className="w-full px-4 py-2.5 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
                   min="0"
                 />
@@ -600,8 +620,9 @@ const RemixPage = () => {
                 </label>
                 <input
                   type="number"
-                  value={cookTime}
-                  onChange={(e) => setCookTime(e.target.value)}
+                  name="cookTime"
+                  value={form.cookTime}
+                  onChange={handleFormChange}
                   className="w-full px-4 py-2.5 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
                   min="0"
                 />
@@ -609,8 +630,9 @@ const RemixPage = () => {
               <div>
                 <label className="block text-sm font-medium text-platerly-muted mb-2">Difficulty</label>
                 <select
-                  value={difficulty}
-                  onChange={(e) => setDifficulty(e.target.value)}
+                  name="difficulty"
+                  value={form.difficulty}
+                  onChange={handleFormChange}
                   className="w-full px-4 py-2.5 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
                 >
                   <option value="Easy">Easy</option>
@@ -634,9 +656,9 @@ const RemixPage = () => {
               {imageError && (
                 <p className="mt-2 text-sm text-red-400">{imageError}</p>
               )}
-              {imageUrl && !imageError && (
+              {form.imageUrl && !imageError && (
                 <img
-                  src={imageUrl}
+                  src={form.imageUrl}
                   alt="Preview"
                   className="mt-4 w-full h-56 object-cover rounded-xl border border-platerly-border shadow-lg"
                 />

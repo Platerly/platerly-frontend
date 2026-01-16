@@ -490,14 +490,21 @@ const SettingsPage = () => {
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
 
-  const [displayName, setDisplayName] = useState("");
-  const [bio, setBio] = useState("");
-  const [websiteUrl, setWebsiteUrl] = useState("");
-  const [youTubeUrl, setYouTubeUrl] = useState("");
-  const [xUrl, setXUrl] = useState("");
-  const [instagramUrl, setInstagramUrl] = useState("");
-  const [profileImageUrl, setProfileImageUrl] = useState("");
-  const [region, setRegion] = useState("");
+  const [profileForm, setProfileForm] = useState({
+    displayName: "",
+    bio: "",
+    websiteUrl: "",
+    youTubeUrl: "",
+    xUrl: "",
+    instagramUrl: "",
+    profileImageUrl: "",
+    region: "",
+  });
+
+  const handleProfileChange = (e) => {
+    const { name, value } = e.target;
+    setProfileForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const fileRef = useRef(null);
 
@@ -517,14 +524,16 @@ const SettingsPage = () => {
         if (!res.ok) throw new Error("Failed to load profile");
         const data = await res.json();
         const u = data.user || {};
-        setDisplayName(u.displayName || "");
-        setBio((u.bio || "").slice(0, BIO_MAX_LENGTH));
-        setWebsiteUrl(u.websiteUrl || "");
-        setYouTubeUrl(u.youTubeUrl || "");
-        setXUrl(u.xUrl || "");
-        setInstagramUrl(u.instagramUrl || "");
-        setProfileImageUrl(u.profileImageUrl || "");
-        setRegion(u.region || "");
+        setProfileForm({
+          displayName: u.displayName || "",
+          bio: (u.bio || "").slice(0, BIO_MAX_LENGTH),
+          websiteUrl: u.websiteUrl || "",
+          youTubeUrl: u.youTubeUrl || "",
+          xUrl: u.xUrl || "",
+          instagramUrl: u.instagramUrl || "",
+          profileImageUrl: u.profileImageUrl || "",
+          region: u.region || "",
+        });
       } catch (e) {
         if (ac.signal.aborted) return;
         logger.error("Failed to load profile", e);
@@ -556,7 +565,7 @@ const SettingsPage = () => {
       });
       if (!res.ok) throw new Error("Upload failed");
       const data = await res.json();
-      setProfileImageUrl(data.imageUrl);
+      setProfileForm((prev) => ({ ...prev, profileImageUrl: data.imageUrl }));
       setOk("Profile picture updated.");
     } catch (e) {
       logger.error("Failed to upload profile picture", e);
@@ -574,13 +583,13 @@ const SettingsPage = () => {
     setOk("");
 
     const payload = {
-      displayName: displayName.trim(),
-      bio: bio.trim().slice(0, BIO_MAX_LENGTH),
-      websiteUrl: websiteUrl.trim(),
-      youTubeUrl: youTubeUrl.trim(),
-      xUrl: xUrl.trim(),
-      instagramUrl: instagramUrl.trim(),
-      region: region.trim(),
+      displayName: profileForm.displayName.trim(),
+      bio: profileForm.bio.trim().slice(0, BIO_MAX_LENGTH),
+      websiteUrl: profileForm.websiteUrl.trim(),
+      youTubeUrl: profileForm.youTubeUrl.trim(),
+      xUrl: profileForm.xUrl.trim(),
+      instagramUrl: profileForm.instagramUrl.trim(),
+      region: profileForm.region.trim(),
     };
 
     try {
@@ -617,7 +626,7 @@ const SettingsPage = () => {
     </div>
   );
 
-  const photo = profileImageUrl || "/placeholder-avatar.png";
+  const photo = profileForm.profileImageUrl || "/placeholder-avatar.png";
 
   return (
     <div className="min-h-screen bg-platerly-dark text-platerly-text relative overflow-hidden">
@@ -688,18 +697,23 @@ const SettingsPage = () => {
 
             <Field label="Display Name">
               <input
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
+                name="displayName"
+                value={profileForm.displayName}
+                onChange={handleProfileChange}
                 required
                 maxLength={80}
                 className={inputClasses}
               />
             </Field>
 
-            <Field label="Bio" hint={`${clamp(bio?.length || 0, 0, BIO_MAX_LENGTH)}/${BIO_MAX_LENGTH}`}>
+            <Field label="Bio" hint={`${clamp(profileForm.bio?.length || 0, 0, BIO_MAX_LENGTH)}/${BIO_MAX_LENGTH}`}>
               <textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value.slice(0, BIO_MAX_LENGTH))}
+                name="bio"
+                value={profileForm.bio}
+                onChange={(e) => {
+                  const val = e.target.value.slice(0, BIO_MAX_LENGTH);
+                  setProfileForm((prev) => ({ ...prev, bio: val }));
+                }}
                 rows={5}
                 className={inputClasses}
                 placeholder="Tell people a little about you..."
@@ -710,8 +724,9 @@ const SettingsPage = () => {
               <div className="relative">
                 <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-platerly-subtle pointer-events-none" />
                 <select
-                  value={region}
-                  onChange={(e) => setRegion(e.target.value)}
+                  name="region"
+                  value={profileForm.region}
+                  onChange={handleProfileChange}
                   className={inputClasses + " pl-10 appearance-none cursor-pointer"}
                 >
                   {REGION_OPTIONS.map((opt) => (
@@ -731,27 +746,29 @@ const SettingsPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Website">
                 <input
-                  value={websiteUrl}
-                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  name="websiteUrl"
+                  value={profileForm.websiteUrl}
+                  onChange={handleProfileChange}
                   placeholder="https://your-site.com"
                   className={inputClasses}
                 />
-                {websiteUrl && (
+                {profileForm.websiteUrl && (
                   <a
-                    href={withScheme(websiteUrl)}
+                    href={withScheme(profileForm.websiteUrl)}
                     target="_blank"
                     rel="noreferrer"
                     className="text-xs underline text-platerly-subtle hover:text-platerly-text mt-1 inline-block"
                   >
-                    Preview: {withScheme(websiteUrl)}
+                    Preview: {withScheme(profileForm.websiteUrl)}
                   </a>
                 )}
               </Field>
 
               <Field label="YouTube">
                 <input
-                  value={youTubeUrl}
-                  onChange={(e) => setYouTubeUrl(e.target.value)}
+                  name="youTubeUrl"
+                  value={profileForm.youTubeUrl}
+                  onChange={handleProfileChange}
                   placeholder="https://youtube.com/@yourchannel"
                   className={inputClasses}
                 />
@@ -759,8 +776,9 @@ const SettingsPage = () => {
 
               <Field label="X (Twitter)">
                 <input
-                  value={xUrl}
-                  onChange={(e) => setXUrl(e.target.value)}
+                  name="xUrl"
+                  value={profileForm.xUrl}
+                  onChange={handleProfileChange}
                   placeholder="https://x.com/yourhandle"
                   className={inputClasses}
                 />
@@ -768,8 +786,9 @@ const SettingsPage = () => {
 
               <Field label="Instagram">
                 <input
-                  value={instagramUrl}
-                  onChange={(e) => setInstagramUrl(e.target.value)}
+                  name="instagramUrl"
+                  value={profileForm.instagramUrl}
+                  onChange={handleProfileChange}
                   placeholder="https://instagram.com/yourhandle"
                   className={inputClasses}
                 />
