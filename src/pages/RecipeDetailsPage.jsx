@@ -454,7 +454,7 @@ const RecipeDetailsPage = () => {
 
         {/* Photo Credit */}
         {recipe?.photoCredit && (
-          <div className="absolute bottom-3 right-3 z-30">
+          <div className="absolute top-3 left-3 z-30">
             {recipe.photoCreditUrl ? (
               <a
                 href={recipe.photoCreditUrl}
