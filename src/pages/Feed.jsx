@@ -1,10 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import RecipeCard from '../components/ui/RecipeCard'
 import { useAuth } from '../context/AuthContext'
 import { useApi } from '../utils/fetchWithAuth'
 import { norm, variants, isSevere } from '../utils/allergenHelpers'
 import { logger } from '../utils/logger'
+
+const PAGE_SIZE = 20
 
 const SkeletonPost = () => (
   <div className="rounded-xl bg-platerly-card border border-platerly-light p-4 animate-pulse">
@@ -20,8 +22,12 @@ const Feed = () => {
   const [userAllergies, setUserAllergies] = useState([])
   const [currentUserId, setCurrentUserId] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
 
+  const loaderRef = useRef(null)
   const [sp, setSp] = useSearchParams()
   const navigate = useNavigate()
   const { authed, token, loading: authLoading } = useAuth()
@@ -57,14 +63,16 @@ const Feed = () => {
     updateParams({ tab: 'following' })
   }
 
-  const buildExploreUrl = () => {
+  const buildExploreUrl = (pageNum) => {
     const params = new URLSearchParams()
+    params.set('page', String(pageNum))
+    params.set('pageSize', String(PAGE_SIZE))
     if (difficulty) params.set('difficulty', difficulty)
     if (tagsQs) params.set('tags', tagsQs)
     if (requireAllTags) params.set('requireAllTags', 'true')
     if (hideRemixes) params.set('hideRemixes', 'true')
     if (hideMyAllergens) params.set('hideMyAllergens', 'true')
-    return `/api/feed/explore${params.toString() ? `?${params.toString()}` : ''}`
+    return `/api/feed/explore?${params.toString()}`
   }
 
   const fetchUserAllergies = async () => {
@@ -93,24 +101,49 @@ const Feed = () => {
     }
   }
 
-  const fetchFeed = async () => {
+  const fetchFeed = async (pageNum = 1, append = false) => {
     try {
-      setLoading(true)
+      if (append) {
+        setLoadingMore(true)
+      } else {
+        setLoading(true)
+        setRecipes([])
+      }
       setError('')
 
-      const path = tab === 'explore' ? buildExploreUrl() : '/api/feed/following'
+      const path = tab === 'explore'
+        ? buildExploreUrl(pageNum)
+        : `/api/feed/following?page=${pageNum}&pageSize=${PAGE_SIZE}`
       const res = await apiFetch(path)
       if (!res.ok) throw new Error('Failed to fetch feed')
       const data = await res.json()
-      setRecipes(Array.isArray(data) ? data : [])
+      const newRecipes = Array.isArray(data) ? data : []
+
+      if (append) {
+        setRecipes(prev => [...prev, ...newRecipes])
+      } else {
+        setRecipes(newRecipes)
+      }
+
+      setHasMore(newRecipes.length >= PAGE_SIZE)
     } catch (err) {
       logger.error('Feed fetch failed', err)
-      setError('Could not load feed.')
-      setRecipes([])
+      if (!append) {
+        setError('Could not load feed.')
+        setRecipes([])
+      }
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
   }
+
+  const loadMore = useCallback(() => {
+    if (loadingMore || !hasMore) return
+    const nextPage = page + 1
+    setPage(nextPage)
+    fetchFeed(nextPage, true)
+  }, [page, loadingMore, hasMore, tab, difficulty, tagsQs, requireAllTags, hideRemixes, hideMyAllergens])
 
   // Allergen helpers imported from utils/allergenHelpers.js
 
@@ -164,6 +197,12 @@ const Feed = () => {
     return list
   }, [tab, recipes, hideRemixes, difficulty, tags, requireAllTags, hideMyAllergens])
 
+  // Reset pagination when filters/tab change
+  useEffect(() => {
+    setPage(1)
+    setHasMore(true)
+  }, [tab, difficulty, tagsQs, requireAllTags, hideRemixes, hideMyAllergens])
+
   // Main effect
   useEffect(() => {
     let cancelled = false
@@ -178,7 +217,7 @@ const Feed = () => {
         setCurrentUserId(null)
       }
 
-      await fetchFeed()
+      await fetchFeed(1, false)
     }
 
     init()
@@ -194,6 +233,24 @@ const Feed = () => {
     authed,
     authLoading
   ])
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+          loadMore()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [hasMore, loading, loadingMore, loadMore])
 
   const renderList = tab === 'following' ? filteredFollowing : recipes
 
@@ -290,6 +347,22 @@ const Feed = () => {
             />
           )
         })}
+
+        {/* Infinite scroll loader */}
+        {!loading && !authLoading && !error && renderList.length > 0 && (
+          <div ref={loaderRef} className="py-8 flex justify-center">
+            {loadingMore ? (
+              <div className="flex items-center gap-2 text-platerly-subtle">
+                <div className="w-5 h-5 border-2 border-platerly-green border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm">Loading more...</span>
+              </div>
+            ) : hasMore ? (
+              <div className="h-10" />
+            ) : (
+              <p className="text-sm text-platerly-subtle">You've reached the end</p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
