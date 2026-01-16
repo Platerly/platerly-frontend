@@ -1,18 +1,58 @@
 module.exports = async function (context, req) {
+  context.log("Share recipe function triggered");
+  context.log("Request URL:", req.url);
+  context.log("Binding data:", JSON.stringify(context.bindingData));
+
   try {
-    const id = context.bindingData.id;
+    const id = context.bindingData.id || req.params?.id;
+    context.log("Recipe ID:", id);
+
+    if (!id) {
+      context.log.error("No recipe ID provided");
+      context.res = {
+        status: 400,
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+        body: "Missing recipe ID"
+      };
+      return;
+    }
+
     const PUBLIC_BASE = (process.env.PublicBaseUrl || "https://www.platerly.com").replace(/\/+$/, "");
     const BACKEND_BASE = (process.env.BackendBaseUrl || "").replace(/\/+$/, "");
     const site = "Platerly";
 
+    context.log("PUBLIC_BASE:", PUBLIC_BASE);
+    context.log("BACKEND_BASE:", BACKEND_BASE);
+
+    if (!BACKEND_BASE) {
+      context.log.error("BackendBaseUrl not configured");
+      context.res = {
+        status: 500,
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+        body: "Server configuration error: BackendBaseUrl not set"
+      };
+      return;
+    }
+
     // pull recipe from your .NET API
     const apiUrl = `https://${BACKEND_BASE}/api/Recipe/${id}`;
+    context.log("Fetching from:", apiUrl);
+
     const r = await fetch(apiUrl);
+    context.log("API response status:", r.status);
+
     if (!r.ok) {
       context.log.warn(`Recipe fetch failed ${r.status} ${apiUrl}`);
-      return html(404, "Recipe not found");
+      context.res = {
+        status: 404,
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+        body: `Recipe not found (API returned ${r.status})`
+      };
+      return;
     }
+
     const data = await r.json();
+    context.log("Recipe data received:", data?.title);
 
     const title = String(data?.title || "Recipe");
     const difficulty = data?.difficulty;
@@ -31,19 +71,19 @@ module.exports = async function (context, req) {
     if (difficulty !== undefined && difficulty !== null) parts.push(`Difficulty: ${difficulty}`);
     if (timePart) parts.push(timePart);
     if (tagNames.length) parts.push(tagNames.join(" "));
-    if (allergens.length) parts.push(`⚠️ Allergens: ${allergens.join(", ")}`);
+    if (allergens.length) parts.push(`Allergens: ${allergens.join(", ")}`);
 
-    let desc = parts.join(" · ");
-    if (desc.length > 240) desc = desc.slice(0, 240) + "…";
+    let desc = parts.join(" - ");
+    if (desc.length > 240) desc = desc.slice(0, 240) + "...";
 
     const canonicalUrl = `${PUBLIC_BASE}/recipe/${id}`;
-    const shareImage = `${PUBLIC_BASE}/og/recipe/${id}.png`;
+    const shareImage = data?.imageUrl || `${PUBLIC_BASE}/og-preview.png`;
 
     const page = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>${E(`${title} — ${site}`)}</title>
+<title>${E(title)} - ${site}</title>
 <link rel="canonical" href="${canonicalUrl}" />
 
 <meta property="og:type" content="article">
@@ -52,7 +92,7 @@ module.exports = async function (context, req) {
 <meta property="og:description" content="${E(desc)}">
 <meta property="og:url" content="${canonicalUrl}">
 <meta property="og:image" content="${shareImage}">
-<meta property="og:image:alt" content="${E(`${title} on ${site}`)}">
+<meta property="og:image:alt" content="${E(title)} on ${site}">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${E(title)}">
@@ -73,23 +113,28 @@ module.exports = async function (context, req) {
   <div class="wrap">
     <div>
       <h1>${E(title)}</h1>
-      <p>Opening recipe… If you are not redirected, <a href="${canonicalUrl}">tap here</a>.</p>
+      <p>Opening recipe... If you are not redirected, <a href="${canonicalUrl}">tap here</a>.</p>
     </div>
   </div>
 </body>
 </html>`;
 
-    return {
+    context.log("Returning HTML page");
+    context.res = {
       status: 200,
       headers: {
-        "content-type": "text/html; charset=utf-8",
-        "cache-control": "public, max-age=21600"
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "public, max-age=21600"
       },
       body: page
     };
   } catch (e) {
-    context.log.error(e);
-    return html(404, "An error occurred while processing the share request.");
+    context.log.error("Function error:", e.message, e.stack);
+    context.res = {
+      status: 500,
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+      body: `Error: ${e.message}`
+    };
   }
 };
 
@@ -97,7 +142,4 @@ function E(s) {
   return String(s || "")
     .replace(/&/g,"&amp;").replace(/</g,"&lt;")
     .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
-function html(code, msg) {
-  return { status: code, headers: { "content-type":"text/html; charset=utf-8" }, body: E(msg) };
 }

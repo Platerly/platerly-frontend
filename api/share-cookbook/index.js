@@ -1,19 +1,47 @@
 module.exports = async function (context, req) {
+  context.log("Share cookbook function triggered");
+
   try {
-    const id = context.bindingData.id;
+    const id = context.bindingData.id || req.params?.id;
+    context.log("Cookbook ID:", id);
+
+    if (!id) {
+      context.res = {
+        status: 400,
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+        body: "Missing cookbook ID"
+      };
+      return;
+    }
+
     const PUBLIC_BASE = (process.env.PublicBaseUrl || "https://www.platerly.com").replace(/\/+$/, "");
     const BACKEND_BASE = (process.env.BackendBaseUrl || "").replace(/\/+$/, "");
     const site = "Platerly";
 
-    // pull cookbook from your .NET API
+    if (!BACKEND_BASE) {
+      context.res = {
+        status: 500,
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+        body: "Server configuration error: BackendBaseUrl not set"
+      };
+      return;
+    }
+
     const apiUrl = `https://${BACKEND_BASE}/api/Cookbook/${id}`;
+    context.log("Fetching from:", apiUrl);
+
     const r = await fetch(apiUrl);
     if (!r.ok) {
       context.log.warn(`Cookbook fetch failed ${r.status} ${apiUrl}`);
-      return html(404, "Cookbook not found or is private");
+      context.res = {
+        status: 404,
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+        body: "Cookbook not found or is private"
+      };
+      return;
     }
-    const data = await r.json();
 
+    const data = await r.json();
     const title = String(data?.title || "Cookbook");
     const recipeCount = data?.recipeCount || data?.items?.length || 0;
     const ownerUsername = data?.ownerUsername;
@@ -39,7 +67,7 @@ module.exports = async function (context, req) {
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>${E(`${title} - ${site}`)}</title>
+<title>${E(title)} - ${site}</title>
 <link rel="canonical" href="${canonicalUrl}" />
 
 <meta property="og:type" content="article">
@@ -48,7 +76,7 @@ module.exports = async function (context, req) {
 <meta property="og:description" content="${E(desc)}">
 <meta property="og:url" content="${canonicalUrl}">
 <meta property="og:image" content="${shareImage}">
-<meta property="og:image:alt" content="${E(`${title} on ${site}`)}">
+<meta property="og:image:alt" content="${E(title)} on ${site}">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${E(title)}">
@@ -75,17 +103,21 @@ module.exports = async function (context, req) {
 </body>
 </html>`;
 
-    return {
+    context.res = {
       status: 200,
       headers: {
-        "content-type": "text/html; charset=utf-8",
-        "cache-control": "public, max-age=21600"
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "public, max-age=21600"
       },
       body: page
     };
   } catch (e) {
-    context.log.error(e);
-    return html(404, "An error occurred while processing the share request.");
+    context.log.error("Function error:", e.message);
+    context.res = {
+      status: 500,
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+      body: `Error: ${e.message}`
+    };
   }
 };
 
@@ -93,7 +125,4 @@ function E(s) {
   return String(s || "")
     .replace(/&/g,"&amp;").replace(/</g,"&lt;")
     .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
-function html(code, msg) {
-  return { status: code, headers: { "content-type":"text/html; charset=utf-8" }, body: E(msg) };
 }
