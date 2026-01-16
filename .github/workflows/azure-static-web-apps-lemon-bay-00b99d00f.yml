@@ -32,6 +32,8 @@ jobs:
           api_location: "api" # Azure Functions for share OG tags
           output_location: "dist" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
+        env:
+          VITE_API_BASE_URL: "https://platerly-api-g9htcadmbda6h8ej.canadacentral-01.azurewebsites.net"
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
