@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { API_BASE_URL } from '../utils/api'
 import { toast } from 'react-hot-toast'
 import logger from '../utils/logger'
-import { User, AlertTriangle, ChevronRight, Check } from 'lucide-react'
+import { User, AlertTriangle, ChevronRight, Check, RefreshCw } from 'lucide-react'
 
 const COMMON_ALLERGENS = [
   { id: 'peanuts', label: 'Peanuts', icon: null },
@@ -30,18 +30,43 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false)
   const [usernameError, setUsernameError] = useState('')
   const [checkingUsername, setCheckingUsername] = useState(false)
+  const [suggestions, setSuggestions] = useState([])
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false)
+  const [isCustomUsername, setIsCustomUsername] = useState(false)
 
-  // Initialize with current user data
+  // Fetch username suggestions
+  const fetchSuggestions = async () => {
+    setLoadingSuggestions(true)
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/User/suggest-usernames?count=5`)
+      if (res.ok) {
+        const data = await res.json()
+        setSuggestions(data.suggestions || [])
+        // Auto-populate first suggestion if user hasn't typed a custom username
+        if (data.suggestions?.length > 0 && !isCustomUsername) {
+          setUsername(data.suggestions[0])
+          setUsernameError('')
+        }
+      }
+    } catch (err) {
+      logger.error('Failed to fetch username suggestions', err)
+    } finally {
+      setLoadingSuggestions(false)
+    }
+  }
+
+  // Initialize with current user data and fetch suggestions
   useEffect(() => {
     if (user) {
-      // For OAuth users, username might be their email - suggest a cleaner version
+      setDisplayName(user.displayName || user.username?.split('@')[0] || '')
+      // Fetch suggestions for new users (those with email-based usernames)
       const currentUsername = user.username || ''
       if (currentUsername.includes('@')) {
-        setUsername(currentUsername.split('@')[0].replace(/[^a-zA-Z0-9_]/g, ''))
+        fetchSuggestions()
       } else {
+        // Existing user with proper username
         setUsername(currentUsername)
       }
-      setDisplayName(user.displayName || user.username?.split('@')[0] || '')
     }
   }, [user])
 
@@ -93,8 +118,11 @@ export default function OnboardingPage() {
   }
 
   const handleUsernameStep = async () => {
-    const valid = await checkUsername(username)
-    if (!valid) return
+    // Only check availability for custom usernames (suggestions are pre-verified unique)
+    if (isCustomUsername) {
+      const valid = await checkUsername(username)
+      if (!valid) return
+    }
 
     // Update username if changed
     if (username.toLowerCase() !== user?.username?.toLowerCase() || displayName !== user?.displayName) {
@@ -211,17 +239,38 @@ export default function OnboardingPage() {
 
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Username
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium">
+                      Username
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsCustomUsername(false)
+                        fetchSuggestions()
+                      }}
+                      disabled={loadingSuggestions}
+                      className="flex items-center gap-1.5 text-xs text-platerly-green hover:text-platerly-green/80 disabled:opacity-50"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${loadingSuggestions ? 'animate-spin' : ''}`} />
+                      New suggestions
+                    </button>
+                  </div>
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => {
-                      setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))
+                      const val = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')
+                      setUsername(val)
                       setUsernameError('')
+                      setIsCustomUsername(true)
                     }}
-                    onBlur={() => checkUsername(username)}
+                    onBlur={() => {
+                      // Only check availability for custom usernames (suggestions are pre-verified)
+                      if (isCustomUsername) {
+                        checkUsername(username)
+                      }
+                    }}
                     placeholder="your_username"
                     className="w-full px-4 py-3 rounded-xl bg-platerly-light border border-platerly-border text-platerly-text placeholder-platerly-muted focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
                   />
@@ -231,7 +280,35 @@ export default function OnboardingPage() {
                   {checkingUsername && (
                     <p className="mt-2 text-sm text-platerly-subtle">Checking availability...</p>
                   )}
-                  <p className="mt-2 text-xs text-platerly-muted">
+
+                  {/* Username suggestions */}
+                  {suggestions.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-xs text-platerly-muted mb-2">Or pick one of these:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {suggestions.slice(0, 5).map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            type="button"
+                            onClick={() => {
+                              setUsername(suggestion)
+                              setUsernameError('')
+                              setIsCustomUsername(false)
+                            }}
+                            className={`px-3 py-1.5 text-sm rounded-lg border transition-all ${
+                              username === suggestion
+                                ? 'bg-platerly-green/20 border-platerly-green text-platerly-green'
+                                : 'bg-platerly-light border-platerly-border hover:border-platerly-green/50 text-platerly-text'
+                            }`}
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="mt-3 text-xs text-platerly-muted">
                     This will be your unique @handle on Platerly
                   </p>
                 </div>

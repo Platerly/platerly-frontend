@@ -67,6 +67,12 @@ const Login = () => {
     if (data?.token && data?.user) {
       // write token into storage (localStorage if remember=true)
       login({ token: data.token, user: data.user, remember })
+
+      // Check if user needs to complete onboarding (email-based username)
+      if (needsOnboarding(data.user)) {
+        navigate('/onboarding', { replace: true })
+        return
+      }
     }
 
     navigate(redirectPath, { replace: true })
