@@ -91,13 +91,13 @@ export default function ResetPassword() {
 
   return (
     <div className="min-h-svh bg-platerly-dark text-platerly-text flex items-center justify-center px-4 py-10 relative overflow-hidden">
-      {/* Background gradient orbs */}
-      <div className="absolute top-0 left-1/4 w-80 h-80 bg-platerly-green/5 rounded-full blur-[120px]" />
-      <div className="absolute bottom-1/3 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
+      {/* Background gradient orbs - hidden on mobile for performance */}
+      <div className="hidden sm:block absolute top-0 left-1/4 w-80 h-80 bg-platerly-green/5 rounded-full blur-[120px]" />
+      <div className="hidden sm:block absolute bottom-1/3 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
 
       <div className="w-full max-w-md relative z-10">
-        {/* Card */}
-        <div className="bg-platerly-card/80 backdrop-blur-sm border border-platerly-border rounded-2xl shadow-xl p-6 sm:p-8">
+        {/* Card - no backdrop-blur on mobile for performance */}
+        <div className="bg-platerly-card sm:bg-platerly-card/80 sm:backdrop-blur-sm border border-platerly-border rounded-2xl shadow-xl p-6 sm:p-8">
           {/* Logo / Brand */}
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-xl bg-platerly-green/20 flex items-center justify-center">

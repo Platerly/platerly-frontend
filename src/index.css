@@ -78,3 +78,29 @@ input[type="radio"] { accent-color: #22C55E; } /* platerly-green */
 /* Hide scrollbars utility */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/*
+ * Disable expensive blur effects on mobile devices for performance.
+ * backdrop-blur and large blur() filters cause severe lag on mobile Safari.
+ */
+@media (max-width: 640px), (hover: none) and (pointer: coarse) {
+  .backdrop-blur,
+  .backdrop-blur-sm,
+  .backdrop-blur-md,
+  .backdrop-blur-lg,
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl,
+  .backdrop-blur-3xl,
+  [class*="backdrop-blur"] {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Also reduce large blur effects on backgrounds */
+  [class*="blur-[100px]"],
+  [class*="blur-[120px]"],
+  [class*="blur-[128px]"] {
+    filter: none !important;
+    opacity: 0.3;
+  }
+}

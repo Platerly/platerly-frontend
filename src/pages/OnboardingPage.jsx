@@ -183,9 +183,9 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-platerly-dark text-platerly-text flex items-center justify-center px-4 py-10 relative overflow-hidden">
-      {/* Background gradient orbs */}
-      <div className="absolute top-1/4 -left-32 w-80 h-80 bg-platerly-green/10 rounded-full blur-[120px]" />
-      <div className="absolute bottom-1/4 -right-32 w-80 h-80 bg-emerald-500/10 rounded-full blur-[120px]" />
+      {/* Background gradient orbs - hidden on mobile for performance */}
+      <div className="hidden sm:block absolute top-1/4 -left-32 w-80 h-80 bg-platerly-green/10 rounded-full blur-[120px]" />
+      <div className="hidden sm:block absolute bottom-1/4 -right-32 w-80 h-80 bg-emerald-500/10 rounded-full blur-[120px]" />
 
       <div className="w-full max-w-lg relative z-10">
         {/* Progress indicator */}
@@ -195,7 +195,7 @@ export default function OnboardingPage() {
           <div className={`w-3 h-3 rounded-full transition-colors ${step >= 2 ? 'bg-platerly-green' : 'bg-platerly-border'}`} />
         </div>
 
-        <div className="bg-platerly-card/80 backdrop-blur-md border border-platerly-border rounded-2xl shadow-2xl shadow-black/20 p-6 sm:p-8">
+        <div className="bg-platerly-card sm:bg-platerly-card/80 sm:backdrop-blur-md border border-platerly-border rounded-2xl shadow-2xl shadow-black/20 p-6 sm:p-8">
           {step === 1 ? (
             /* Step 1: Username & Display Name */
             <>
