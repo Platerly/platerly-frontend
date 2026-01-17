@@ -9,7 +9,7 @@ import { API_BASE_URL } from '../../utils/api'
 const Navbar = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { user, token, loading, authed, logout } = useAuth()
+  const { loading, authed, logout } = useAuth()
   const [open, setOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
 

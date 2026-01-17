@@ -8,19 +8,19 @@ export function bumpGuestSeenCount({ authed, loading }) {
     try {
       localStorage.removeItem(COUNT_KEY);
       localStorage.removeItem(SHOWN_AT_KEY);
-    } catch {}
+    } catch { /* ignore */ }
     return;
   }
   // guest
   try {
     const cur = parseInt(localStorage.getItem(COUNT_KEY) || '0', 10) || 0;
     localStorage.setItem(COUNT_KEY, String(cur + 1));
-  } catch {}
+  } catch { /* ignore */ }
 }
 
 export function clearSoftWall() {
   try {
     localStorage.removeItem(COUNT_KEY);
     localStorage.removeItem(SHOWN_AT_KEY);
-  } catch {}
+  } catch { /* ignore */ }
 }

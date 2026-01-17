@@ -14,7 +14,7 @@ function clearGuestSoftWall() {
     SOFTWALL_KEYS.forEach(k => localStorage.removeItem(k));
     // clean up legacy/typo’d key if present
     localStorage.removeItem('pl_guet_seen_count_v1');
-  } catch {}
+  } catch { /* ignore */ }
 }
 
 function readFrom(storage) {
@@ -137,7 +137,7 @@ export function AuthProvider({ children }) {
             setUser(u);
             writeTo(store, { token: newToken, user: u });
           }
-        } catch {}
+        } catch { /* ignore */ }
 
         clearGuestSoftWall(); // ✅ successful auth path: clear guest counters
         return true;

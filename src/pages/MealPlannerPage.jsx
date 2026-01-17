@@ -17,7 +17,7 @@ const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner', 'Snack']
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export default function MealPlannerPage() {
-  const { user, token } = useAuth()
+  const { token } = useAuth()
   const { isPremium } = usePremium()
 
   // Meal plans list

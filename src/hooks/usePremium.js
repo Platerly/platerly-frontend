@@ -44,14 +44,14 @@ export function usePremium() {
         data,
         timestamp: Date.now()
       }))
-    } catch {}
+    } catch { /* ignore */ }
   }
 
   // Clear cache (call on logout)
   function clearCache() {
     try {
       localStorage.removeItem(CACHE_KEY)
-    } catch {}
+    } catch { /* ignore */ }
   }
 
   const fetchStatus = useCallback(async (options = {}) => {
@@ -139,5 +139,5 @@ export function usePremium() {
 export function clearPremiumCache() {
   try {
     localStorage.removeItem(CACHE_KEY)
-  } catch {}
+  } catch { /* ignore */ }
 }

@@ -6,17 +6,23 @@ import { toast } from 'react-hot-toast'
 import logger from '../utils/logger'
 import { User, AlertTriangle, ChevronRight, Check, RefreshCw } from 'lucide-react'
 
+// Common allergens - matches database Allergy.Name values
+// FDA Big 9 + EU allergens + Nickel
 const COMMON_ALLERGENS = [
-  { id: 'peanuts', label: 'Peanuts', icon: null },
-  { id: 'tree-nuts', label: 'Tree Nuts', icon: null },
-  { id: 'milk', label: 'Dairy/Milk', icon: null },
-  { id: 'eggs', label: 'Eggs', icon: null },
-  { id: 'wheat', label: 'Wheat/Gluten', icon: null },
-  { id: 'soy', label: 'Soy', icon: null },
-  { id: 'fish', label: 'Fish', icon: null },
-  { id: 'shellfish', label: 'Shellfish', icon: null },
-  { id: 'sesame', label: 'Sesame', icon: null },
-  { id: 'nickel', label: 'Nickel', icon: null },
+  { name: 'Peanuts', label: 'Peanuts' },
+  { name: 'Tree Nuts', label: 'Tree Nuts' },
+  { name: 'Milk', label: 'Dairy/Milk' },
+  { name: 'Eggs', label: 'Eggs' },
+  { name: 'Gluten', label: 'Wheat/Gluten' },
+  { name: 'Soy', label: 'Soy' },
+  { name: 'Fish', label: 'Fish' },
+  { name: 'Shellfish', label: 'Shellfish' },
+  { name: 'Sesame', label: 'Sesame' },
+  { name: 'Sulfites', label: 'Sulfites' },
+  { name: 'Mustard', label: 'Mustard' },
+  { name: 'Celery', label: 'Celery' },
+  { name: 'Lupin', label: 'Lupin' },
+  { name: 'Nickel', label: 'Nickel' },
 ]
 
 export default function OnboardingPage() {
@@ -26,13 +32,32 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1) // 1 = username, 2 = allergies
   const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
-  const [selectedAllergens, setSelectedAllergens] = useState([])
+  const [selectedAllergens, setSelectedAllergens] = useState([]) // Array of allergen names
+  const [allAllergies, setAllAllergies] = useState([]) // Array of {id, name} from API
   const [loading, setLoading] = useState(false)
   const [usernameError, setUsernameError] = useState('')
   const [checkingUsername, setCheckingUsername] = useState(false)
   const [suggestions, setSuggestions] = useState([])
   const [loadingSuggestions, setLoadingSuggestions] = useState(false)
   const [isCustomUsername, setIsCustomUsername] = useState(false)
+
+  // Fetch all allergies from the database
+  useEffect(() => {
+    const fetchAllergies = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/Allergy/all`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setAllAllergies(Array.isArray(data) ? data : [])
+        }
+      } catch (err) {
+        logger.error('Failed to fetch allergies', err)
+      }
+    }
+    fetchAllergies()
+  }, [token])
 
   // Fetch username suggestions
   const fetchSuggestions = async () => {
@@ -109,11 +134,11 @@ export default function OnboardingPage() {
     }
   }
 
-  const toggleAllergen = (id) => {
+  const toggleAllergen = (name) => {
     setSelectedAllergens(prev =>
-      prev.includes(id)
-        ? prev.filter(a => a !== id)
-        : [...prev, id]
+      prev.includes(name)
+        ? prev.filter(a => a !== name)
+        : [...prev, name]
     )
   }
 
@@ -163,29 +188,25 @@ export default function OnboardingPage() {
   const handleAllergiesStep = async () => {
     setLoading(true)
     try {
-      // Get existing allergies first
-      const existingRes = await fetch(`${API_BASE_URL}/api/User/allergies`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      const existingData = existingRes.ok ? await existingRes.json() : []
-      const existingIds = existingData.map(a => a.allergenId || a.id)
+      // Map selected allergen names to their database IDs
+      const selectedIds = selectedAllergens
+        .map(name => {
+          const allergy = allAllergies.find(a =>
+            a.name.toLowerCase() === name.toLowerCase()
+          )
+          return allergy?.id
+        })
+        .filter(Boolean)
 
-      // Add new allergies
-      for (const allergenId of selectedAllergens) {
-        if (!existingIds.includes(allergenId)) {
-          await fetch(`${API_BASE_URL}/api/User/allergies`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              allergenId: allergenId,
-              severity: 'high'
-            })
-          })
-        }
-      }
+      // Update allergies using the correct endpoint
+      await fetch(`${API_BASE_URL}/api/Allergy/update`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(selectedIds)
+      })
 
       toast.success('Setup complete!')
       navigate('/feed', { replace: true })
@@ -355,20 +376,20 @@ export default function OnboardingPage() {
               <div className="grid grid-cols-2 gap-3 mb-6">
                 {COMMON_ALLERGENS.map(allergen => (
                   <button
-                    key={allergen.id}
-                    onClick={() => toggleAllergen(allergen.id)}
+                    key={allergen.name}
+                    onClick={() => toggleAllergen(allergen.name)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
-                      selectedAllergens.includes(allergen.id)
+                      selectedAllergens.includes(allergen.name)
                         ? 'bg-platerly-green/20 border-platerly-green text-platerly-green'
                         : 'bg-platerly-light border-platerly-border hover:border-platerly-green/30'
                     }`}
                   >
                     <div className={`w-5 h-5 rounded flex items-center justify-center border-2 shrink-0 ${
-                      selectedAllergens.includes(allergen.id)
+                      selectedAllergens.includes(allergen.name)
                         ? 'bg-platerly-green border-platerly-green'
                         : 'border-platerly-border'
                     }`}>
-                      {selectedAllergens.includes(allergen.id) && (
+                      {selectedAllergens.includes(allergen.name) && (
                         <Check className="w-3 h-3 text-platerly-dark" />
                       )}
                     </div>

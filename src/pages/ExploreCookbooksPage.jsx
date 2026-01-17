@@ -7,13 +7,6 @@ import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/fetchWithAuth";
 import { logger } from "../utils/logger";
 
-/* ---------------- Helpers ---------------- */
-const formatDate = (dateString) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  return date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-};
-
 /* ---------------- Components ---------------- */
 const CookbookCard = ({ cookbook }) => {
   const recipeCount = cookbook.recipeCount ?? cookbook.itemCount ?? 0;

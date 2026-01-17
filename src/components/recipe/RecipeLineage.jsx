@@ -93,7 +93,6 @@ const RecipeLineage = ({ recipeId, isRemix, remixCount = 0 }) => {
     fetchLineage()
   }, [recipeId, token, expanded])
 
-  const currentIndex = lineage.findIndex(r => r.id === recipeId || r.recipeId === recipeId)
   const hasLineage = lineage.length > 1
   const hasRemixes = remixes.length > 0
 

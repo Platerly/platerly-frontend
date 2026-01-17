@@ -216,8 +216,7 @@ const NotificationsPage = () => {
     markAsRead,
     markAllAsRead,
     deleteNotification,
-    loadMore,
-    refresh
+    loadMore
   } = useNotifications()
 
   useEffect(() => {

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 module.exports = async function (context, req) {
   context.log("Share recipe function triggered");
   context.log("Request URL:", req.url);
@@ -49,7 +50,7 @@ module.exports = async function (context, req) {
 
     if (!r.ok) {
       let errorBody = "";
-      try { errorBody = await r.text(); } catch (e) {}
+      try { errorBody = await r.text(); } catch { /* ignore */ }
       context.log.warn(`Recipe fetch failed ${r.status} ${apiUrl}`, errorBody);
       context.res = {
         status: 404,

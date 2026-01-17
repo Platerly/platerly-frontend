@@ -14,7 +14,7 @@ import ConfirmDialog from '../components/common/ConfirmDialog'
 const cx = (...a) => a.filter(Boolean).join(' ')
 
 export default function ShoppingListPage() {
-  const { user, token } = useAuth()
+  const { token } = useAuth()
   const { isPremium } = usePremium()
 
   const [lists, setLists] = useState([])
@@ -326,7 +326,7 @@ export default function ShoppingListPage() {
     try {
       await navigator.clipboard.writeText(`${selectedList.name}\n\n${text}`)
       toast.success('Copied to clipboard!')
-    } catch (err) {
+    } catch {
       toast.error('Failed to copy')
     }
   }

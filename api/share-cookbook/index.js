@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 module.exports = async function (context, req) {
   context.log("Share cookbook function triggered");
 
@@ -39,7 +40,7 @@ module.exports = async function (context, req) {
     });
     if (!r.ok) {
       let errorBody = "";
-      try { errorBody = await r.text(); } catch (e) {}
+      try { errorBody = await r.text(); } catch { /* ignore */ }
       context.log.warn(`Cookbook fetch failed ${r.status} ${apiUrl}`, errorBody);
       context.res = {
         status: 404,

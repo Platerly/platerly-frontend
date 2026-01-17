@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import Button from '../components/ui/Button'
 import { Shield, Sparkles, Users, ChefHat, ArrowRight } from 'lucide-react'
 
+// eslint-disable-next-line no-unused-vars
 const FeatureCard = ({ icon: Icon, title, description }) => (
   <div className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
     <div className="shrink-0 w-10 h-10 rounded-lg bg-platerly-green/20 flex items-center justify-center">

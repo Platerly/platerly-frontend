@@ -77,6 +77,7 @@ const UserManagementPage = lazy(() => import('../pages/admin/UserManagementPage'
 const AuditLogsPage = lazy(() => import('../pages/admin/AuditLogsPage'))
 
 // Wrap component with Suspense
+// eslint-disable-next-line no-unused-vars
 const withSuspense = (Component) => (
   <Suspense fallback={<PageLoader />}>
     <Component />
@@ -84,6 +85,7 @@ const withSuspense = (Component) => (
 )
 
 // Wrap with Suspense and layout
+// eslint-disable-next-line no-unused-vars
 const withLayout = (Component, Layout = AppLayout) => (
   <Suspense fallback={<PageLoader />}>
     <Layout><Component /></Layout>
@@ -91,6 +93,7 @@ const withLayout = (Component, Layout = AppLayout) => (
 )
 
 // Wrap with Suspense, layout, and auth
+// eslint-disable-next-line no-unused-vars
 const withAuth = (Component, Layout = AppLayout) => (
   <RequireAuth>
     <Suspense fallback={<PageLoader />}>

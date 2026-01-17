@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ShoppingCart, Check, Copy, Download, Printer, X, Plus, Minus, Crown, Loader2
@@ -6,14 +6,13 @@ import {
 import { useAuth } from '../../context/AuthContext'
 import { usePremium } from '../../hooks/usePremium'
 import { API_BASE_URL } from '../../utils/api'
-import { toast } from 'react-hot-toast'
 
 /**
  * ShoppingListSection - Add recipe ingredients to shopping list
  * Follows the SaveToCookbookSection pattern - inline expandable section
  */
 
-const ShoppingListSection = ({ ingredients = [], servings = 1, recipeTitle = '', recipeId }) => {
+const ShoppingListSection = ({ ingredients = [], recipeId }) => {
   const { token } = useAuth()
   const { isPremium } = usePremium()
 

@@ -19,7 +19,7 @@ const readInt = (k, d = 0) => {
     return Number.isFinite(n) ? n : d
   } catch { return d }
 }
-const writeInt = (k, v) => { try { localStorage.setItem(k, String(v)) } catch {} }
+const writeInt = (k, v) => { try { localStorage.setItem(k, String(v)) } catch { /* ignore */ } }
 
 const readArray = (key) => {
   try { return JSON.parse(localStorage.getItem(key) || '[]') }
@@ -27,7 +27,7 @@ const readArray = (key) => {
 }
 const writeArray = (key, arr) => {
   try { localStorage.setItem(key, JSON.stringify(arr)) }
-  catch {}
+  catch { /* ignore */ }
 }
 
 /* ---------- Path configuration ---------- */

@@ -22,7 +22,7 @@ const getErrorText = (err, fallback = "Something went wrong.") => {
     if (typeof d === "string") return d;
     if (d?.title) return d.title;
     if (d?.error) return d.error;
-  } catch {}
+  } catch { /* ignore */ }
   return fallback;
 };
 
@@ -212,7 +212,7 @@ const CookbookDetailsPage = () => {
   const [cookbook, setCookbook] = useState(null);
   const [contributors, setContributors] = useState([]); // null => hide panel (non-owner / forbidden)
   const [pendingRequests, setPendingRequests] = useState([]);
-  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [, setRequestsLoading] = useState(false);
 
   // Request to add recipe (non-owner, public cookbook)
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -636,7 +636,7 @@ const CookbookDetailsPage = () => {
         try {
           const text = await res.text();
           if (text) msg = text;
-        } catch {}
+        } catch { /* ignore */ }
       }
       throw new Error(msg);
     }
@@ -1000,8 +1000,6 @@ const CookbookDetailsPage = () => {
         Cookbook not found.
       </div>
     );
-
-  const items = cookbook.items || [];
 
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 text-platerly-text">

@@ -104,7 +104,7 @@ const fmtMinutes = (m) => {
 /* ---------- Scale quantity helper ---------- */
 const scaleQuantity = (quantity, scale) => {
   if (!quantity || scale === 1) return quantity
-  const qtyMatch = String(quantity).match(/^([\d.\/]+)\s*(.*)$/)
+  const qtyMatch = String(quantity).match(/^([\d./]+)\s*(.*)$/)
   if (!qtyMatch) return quantity
 
   const numPart = qtyMatch[1]
@@ -259,7 +259,7 @@ const RecipeDetailsPage = () => {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         })
         if (r.ok) setComments(await r.json())
-      } catch { }
+      } catch { /* ignore */ }
     })()
 
     return () => ctl.abort()
@@ -385,7 +385,7 @@ const RecipeDetailsPage = () => {
       setCopied(true)
       toast.success('Link copied!')
       setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
+    } catch {
       toast.error('Failed to copy link')
     }
     setShareOpen(false)
@@ -403,7 +403,7 @@ const RecipeDetailsPage = () => {
       if (res.status === 401 || res.status === 403) {
         window.location.assign('/login'); return
       }
-      let msg = ''; try { msg = await res.text() } catch { }
+      let msg = ''; try { msg = await res.text() } catch { /* ignore */ }
       throw new Error(`Delete failed (${res.status}): ${msg}`)
     } catch (e) {
       logger.error('Delete failed', e)

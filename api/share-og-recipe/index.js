@@ -1,4 +1,5 @@
-module.exports = async function (context, req) {
+/* eslint-disable no-undef, no-unused-vars */
+module.exports = async function (context, _req) {
   const PUBLIC_BASE = (process.env.PublicBaseUrl || "https://www.platerly.com").replace(/\/+$/, "");
   const BACKEND_BASE = (process.env.BackendBaseUrl || "").replace(/\/+$/, "");
   const id = context.bindingData.id;

@@ -12,7 +12,7 @@ function getTokenFromStorage() {
     if (ss) return ss
     const ls = localStorage.getItem(TOKEN_KEY)
     if (ls) return ls
-  } catch {}
+  } catch { /* storage unavailable */ }
   return ''
 }
 
@@ -29,7 +29,7 @@ function setTokenInStorage(newToken) {
     }
     // default to sessionStorage
     sessionStorage.setItem(TOKEN_KEY, newToken)
-  } catch {}
+  } catch { /* storage unavailable */ }
 }
 
 // -------- core wrapper --------
@@ -130,7 +130,7 @@ function handleUnauthorizedOutsideReact() {
   try {
     sessionStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(TOKEN_KEY)
-  } catch {}
+  } catch { /* storage unavailable */ }
 
   if (typeof window !== 'undefined') {
     const isOnLogin = window.location.pathname.startsWith('/login')

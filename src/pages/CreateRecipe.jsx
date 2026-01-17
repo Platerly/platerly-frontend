@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChefHat, Plus, X, Check, Clock, Flame } from 'lucide-react'
 import Input from '../components/ui/Input'

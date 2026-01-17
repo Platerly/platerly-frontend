@@ -39,7 +39,7 @@ const ConfirmDialog = ({
 
   const stopBubble = (e) => e.stopPropagation?.()
 
-  const handleConfirmClick = async (e) => {
+  const handleConfirmClick = async () => {
     try {
       await onConfirm?.()
     } catch (err) {

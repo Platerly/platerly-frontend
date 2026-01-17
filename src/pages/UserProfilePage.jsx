@@ -71,6 +71,7 @@ const Skeleton = () => (
   </div>
 );
 
+// eslint-disable-next-line no-unused-vars
 const EmptyState = ({ icon: Icon, title, subtitle }) => (
   <div className="py-16 text-center">
     <div className="w-16 h-16 rounded-2xl bg-platerly-light flex items-center justify-center mx-auto mb-4">
@@ -297,7 +298,7 @@ const UserProfilePage = () => {
         { method, headers: authHeaders }
       );
       if (!res.ok) throw new Error("toggle failed");
-    } catch (e) {
+    } catch {
       // revert
       setIsFollowing(prev);
     } finally {
@@ -522,6 +523,7 @@ const UserProfilePage = () => {
             {[
               { k: "recipes", label: "Recipes", icon: ChefHat },
               { k: "cookbooks", label: "Cookbooks", icon: BookOpen },
+            // eslint-disable-next-line no-unused-vars
             ].map(({ k, label, icon: Icon }) => {
               const active = tab === k;
               return (

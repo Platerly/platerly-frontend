@@ -59,7 +59,7 @@ export default function SocialLoginButtons({ onSuccess, onError, disabled = fals
             const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
               headers: { Authorization: `Bearer ${response.access_token}` }
             })
-            const userInfo = await userInfoRes.json()
+            await userInfoRes.json() // Validate response
 
             // Send to our backend
             const authRes = await fetch(`${API_BASE_URL}/api/Auth/external`, {

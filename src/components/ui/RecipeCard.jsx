@@ -68,7 +68,6 @@ const RecipeCard = ({
   likes = 0, isLiked = false,
   reposts = 0, isRepostedByCurrentUser = false,
   ingredientNames = [],
-  matchedAllergenTerms = [],
   allergenSeverity = {},
   prepTime, cookTime, difficulty,
   tags = '',
@@ -268,6 +267,7 @@ const RecipeCard = ({
     } catch (err) { logger.error('Copy link failed', err) }
   }
 
+  // eslint-disable-next-line no-unused-vars
   const Pill = ({ as: Comp = 'span', className = '', children, ...rest }) => (
     <Comp
       className={[

@@ -9,6 +9,7 @@ import { useNotifications } from '../../context/NotificationsContext'
 const cx = (...a) => a.filter(Boolean).join(' ')
 
 /* Reusable nav item with premium styling */
+// eslint-disable-next-line no-unused-vars
 const NavItem = ({ to, icon: Icon, children, end = false, isActiveMatch, badge }) => {
   const location = useLocation()
   return (
@@ -165,7 +166,7 @@ const Sidebar = () => {
 }
 
 /* === MOBILE BOTTOM TABS (single source of truth) === */
-const MobileTabBar = ({ authed, user }) => {
+const MobileTabBar = ({ authed }) => {
   const location = useLocation()
   const isActive = (path, startsWith = false) =>
     startsWith ? location.pathname.startsWith(path) : location.pathname === path
@@ -187,6 +188,7 @@ const MobileTabBar = ({ authed, user }) => {
     )
   }
 
+  // eslint-disable-next-line no-unused-vars
   const TabItem = ({ to, icon: Icon, label, matchStartsWith = false }) => {
     const active = isActive(to, matchStartsWith)
     return (
@@ -234,7 +236,7 @@ export default function SidebarWithTabs() {
   return (
     <>
       <Sidebar />
-      <MobileTabBar authed={authed} user={user} />
+      <MobileTabBar authed={authed} />
     </>
   )
 }

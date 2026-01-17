@@ -97,7 +97,7 @@ export const NotificationsProvider = ({ children }) => {
 
       const data = await res.json()
       setUnreadCount(data.count ?? data ?? 0)
-    } catch (err) {
+    } catch {
       // Silent fail
     }
   }, [token])

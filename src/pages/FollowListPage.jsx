@@ -172,12 +172,11 @@ const FollowListPage = ({ type }) => {
 
         if (!alive) return;
         setRows(normalized);
-      } catch (e) {
+      } catch {
         if (!alive) return;
         setRows([]);
       } finally {
-        if (!alive) return;
-        setLoading(false);
+        if (alive) setLoading(false);
       }
     };
 

@@ -38,7 +38,7 @@ const getNotificationIcon = (type) => {
 }
 
 const getNotificationLink = (notification) => {
-  const { type, recipeId, commentId, actorUsername } = notification
+  const { type, recipeId, actorUsername } = notification
 
   switch (type) {
     case 'like':
