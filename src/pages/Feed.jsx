@@ -263,13 +263,13 @@ const Feed = () => {
     <div className="flex flex-col bg-platerly-dark text-platerly-text min-h-screen">
       {/* Sticky tabs */}
       <div className="sticky top-0 z-20 bg-platerly-dark/95 backdrop-blur py-3 border-b border-platerly-light">
-        <div className="max-w-4xl mx-auto px-4 flex justify-center gap-3 sm:gap-4">
+        <div className="max-w-4xl mx-auto px-4 flex justify-center gap-2 sm:gap-4">
           <button
             onClick={goExplore}
-            className={`px-4 sm:px-5 py-2 rounded-full text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-platerly-green/40
+            className={`px-5 sm:px-6 py-2.5 sm:py-2 rounded-full text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-platerly-green/40 active:scale-95
               ${tab === 'explore'
                 ? 'bg-platerly-green text-platerly-dark shadow'
-                : 'bg-platerly-card text-platerly-subtle md:hover:bg-platerly-green/20'}`}
+                : 'bg-platerly-card text-platerly-subtle active:bg-platerly-light'}`}
           >
             Explore
           </button>
@@ -277,10 +277,10 @@ const Feed = () => {
           {authed && (
             <button
               onClick={goFollowing}
-              className={`px-4 sm:px-5 py-2 rounded-full text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-platerly-green/40
+              className={`px-5 sm:px-6 py-2.5 sm:py-2 rounded-full text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-platerly-green/40 active:scale-95
                 ${tab === 'following'
                   ? 'bg-platerly-green text-platerly-dark shadow'
-                  : 'bg-platerly-card text-platerly-subtle md:hover:bg-platerly-green/20'}`}
+                  : 'bg-platerly-card text-platerly-subtle active:bg-platerly-light'}`}
             >
               Following
             </button>
@@ -289,16 +289,20 @@ const Feed = () => {
       </div>
 
       {/* Recipe type filter */}
-      <div className="max-w-4xl mx-auto px-4 pt-4">
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="max-w-4xl mx-auto pt-4 relative">
+        {/* Scroll fade indicators */}
+        <div className="absolute left-0 top-4 bottom-2 w-4 bg-gradient-to-r from-platerly-dark to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-4 bottom-2 w-8 bg-gradient-to-l from-platerly-dark to-transparent z-10 pointer-events-none" />
+
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-3 px-4 scrollbar-hide scroll-smooth snap-x snap-mandatory">
           {RECIPE_TYPES.map(type => (
             <button
               key={type || 'all'}
               onClick={() => updateParams({ recipeType: type || undefined })}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition
+              className={`px-4 py-2 sm:px-3 sm:py-1.5 rounded-full text-sm sm:text-xs font-medium whitespace-nowrap transition snap-start shrink-0
                 ${recipeType === type || (!recipeType && !type)
                   ? 'bg-platerly-green text-platerly-dark'
-                  : 'bg-platerly-card text-platerly-subtle hover:bg-platerly-light'}`}
+                  : 'bg-platerly-card text-platerly-subtle hover:bg-platerly-light active:bg-platerly-light'}`}
             >
               {type || 'All'}
             </button>
