@@ -12,6 +12,29 @@ const needsOnboarding = (user) => {
   return user.username.includes('@')
 }
 
+// Password strength calculation
+const getPasswordStrength = (password) => {
+  if (!password) return { score: 0, label: '', color: '' }
+
+  let score = 0
+  if (password.length >= 8) score++
+  if (password.length >= 12) score++
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++
+  if (/\d/.test(password)) score++
+  if (/[^a-zA-Z0-9]/.test(password)) score++
+
+  const levels = [
+    { label: 'Too weak', color: 'bg-red-500' },
+    { label: 'Weak', color: 'bg-orange-500' },
+    { label: 'Fair', color: 'bg-yellow-500' },
+    { label: 'Good', color: 'bg-lime-500' },
+    { label: 'Strong', color: 'bg-green-500' }
+  ]
+
+  const index = Math.min(score, 4)
+  return { score, label: levels[index].label, color: levels[index].color }
+}
+
 const Register = () => {
   const [form, setForm] = useState({
     name: '',
@@ -63,7 +86,12 @@ const Register = () => {
       try { data = await res.json() } catch { data = {} }
 
       if (!res.ok) {
-        throw new Error(data.message || 'Registration failed.')
+        // Handle validation errors from ASP.NET
+        if (data.errors) {
+          const firstError = Object.values(data.errors).flat()[0]
+          throw new Error(firstError || 'Validation failed.')
+        }
+        throw new Error(data.message || data.title || 'Registration failed.')
       }
 
       // Auto-login and go to onboarding
@@ -182,6 +210,30 @@ const Register = () => {
               >
                 {showPw ? 'Hide' : 'Show'}
               </button>
+
+              {/* Password strength indicator */}
+              {form.password && (
+                <div className="mt-2">
+                  <div className="flex gap-1 mb-1">
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className={`h-1 flex-1 rounded-full transition-colors ${
+                          i < getPasswordStrength(form.password).score
+                            ? getPasswordStrength(form.password).color
+                            : 'bg-platerly-border'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs text-platerly-muted">
+                    {getPasswordStrength(form.password).label}
+                    {getPasswordStrength(form.password).score < 3 && (
+                      <span className="ml-1">— Try adding uppercase, numbers, or symbols</span>
+                    )}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Confirm Password */}
