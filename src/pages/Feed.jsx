@@ -289,20 +289,16 @@ const Feed = () => {
       </div>
 
       {/* Recipe type filter */}
-      <div className="max-w-4xl mx-auto pt-4 relative">
-        {/* Scroll fade indicators */}
-        <div className="absolute left-0 top-4 bottom-2 w-4 bg-gradient-to-r from-platerly-dark to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-4 bottom-2 w-8 bg-gradient-to-l from-platerly-dark to-transparent z-10 pointer-events-none" />
-
-        <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-3 px-4 scrollbar-hide scroll-smooth snap-x snap-mandatory">
+      <div className="max-w-4xl mx-auto pt-4 px-4">
+        <div className="flex flex-wrap gap-2 justify-center">
           {RECIPE_TYPES.map(type => (
             <button
               key={type || 'all'}
               onClick={() => updateParams({ recipeType: type || undefined })}
-              className={`px-4 py-2 sm:px-3 sm:py-1.5 rounded-full text-sm sm:text-xs font-medium whitespace-nowrap transition snap-start shrink-0
+              className={`px-4 py-2 rounded-full text-sm font-medium transition active:scale-95
                 ${recipeType === type || (!recipeType && !type)
                   ? 'bg-platerly-green text-platerly-dark'
-                  : 'bg-platerly-card text-platerly-subtle hover:bg-platerly-light active:bg-platerly-light'}`}
+                  : 'bg-platerly-card text-platerly-subtle active:bg-platerly-light'}`}
             >
               {type || 'All'}
             </button>
