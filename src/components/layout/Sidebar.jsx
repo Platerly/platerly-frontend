@@ -65,6 +65,50 @@ const NavItem = ({ to, icon: Icon, children, end = false, isActiveMatch, badge }
   )
 }
 
+/* Feed nav item - scrolls to top if already on feed */
+// eslint-disable-next-line no-unused-vars
+const FeedNavItem = ({ icon: Icon }) => {
+  const location = useLocation()
+  const isOnFeed = location.pathname === '/feed'
+
+  const handleClick = (e) => {
+    if (isOnFeed) {
+      e.preventDefault()
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  return (
+    <NavLink
+      to="/feed"
+      end
+      onClick={handleClick}
+      className={({ isActive }) => cx(
+        'group flex items-center gap-4 text-base px-4 py-3 rounded-xl transition-all duration-200 outline-none',
+        'focus-visible:ring-2 focus-visible:ring-platerly-green/60 focus-visible:ring-offset-0',
+        isActive
+          ? 'bg-platerly-green text-platerly-dark font-semibold shadow-lg shadow-platerly-green/20'
+          : 'text-platerly-text hover:bg-platerly-card hover:border-platerly-green/20 hover:text-platerly-green'
+      )}
+      aria-label="Feed"
+    >
+      {({ isActive }) => (
+        <>
+          <div className={cx(
+            'relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200',
+            isActive
+              ? 'bg-platerly-dark/20'
+              : 'bg-platerly-card group-hover:bg-platerly-green/10'
+          )}>
+            <Icon className="w-5 h-5 shrink-0" />
+          </div>
+          <span className="truncate">Feed</span>
+        </>
+      )}
+    </NavLink>
+  )
+}
+
 /* Authed check also reads persisted token for cold loads */
 const useAuthed = (user, token) => {
   const stored =
@@ -83,22 +127,21 @@ export const SidebarPanel = () => {
   return (
     <div className="flex h-full w-full flex-col justify-between p-6">
       <div>
-        {/* Logo with icon */}
-        <Link
-          to={homeTarget}
+        {/* Logo with icon - click reloads the page */}
+        <button
+          onClick={() => window.location.href = homeTarget}
           aria-label="Platerly Home"
-          title={`Go to ${authed ? '/feed' : '/login'}`}
-          className="flex items-center gap-3 mb-10 group"
+          title="Reload Platerly"
+          className="flex items-center gap-3 mb-10 group cursor-pointer"
         >
-          
           <span className="text-3xl font-bold text-platerly-green tracking-tight">
             Platerly
           </span>
-        </Link>
+        </button>
 
         {authed ? (
           <nav className="flex flex-col space-y-1.5" role="navigation" aria-label="Main">
-            <NavItem to="/feed" icon={Home} end>Feed</NavItem>
+            <FeedNavItem icon={Home} />
             <NavItem to="/explore-chefs" icon={Users} end>Explore Chefs</NavItem>
             <NavItem to="/create" icon={PlusCircle} end>Create Recipe</NavItem>
             <NavItem to="/cookbooks" icon={Book} end>My Cookbooks</NavItem>
@@ -213,6 +256,39 @@ const MobileTabBar = ({ authed }) => {
     )
   }
 
+  // Feed tab - scrolls to top if already on feed
+  // eslint-disable-next-line no-unused-vars
+  const FeedTabItem = ({ icon: Icon }) => {
+    const active = isActive('/feed', false)
+    const handleClick = (e) => {
+      if (active) {
+        e.preventDefault()
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }
+    return (
+      <li className="flex">
+        <Link
+          to="/feed"
+          onClick={handleClick}
+          className={cx(
+            'flex-1 flex flex-col items-center justify-center gap-1 text-xs transition-colors',
+            active ? 'text-platerly-green' : 'text-platerly-subtle'
+          )}
+          aria-label="Feed"
+        >
+          <div className={cx(
+            'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200',
+            active ? 'bg-platerly-green/15' : 'bg-transparent'
+          )}>
+            <Icon className={cx('w-5 h-5', active && 'scale-110')} />
+          </div>
+          <span className={cx('font-medium', active && 'text-platerly-green')}>Feed</span>
+        </Link>
+      </li>
+    )
+  }
+
   return (
     <nav
       className="fixed bottom-0 inset-x-0 z-40 bg-platerly-card/95 border-t border-platerly-border backdrop-blur-md md:hidden"
@@ -220,7 +296,7 @@ const MobileTabBar = ({ authed }) => {
       aria-label="Primary mobile"
     >
       <ul className="safe-area-inset-b h-[72px] grid grid-cols-5 px-1">
-        <TabItem to="/feed" icon={Home} label="Feed" />
+        <FeedTabItem icon={Home} />
         <TabItem to="/explore-chefs" icon={Users} label="Chefs" />
         <TabItem to="/create" icon={PlusCircle} label="Create" />
         <TabItem to="/cookbooks" icon={Book} label="Books" matchStartsWith />

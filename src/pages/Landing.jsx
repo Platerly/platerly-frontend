@@ -114,21 +114,21 @@ const Landing = () => {
             />
           </div>
 
-          {/* Social proof / Stats */}
+          {/* Platform stats */}
           <div className="flex flex-wrap items-center justify-center gap-8 text-center mb-12">
             <div>
-              <div className="text-2xl sm:text-3xl font-bold text-platerly-text">10K+</div>
-              <div className="text-sm text-platerly-subtle">Recipes</div>
-            </div>
-            <div className="w-px h-10 bg-platerly-border hidden sm:block" />
-            <div>
-              <div className="text-2xl sm:text-3xl font-bold text-platerly-text">50+</div>
+              <div className="text-2xl sm:text-3xl font-bold text-platerly-text">14</div>
               <div className="text-sm text-platerly-subtle">Allergens Tracked</div>
             </div>
             <div className="w-px h-10 bg-platerly-border hidden sm:block" />
             <div>
-              <div className="text-2xl sm:text-3xl font-bold text-platerly-text">5K+</div>
-              <div className="text-sm text-platerly-subtle">Active Chefs</div>
+              <div className="text-2xl sm:text-3xl font-bold text-platerly-text">1,400+</div>
+              <div className="text-sm text-platerly-subtle">Ingredient Mappings</div>
+            </div>
+            <div className="w-px h-10 bg-platerly-border hidden sm:block" />
+            <div>
+              <div className="text-2xl sm:text-3xl font-bold text-platerly-text">100%</div>
+              <div className="text-sm text-platerly-subtle">Free to Join</div>
             </div>
           </div>
 
