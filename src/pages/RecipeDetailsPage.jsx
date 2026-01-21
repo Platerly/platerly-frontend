@@ -164,7 +164,7 @@ const RecipeDetailsPage = () => {
   // Determine which API endpoint to use
   const getApiUrl = (base = '') => {
     if (username && slug) {
-      return `${API_BASE_URL}/api/Recipe/@${username}/${slug}${base}`
+      return `${API_BASE_URL}/api/Recipe/by-slug/${username}/${slug}${base}`
     }
     return `${API_BASE_URL}/api/Recipe/${id}${base}`
   }
