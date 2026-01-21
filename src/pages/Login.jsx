@@ -30,7 +30,6 @@ const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showPw, setShowPw] = useState(false)
   const [remember, setRemember] = useState(false) // default unchecked for security
   const [showEmailForm, setShowEmailForm] = useState(false)
 
@@ -159,27 +158,17 @@ const Login = () => {
             />
 
             <div className="space-y-2">
-              <div className="relative">
-                <Input
-                  label="Password"
-                  name="password"
-                  type={showPw ? 'text' : 'password'}
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  required
-                  autoComplete="current-password"
-                  enterKeyHint="done"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPw((s) => !s)}
-                  className="absolute right-3 top-9 text-xs text-platerly-muted hover:text-platerly-text"
-                  aria-label={showPw ? 'Hide password' : 'Show password'}
-                >
-                  {showPw ? 'Hide' : 'Show'}
-                </button>
-              </div>
+              <Input
+                label="Password"
+                name="password"
+                type="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                required
+                autoComplete="current-password"
+                enterKeyHint="done"
+              />
               <div className="flex items-center justify-between text-sm">
                 <label htmlFor="remember" className="flex items-center gap-2 select-none">
                   <input

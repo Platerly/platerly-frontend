@@ -45,8 +45,6 @@ const Register = () => {
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
-  const [showPw, setShowPw] = useState(false)
-  const [showPw2, setShowPw2] = useState(false)
   const [showEmailForm, setShowEmailForm] = useState(false)
 
   const navigate = useNavigate()
@@ -205,11 +203,11 @@ const Register = () => {
             />
 
             {/* Password */}
-            <div className="relative">
+            <div>
               <Input
                 label="Password"
                 name="password"
-                type={showPw ? 'text' : 'password'}
+                type="password"
                 value={form.password}
                 onChange={handleChange}
                 placeholder="Min. 8 characters"
@@ -217,14 +215,6 @@ const Register = () => {
                 required
                 autoComplete="new-password"
               />
-              <button
-                type="button"
-                onClick={() => setShowPw((s) => !s)}
-                className="absolute right-3 top-9 text-xs text-platerly-muted hover:text-platerly-text"
-                aria-label={showPw ? 'Hide password' : 'Show password'}
-              >
-                {showPw ? 'Hide' : 'Show'}
-              </button>
 
               {/* Password strength indicator */}
               {form.password && (
@@ -252,27 +242,17 @@ const Register = () => {
             </div>
 
             {/* Confirm Password */}
-            <div className="relative">
-              <Input
-                label="Confirm Password"
-                name="confirmPassword"
-                type={showPw2 ? 'text' : 'password'}
-                value={form.confirmPassword}
-                onChange={handleChange}
-                placeholder="Re-enter password"
-                error={errors.confirmPassword}
-                required
-                autoComplete="new-password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPw2((s) => !s)}
-                className="absolute right-3 top-9 text-xs text-platerly-muted hover:text-platerly-text"
-                aria-label={showPw2 ? 'Hide password' : 'Show password'}
-              >
-                {showPw2 ? 'Hide' : 'Show'}
-              </button>
-            </div>
+            <Input
+              label="Confirm Password"
+              name="confirmPassword"
+              type="password"
+              value={form.confirmPassword}
+              onChange={handleChange}
+              placeholder="Re-enter password"
+              error={errors.confirmPassword}
+              required
+              autoComplete="new-password"
+            />
 
             <Button type="submit" size="lg" className="w-full" disabled={loading}>
               {loading ? 'Creating Account...' : 'Continue'}
