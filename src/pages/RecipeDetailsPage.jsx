@@ -155,7 +155,7 @@ const Section = ({ icon: Icon, title, children }) => (
 
 const RecipeDetailsPage = () => {
   // Support both URL patterns:
-  // - New SEO-friendly: /@username/slug
+  // - New SEO-friendly: /username/slug (GitHub-style)
   // - Legacy: /recipe/:id
   const { id, username, slug } = useParams()
   const navigate = useNavigate()

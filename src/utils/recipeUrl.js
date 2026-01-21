@@ -1,10 +1,10 @@
 /**
  * Generate the URL path for a recipe.
- * Uses SEO-friendly format /@username/slug when available,
+ * Uses SEO-friendly format /username/slug when available (GitHub-style),
  * falls back to /recipe/{id} for backwards compatibility.
  *
  * @param {Object} recipe - Recipe object (can have various shapes from different APIs)
- * @returns {string} URL path like "/@johndoe/chocolate-chip-cookies" or "/recipe/{id}"
+ * @returns {string} URL path like "/johndoe/chocolate-chip-cookies" or "/recipe/{id}"
  */
 export function getRecipeUrl(recipe) {
   if (!recipe) return '/feed'
@@ -16,7 +16,7 @@ export function getRecipeUrl(recipe) {
 
   // Use SEO-friendly URL if both slug and username are available
   if (slug && username) {
-    return `/@${username}/${slug}`
+    return `/${username}/${slug}`
   }
 
   // Fall back to ID-based URL
