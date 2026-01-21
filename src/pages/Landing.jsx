@@ -62,30 +62,31 @@ const Landing = () => {
               dietary restrictions, and health goals. Share, discover, and cook with confidence.
             </p>
 
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/feed?tab=explore">
-                <Button size="lg" className="min-w-[200px] shadow-lg shadow-platerly-green/20">
-                  Explore Recipes
-                  <ArrowRight className="w-5 h-5 ml-1" />
-                </Button>
-              </Link>
-
+            {/* Single Primary CTA */}
+            <div className="flex flex-col items-center justify-center gap-4">
               <Link to="/register">
-                <Button variant="secondary" size="lg" className="min-w-[200px]">
-                  Create Free Account
+                <Button size="lg" className="min-w-[240px] shadow-lg shadow-platerly-green/20 text-lg py-4">
+                  Get Started Free
+                  <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
+              <p className="text-sm text-platerly-subtle">No credit card required</p>
             </div>
 
-            {/* Already have account */}
-            <div className="mt-6">
+            {/* Secondary links */}
+            <div className="mt-6 flex items-center justify-center gap-4 text-sm">
               <Link
                 to="/login"
-                className="inline-flex items-center gap-1 text-sm text-platerly-subtle hover:text-platerly-text transition-colors"
+                className="text-platerly-subtle hover:text-platerly-text transition-colors"
               >
                 Already have an account? Sign in
-                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <span className="text-platerly-border">•</span>
+              <Link
+                to="/feed?tab=explore"
+                className="text-platerly-subtle hover:text-platerly-text transition-colors"
+              >
+                Browse first
               </Link>
             </div>
           </div>
