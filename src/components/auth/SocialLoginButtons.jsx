@@ -12,7 +12,7 @@ import { API_BASE_URL } from '../../utils/api'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
-export default function SocialLoginButtons({ onSuccess, onError, disabled = false }) {
+export default function SocialLoginButtons({ onSuccess, onError, disabled = false, showDivider = true }) {
   const [loading, setLoading] = useState(false)
 
   // Load Google script dynamically
@@ -123,14 +123,16 @@ export default function SocialLoginButtons({ onSuccess, onError, disabled = fals
       </button>
 
       {/* Divider */}
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-platerly-border" />
+      {showDivider && (
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-platerly-border" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-4 bg-platerly-card text-platerly-muted">or continue with email</span>
+          </div>
         </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-platerly-card text-platerly-muted">or continue with email</span>
-        </div>
-      </div>
+      )}
     </div>
   )
 }

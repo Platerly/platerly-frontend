@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import Sidebar, { SidebarPanel } from './Sidebar'
 import RightColumn from './RightColumn'
@@ -10,6 +11,12 @@ import { bumpGuestSeenCount } from '../../utils/softwall'
 const AppLayout = ({ children }) => {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const { authed, loading } = useAuth()
+  const location = useLocation()
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setDrawerOpen(false)
+  }, [location.pathname])
 
   // Increment guest counter only when we know the user is NOT authed
   useEffect(() => {

@@ -64,27 +64,27 @@ const Landing = () => {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/register">
-                <Button size="lg" className="min-w-[180px] shadow-lg shadow-platerly-green/20">
-                  Get Started Free
+              <Link to="/feed?tab=explore">
+                <Button size="lg" className="min-w-[200px] shadow-lg shadow-platerly-green/20">
+                  Explore Recipes
                   <ArrowRight className="w-5 h-5 ml-1" />
                 </Button>
               </Link>
 
-              <Link to="/login">
-                <Button variant="secondary" size="lg" className="min-w-[180px]">
-                  Sign In
+              <Link to="/register">
+                <Button variant="secondary" size="lg" className="min-w-[200px]">
+                  Create Free Account
                 </Button>
               </Link>
             </div>
 
-            {/* Explore as guest */}
+            {/* Already have account */}
             <div className="mt-6">
               <Link
-                to="/feed?tab=explore"
+                to="/login"
                 className="inline-flex items-center gap-1 text-sm text-platerly-subtle hover:text-platerly-text transition-colors"
               >
-                Or explore as a guest
+                Already have an account? Sign in
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

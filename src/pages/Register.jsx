@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
 import SocialLoginButtons from '../components/auth/SocialLoginButtons'
@@ -46,6 +47,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false)
   const [showPw, setShowPw] = useState(false)
   const [showPw2, setShowPw2] = useState(false)
+  const [showEmailForm, setShowEmailForm] = useState(false)
 
   const navigate = useNavigate()
   const { login } = useAuth()
@@ -138,10 +140,10 @@ const Register = () => {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Join <span className="text-platerly-accent">Platerly</span>
             </h1>
-            <p className="text-sm text-platerly-muted mt-2">Create your account in seconds</p>
+            <p className="text-sm text-platerly-muted mt-2">One click to get started</p>
           </div>
 
-          {/* Social Login */}
+          {/* Social Login - Primary Option */}
           <SocialLoginButtons
             onSuccess={(data) => {
               if (data?.token && data?.user) {
@@ -156,6 +158,7 @@ const Register = () => {
             }}
             onError={(msg) => setErrors((s) => ({ ...s, social: msg }))}
             disabled={loading}
+            showDivider={false}
           />
 
           {/* Error message */}
@@ -165,7 +168,19 @@ const Register = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Collapsible Email Form */}
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => setShowEmailForm(!showEmailForm)}
+              className="w-full flex items-center justify-center gap-2 py-3 text-sm text-platerly-muted hover:text-platerly-text transition-colors"
+            >
+              <span>Or use email instead</span>
+              {showEmailForm ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className={`space-y-4 overflow-hidden transition-all duration-300 ${showEmailForm ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'}`}>
             <Input
               label="Full Name"
               name="name"
