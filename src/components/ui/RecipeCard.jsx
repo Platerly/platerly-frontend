@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext'
 import { norm, variants, isSevere, sevRank } from '../../utils/allergenHelpers'
 import { logger } from '../../utils/logger'
 import { TAGS_INLINE_MAX } from '../../constants/limits'
+import { getRecipeUrl, getRecipeShareUrl } from '../../utils/recipeUrl'
 
 const PRIORITY = {
   sensitivity: ['low nickel','nut free','soy free','egg free','shellfish free','peanut free','gluten free','dairy free'],
@@ -73,6 +74,9 @@ const RecipeCard = ({
   tags = '',
   isTrending = false,
   trendingRank = null,
+  // SEO-friendly URL fields
+  slug = null,
+  authorUsername = null,
 }) => {
   const [isLikedState, setIsLikedState] = useState(isLiked)
   const [likeCount, setLikeCount] = useState(likes)
@@ -86,7 +90,9 @@ const RecipeCard = ({
 
   const safeImg = imageUrl || '/placeholder.png'
   // Use /api/share/ so social media crawlers get OG meta tags
-  const shareUrl = `${window.location.origin}/api/share/recipe/${id}`
+  const shareUrl = getRecipeShareUrl({ id })
+  // Build the recipe object for URL generation
+  const recipeForUrl = { id, slug, authorUsername }
 
   // --- Tag normalization + prioritization ---
   const rawTags = Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',') : [])
@@ -168,7 +174,7 @@ const RecipeCard = ({
 
   const hasAllergyMatch = severeIngredients.length > 0
 
-  const handleCardClick = () => navigate(`/recipe/${id}`)
+  const handleCardClick = () => navigate(getRecipeUrl(recipeForUrl))
   const handleProfileClick = (e) => { e.stopPropagation(); navigate(`/profile/${author}`) }
 
   useEffect(() => setIsLikedState(isLiked), [isLiked])

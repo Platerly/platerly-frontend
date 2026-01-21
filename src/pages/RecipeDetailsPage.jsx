@@ -154,9 +154,24 @@ const Section = ({ icon: Icon, title, children }) => (
 
 
 const RecipeDetailsPage = () => {
-  const { id } = useParams()
+  // Support both URL patterns:
+  // - New SEO-friendly: /@username/slug
+  // - Legacy: /recipe/:id
+  const { id, username, slug } = useParams()
   const navigate = useNavigate()
   const { token, user } = useAuth()
+
+  // Determine which API endpoint to use
+  const getApiUrl = (base = '') => {
+    if (username && slug) {
+      return `${API_BASE_URL}/api/Recipe/@${username}/${slug}${base}`
+    }
+    return `${API_BASE_URL}/api/Recipe/${id}${base}`
+  }
+
+  // Get the recipe identifier for things like comments, views, etc.
+  // For these we need the actual ID, which we get from the loaded recipe
+  const [recipeId, setRecipeId] = useState(id)
 
   const [recipe, setRecipe] = useState(null)
   const [remixMeta, setRemixMeta] = useState(null)
@@ -192,8 +207,8 @@ const RecipeDetailsPage = () => {
     const auth = token ? { Authorization: `Bearer ${token}` } : {}
 
     try {
-      // NOTE: keep this if your API still supports it; highlighting no longer relies on it
-      const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}?allergyMin=medium`, { headers: auth, signal })
+      // Use the appropriate API endpoint based on URL pattern
+      const res = await fetch(`${getApiUrl('?allergyMin=medium')}`, { headers: auth, signal })
       if (res.status === 404) { setNotFound(true); setLoading(false); return }
       if (!res.ok) throw new Error(`Failed to fetch recipe (${res.status})`)
       const data = await res.json()
@@ -202,6 +217,9 @@ const RecipeDetailsPage = () => {
       const core = data.recipe ?? data
       setRecipe(core)
       setRemixMeta(data.remixMeta ?? null)
+
+      // Store the actual recipe ID for subsequent API calls (comments, views, etc.)
+      if (core?.id) setRecipeId(core.id)
 
       // legacy map (optional fallback)
       const sevMap = core?.matchedAllergenSeverity || {}
@@ -255,7 +273,7 @@ const RecipeDetailsPage = () => {
 
     ; (async () => {
       try {
-        const r = await fetch(`${API_BASE_URL}/api/Recipe/${id}/comments`, {
+        const r = await fetch(`${API_BASE_URL}/api/Recipe/${recipeId}/comments`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         })
         if (r.ok) setComments(await r.json())
@@ -263,15 +281,16 @@ const RecipeDetailsPage = () => {
     })()
 
     return () => ctl.abort()
-  }, [id, token])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, username, slug, token])
 
   /* ---------- Track view for trending ---------- */
   useEffect(() => {
-    if (!id || loading || notFound || error) return
+    if (loading || notFound || error || !recipeId) return
 
     // Fire and forget - don't await or handle errors
-    fetch(`${API_BASE_URL}/api/Recipe/${id}/view`, { method: 'POST' }).catch(() => {})
-  }, [id, loading, notFound, error])
+    fetch(`${API_BASE_URL}/api/Recipe/${recipeId}/view`, { method: 'POST' }).catch(() => {})
+  }, [recipeId, loading, notFound, error])
 
   /* ---------- Derived ---------- */
   const hitSeverityByIngredientId = useMemo(() => {
@@ -393,7 +412,7 @@ const RecipeDetailsPage = () => {
 
   const doDelete = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/Recipe/${recipeId}`, {
         method: 'DELETE',
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       })

@@ -180,6 +180,9 @@ const AppRoutes = () =>
     // Public content (with layout but no auth required)
     { path: '/feed', element: withLayout(Feed) },
     { path: '/trending', element: withLayout(TrendingPage) },
+    // SEO-friendly recipe URLs: /@username/slug
+    { path: '/@:username/:slug', element: withLayout(RecipeDetailsPage) },
+    // Legacy route for backwards compatibility (GUIDs still work)
     { path: '/recipe/:id', element: withLayout(RecipeDetailsPage) },
     { path: '/profile/:username', element: withLayout(UserProfilePage) },
     { path: '/search', element: withLayout(SearchResultsPage) },

@@ -367,6 +367,8 @@ const Feed = () => {
               cookTime={recipe.cookTimeMinutes}
               difficulty={recipe.difficulty}
               tags={recipe.tags}
+              slug={recipe.slug}
+              authorUsername={recipe.authorUsername}
             />
           )
         })}

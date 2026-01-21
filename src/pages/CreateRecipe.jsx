@@ -196,7 +196,9 @@ const CreateRecipe = () => {
         return
       }
       const created = await res.json()
-      navigate(`/recipe/${created.id}`)
+      // Use SEO-friendly URL if available, otherwise fall back to ID
+      const recipeUrl = created.UrlPath || created.urlPath || `/recipe/${created.id}`
+      navigate(recipeUrl)
     } catch (err) {
       logger.error(err)
       setError({ message: err.message || 'Something went wrong', violations: null })

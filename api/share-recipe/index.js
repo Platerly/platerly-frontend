@@ -61,32 +61,86 @@ module.exports = async function (context, req) {
     }
 
     const data = await r.json();
-    context.log("Recipe data received:", data?.title);
+    // API returns { recipe: {...}, tagNames: [...], ... }
+    const recipe = data?.recipe || data;
+    const tagNamesArr = data?.tagNames || recipe?.tags || [];
 
-    const title = String(data?.title || "Recipe");
-    const difficulty = data?.difficulty;
-    const prep = data?.prepTimeMinutes > 0 ? `${data.prepTimeMinutes} min prep` : null;
-    const cook = data?.cookTimeMinutes > 0 ? `${data.cookTimeMinutes} min cook` : null;
+    context.log("Recipe data received:", recipe?.title);
+
+    const title = String(recipe?.title || "Recipe");
+    const difficulty = recipe?.difficulty;
+    const prep = recipe?.prepTimeMinutes > 0 ? `${recipe.prepTimeMinutes} min prep` : null;
+    const cook = recipe?.cookTimeMinutes > 0 ? `${recipe.cookTimeMinutes} min cook` : null;
     const timePart = prep && cook ? `${prep}, ${cook}` : (prep || cook || null);
 
-    const tagNames = (data?.tagNames || data?.tags || [])
+    const tagNamesFormatted = tagNamesArr
       .filter(Boolean)
       .map(s => `#${String(s).trim()}`)
       .slice(0, 3);
 
-    const allergens = (data?.allergenList || []).filter(Boolean).slice(0, 3);
+    const allergens = (recipe?.allergenList || []).filter(Boolean).slice(0, 3);
 
     const parts = [];
     if (difficulty !== undefined && difficulty !== null) parts.push(`Difficulty: ${difficulty}`);
     if (timePart) parts.push(timePart);
-    if (tagNames.length) parts.push(tagNames.join(" "));
+    if (tagNamesFormatted.length) parts.push(tagNamesFormatted.join(" "));
     if (allergens.length) parts.push(`Allergens: ${allergens.join(", ")}`);
 
-    let desc = parts.join(" - ");
+    let desc = recipe?.description || parts.join(" - ");
     if (desc.length > 240) desc = desc.slice(0, 240) + "...";
 
-    const canonicalUrl = `${PUBLIC_BASE}/recipe/${id}`;
-    const shareImage = data?.imageUrl || `${PUBLIC_BASE}/og-preview.png`;
+    // Use SEO-friendly URL if slug and username are available, otherwise fall back to ID
+    const authorUsername = recipe?.authorUsername;
+    const recipeSlug = recipe?.slug;
+    const canonicalUrl = (authorUsername && recipeSlug)
+      ? `${PUBLIC_BASE}/@${authorUsername}/${recipeSlug}`
+      : `${PUBLIC_BASE}/recipe/${id}`;
+    const shareImage = recipe?.imageUrl || `${PUBLIC_BASE}/og-preview.png`;
+
+    // Parse instructions - could be string (with newlines) or array
+    const instructionsRaw = recipe?.instructions || "";
+    const instructionSteps = typeof instructionsRaw === 'string'
+      ? instructionsRaw.split(/\n+/).map(s => s.trim()).filter(Boolean)
+      : (Array.isArray(instructionsRaw) ? instructionsRaw : []);
+
+    // Build Recipe structured data (JSON-LD) for Google rich results
+    const recipeSchema = {
+      "@context": "https://schema.org",
+      "@type": "Recipe",
+      "name": title,
+      "image": shareImage,
+      "description": desc,
+      "url": canonicalUrl,
+      "author": {
+        "@type": "Person",
+        "name": recipe?.authorDisplayName || recipe?.authorUsername || "Platerly Chef"
+      },
+      "datePublished": recipe?.createdAt ? new Date(recipe.createdAt).toISOString().split('T')[0] : undefined,
+      "prepTime": recipe?.prepTimeMinutes > 0 ? `PT${recipe.prepTimeMinutes}M` : undefined,
+      "cookTime": recipe?.cookTimeMinutes > 0 ? `PT${recipe.cookTimeMinutes}M` : undefined,
+      "totalTime": (recipe?.prepTimeMinutes > 0 || recipe?.cookTimeMinutes > 0)
+        ? `PT${(recipe?.prepTimeMinutes || 0) + (recipe?.cookTimeMinutes || 0)}M`
+        : undefined,
+      "recipeCategory": tagNamesArr.filter(Boolean).slice(0, 3),
+      "recipeIngredient": (recipe?.ingredients || []).map(i =>
+        typeof i === 'string' ? i : (i?.quantity ? `${i.quantity} ${i.name}`.trim() : i?.name)
+      ).filter(Boolean),
+      "recipeInstructions": instructionSteps.map((step, idx) => ({
+        "@type": "HowToStep",
+        "position": idx + 1,
+        "text": typeof step === 'string' ? step : step?.text || step?.instruction || String(step)
+      })).filter(s => s.text),
+      "recipeYield": recipe?.servings ? `${recipe.servings} servings` : undefined,
+      "keywords": tagNamesArr.filter(Boolean).join(", ") || undefined
+    };
+
+    // Remove undefined fields
+    Object.keys(recipeSchema).forEach(key => {
+      if (recipeSchema[key] === undefined ||
+          (Array.isArray(recipeSchema[key]) && recipeSchema[key].length === 0)) {
+        delete recipeSchema[key];
+      }
+    });
 
     const page = `<!doctype html>
 <html lang="en">
@@ -114,6 +168,8 @@ module.exports = async function (context, req) {
 <meta name="twitter:url" content="${canonicalUrl}">
 <meta name="twitter:domain" content="platerly.com">
 <meta name="twitter:site" content="@platerlyinc">
+
+<script type="application/ld+json">${JSON.stringify(recipeSchema)}</script>
 
 <meta http-equiv="refresh" content="0; url=${canonicalUrl}">
 <style>
