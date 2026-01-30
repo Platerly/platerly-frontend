@@ -110,12 +110,12 @@ export default function AllergySettingsTab() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-8 md:py-12 px-4 md:px-6 text-platerly-text space-y-6 md:space-y-10">
-      <div className="bg-platerly-card border border-platerly-border rounded-2xl shadow p-5 md:p-6">
+    <div className="max-w-4xl mx-auto py-8 md:py-12 px-4 md:px-6 text-recipzee-text space-y-6 md:space-y-10">
+      <div className="bg-recipzee-card border border-recipzee-border rounded-2xl shadow p-5 md:p-6">
         <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
           <div>
             <h2 className="text-xl md:text-2xl font-semibold">Allergy Preferences</h2>
-            <p className="text-sm text-platerly-subtle mt-1">
+            <p className="text-sm text-recipzee-subtle mt-1">
               Tap to toggle allergens you’d like to be warned about in recipes.
             </p>
           </div>
@@ -126,7 +126,7 @@ export default function AllergySettingsTab() {
               type="button"
               onClick={selectAll}
               disabled={loading || saving || allAllergies.length === 0}
-              className="text-sm px-3 py-1.5 rounded-md border border-platerly-border bg-platerly-card hover:bg-platerly-card/80 disabled:opacity-50"
+              className="text-sm px-3 py-1.5 rounded-md border border-recipzee-border bg-recipzee-card hover:bg-recipzee-card/80 disabled:opacity-50"
             >
               Select all
             </button>
@@ -134,7 +134,7 @@ export default function AllergySettingsTab() {
               type="button"
               onClick={clearAll}
               disabled={loading || saving}
-              className="text-sm px-3 py-1.5 rounded-md border border-platerly-border bg-platerly-card hover:bg-platerly-card/80 disabled:opacity-50"
+              className="text-sm px-3 py-1.5 rounded-md border border-recipzee-border bg-recipzee-card hover:bg-recipzee-card/80 disabled:opacity-50"
             >
               Clear
             </button>
@@ -142,7 +142,7 @@ export default function AllergySettingsTab() {
               type="button"
               onClick={invert}
               disabled={loading || saving || allAllergies.length === 0}
-              className="text-sm px-3 py-1.5 rounded-md border border-platerly-border bg-platerly-card hover:bg-platerly-card/80 disabled:opacity-50"
+              className="text-sm px-3 py-1.5 rounded-md border border-recipzee-border bg-recipzee-card hover:bg-recipzee-card/80 disabled:opacity-50"
             >
               Invert
             </button>
@@ -157,7 +157,7 @@ export default function AllergySettingsTab() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             disabled={loading}
-            className="w-full md:max-w-md border border-platerly-border bg-platerly-card rounded-md px-3 py-2 text-sm placeholder:text-platerly-text/40 focus:outline-none focus:ring-2 focus:ring-platerly-green/60 disabled:opacity-50"
+            className="w-full md:max-w-md border border-recipzee-border bg-recipzee-card rounded-md px-3 py-2 text-sm placeholder:text-recipzee-text/40 focus:outline-none focus:ring-2 focus:ring-recipzee-green/60 disabled:opacity-50"
             aria-label="Search allergens"
           />
         </div>
@@ -175,7 +175,7 @@ export default function AllergySettingsTab() {
               {Array.from({ length: 12 }).map((_, i) => (
                 <span
                   key={i}
-                  className="h-8 w-24 rounded-full bg-platerly-border/40"
+                  className="h-8 w-24 rounded-full bg-recipzee-border/40"
                 />
               ))}
             </div>
@@ -184,7 +184,7 @@ export default function AllergySettingsTab() {
               {/* Pills */}
               <div className="flex flex-wrap gap-2">
                 {filtered.length === 0 ? (
-                  <p className="text-sm text-platerly-subtle">
+                  <p className="text-sm text-recipzee-subtle">
                     No allergens match “{query}”.
                   </p>
                 ) : (
@@ -196,11 +196,11 @@ export default function AllergySettingsTab() {
                         type="button"
                         onClick={() => toggle(a.name)}
                         aria-pressed={active}
-                        className={`px-4 py-2 rounded-full border text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-platerly-green/60
+                        className={`px-4 py-2 rounded-full border text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-recipzee-green/60
                           ${
                             active
-                              ? "bg-platerly-green text-white border-platerly-green shadow"
-                              : "bg-platerly-card border-platerly-border text-platerly-text hover:bg-platerly-card/80"
+                              ? "bg-recipzee-green text-white border-recipzee-green shadow"
+                              : "bg-recipzee-card border-recipzee-border text-recipzee-text hover:bg-recipzee-card/80"
                           }`}
                         disabled={saving}
                       >
@@ -213,8 +213,8 @@ export default function AllergySettingsTab() {
 
               {/* Footer: count + save */}
               <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
-                <div className="text-sm text-platerly-subtle">
-                  Selected: <span className="text-platerly-text">{selectedNames.length}</span> /{" "}
+                <div className="text-sm text-recipzee-subtle">
+                  Selected: <span className="text-recipzee-text">{selectedNames.length}</span> /{" "}
                   {allAllergies.length}
                 </div>
 
@@ -222,7 +222,7 @@ export default function AllergySettingsTab() {
                   <button
                     onClick={handleSave}
                     disabled={saving || loading}
-                    className="px-5 py-2 rounded-md bg-platerly-green hover:bg-platerly-green/90 text-white font-semibold transition disabled:opacity-50"
+                    className="px-5 py-2 rounded-md bg-recipzee-green hover:bg-recipzee-green/90 text-white font-semibold transition disabled:opacity-50"
                     aria-busy={saving || undefined}
                   >
                     {saving ? "Saving..." : "Save Preferences"}
@@ -234,7 +234,7 @@ export default function AllergySettingsTab() {
         </div>
       </div>
 
-      <p className="text-xs text-platerly-subtle text-center">
+      <p className="text-xs text-recipzee-subtle text-center">
         Tip: Your selections power “Hide my allergens” in feeds and highlight warnings in recipes.
       </p>
     </div>

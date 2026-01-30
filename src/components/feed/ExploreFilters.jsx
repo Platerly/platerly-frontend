@@ -92,7 +92,7 @@ export default function ExploreFilters({ value, onChange, loading }) {
     setHideRemixes(false);
   };
 
-  const chipClasses = "inline-flex items-center gap-1 rounded-full border border-platerly-border bg-platerly-card/60 px-2 py-0.5 text-xs";
+  const chipClasses = "inline-flex items-center gap-1 rounded-full border border-recipzee-border bg-recipzee-card/60 px-2 py-0.5 text-xs";
 
   const hint = useMemo(() => {
     if (tags.length === 0) return "Tip: press Enter to add a tag";
@@ -101,17 +101,17 @@ export default function ExploreFilters({ value, onChange, loading }) {
 
   return (
     <section
-      className="w-full border-b border-platerly-border pb-3 mb-4"
+      className="w-full border-b border-recipzee-border pb-3 mb-4"
       aria-label="Explore filters"
     >
       <div className="w-full flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
         {/* Difficulty */}
         <div className="flex flex-col min-w-[160px]">
-          <label className="text-xs font-medium text-platerly-text/70 mb-1">
+          <label className="text-xs font-medium text-recipzee-text/70 mb-1">
             Difficulty
           </label>
           <select
-            className="border border-platerly-border bg-platerly-card text-platerly-text rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-platerly-green/60 disabled:opacity-50"
+            className="border border-recipzee-border bg-recipzee-card text-recipzee-text rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-recipzee-green/60 disabled:opacity-50"
             value={difficulty}
             disabled={disabled}
             onChange={(e) => setDifficulty(e.target.value)}
@@ -124,13 +124,13 @@ export default function ExploreFilters({ value, onChange, loading }) {
 
         {/* Tags input */}
         <div className="flex-1 min-w-[220px] flex flex-col">
-          <label className="text-xs font-medium text-platerly-text/70 mb-1">
+          <label className="text-xs font-medium text-recipzee-text/70 mb-1">
             Tags
-            <span className="ml-2 text-[11px] text-platerly-text/50">(comma or Enter to add)</span>
+            <span className="ml-2 text-[11px] text-recipzee-text/50">(comma or Enter to add)</span>
           </label>
           <input
             ref={inputRef}
-            className="border border-platerly-border bg-platerly-card text-platerly-text rounded-md px-3 py-2 text-sm placeholder:text-platerly-text/40 focus:outline-none focus:ring-2 focus:ring-platerly-green/60 disabled:opacity-50"
+            className="border border-recipzee-border bg-recipzee-card text-recipzee-text rounded-md px-3 py-2 text-sm placeholder:text-recipzee-text/40 focus:outline-none focus:ring-2 focus:ring-recipzee-green/60 disabled:opacity-50"
             placeholder="vegan, breakfast, low nickel"
             value={tagsInput}
             disabled={disabled}
@@ -146,7 +146,7 @@ export default function ExploreFilters({ value, onChange, loading }) {
                   <span className="truncate max-w-[160px]">{t}</span>
                   <button
                     type="button"
-                    className="ml-1 rounded-full px-1 text-platerly-text/70 hover:text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/60"
+                    className="ml-1 rounded-full px-1 text-recipzee-text/70 hover:text-recipzee-text focus:outline-none focus:ring-2 focus:ring-recipzee-green/60"
                     onClick={() => removeTag(t)}
                     aria-label={`Remove tag ${t}`}
                     disabled={disabled}
@@ -158,24 +158,24 @@ export default function ExploreFilters({ value, onChange, loading }) {
               <button
                 type="button"
                 onClick={() => { setTags([]); setTagsInput(""); }}
-                className="text-xs text-platerly-text/60 hover:text-platerly-text underline-offset-2 hover:underline"
+                className="text-xs text-recipzee-text/60 hover:text-recipzee-text underline-offset-2 hover:underline"
                 disabled={disabled}
               >
                 Clear
               </button>
             </div>
           )}
-          <p id="tags-hint" className="mt-1 text-[11px] text-platerly-text/50">
+          <p id="tags-hint" className="mt-1 text-[11px] text-recipzee-text/50">
             {hint}
           </p>
         </div>
 
         {/* Toggles */}
         <div className="flex flex-wrap items-center gap-4">
-          <label className="inline-flex items-center gap-2 text-sm text-platerly-text">
+          <label className="inline-flex items-center gap-2 text-sm text-recipzee-text">
             <input
               type="checkbox"
-              className="h-4 w-4 rounded border-platerly-border bg-platerly-card text-platerly-green focus:ring-platerly-green/60"
+              className="h-4 w-4 rounded border-recipzee-border bg-recipzee-card text-recipzee-green focus:ring-recipzee-green/60"
               checked={requireAllTags}
               disabled={disabled}
               onChange={(e) => setRequireAllTags(e.target.checked)}
@@ -183,10 +183,10 @@ export default function ExploreFilters({ value, onChange, loading }) {
             Require all tags
           </label>
 
-          <label className="inline-flex items-center gap-2 text-sm text-platerly-text">
+          <label className="inline-flex items-center gap-2 text-sm text-recipzee-text">
             <input
               type="checkbox"
-              className="h-4 w-4 rounded border-platerly-border bg-platerly-card text-platerly-green focus:ring-platerly-green/60"
+              className="h-4 w-4 rounded border-recipzee-border bg-recipzee-card text-recipzee-green focus:ring-recipzee-green/60"
               checked={hideRemixes}
               disabled={disabled}
               onChange={(e) => setHideRemixes(e.target.checked)}
@@ -194,10 +194,10 @@ export default function ExploreFilters({ value, onChange, loading }) {
             Hide remixes
           </label>
 
-          <label className="inline-flex items-center gap-2 text-sm text-platerly-text">
+          <label className="inline-flex items-center gap-2 text-sm text-recipzee-text">
             <input
               type="checkbox"
-              className="h-4 w-4 rounded border-platerly-border bg-platerly-card text-platerly-green focus:ring-platerly-green/60"
+              className="h-4 w-4 rounded border-recipzee-border bg-recipzee-card text-recipzee-green focus:ring-recipzee-green/60"
               checked={hideMyAllergens}
               disabled={disabled}
               onChange={(e) => setHideMyAllergens(e.target.checked)}
@@ -211,7 +211,7 @@ export default function ExploreFilters({ value, onChange, loading }) {
           <button
             type="button"
             onClick={resetFilters}
-            className="text-sm text-platerly-green hover:underline underline-offset-2 disabled:opacity-50"
+            className="text-sm text-recipzee-green hover:underline underline-offset-2 disabled:opacity-50"
             disabled={disabled}
           >
             Reset filters

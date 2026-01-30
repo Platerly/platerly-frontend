@@ -208,36 +208,36 @@ const CreateRecipe = () => {
   useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl) }, [previewUrl])
 
   return (
-    <div className="min-h-screen bg-platerly-dark text-platerly-text relative overflow-hidden">
+    <div className="min-h-screen bg-recipzee-dark text-recipzee-text relative overflow-hidden">
       {/* Background gradient orbs */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-platerly-green/5 rounded-full blur-[128px]" />
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-recipzee-green/5 rounded-full blur-[128px]" />
       <div className="absolute bottom-1/3 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
 
       <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <div className="bg-platerly-card/80 backdrop-blur-sm border border-platerly-border rounded-2xl shadow-2xl p-5 sm:p-8">
+        <div className="bg-recipzee-card/80 backdrop-blur-sm border border-recipzee-border rounded-2xl shadow-2xl p-5 sm:p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-platerly-green/20 flex items-center justify-center mx-auto mb-4">
-              <ChefHat className="w-7 h-7 text-platerly-green" />
+            <div className="w-14 h-14 rounded-2xl bg-recipzee-green/20 flex items-center justify-center mx-auto mb-4">
+              <ChefHat className="w-7 h-7 text-recipzee-green" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold">Create a New Recipe</h1>
-            <p className="text-platerly-subtle mt-2">Share your culinary creation with the community</p>
+            <p className="text-recipzee-subtle mt-2">Share your culinary creation with the community</p>
           </div>
 
           {/* Required tags progress */}
           <div className="mb-6 flex flex-wrap items-center gap-2 text-xs">
             <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 ring-1 ${
               singlesComplete
-                ? 'bg-platerly-green/10 text-platerly-green ring-platerly-green/30'
-                : 'bg-platerly-light text-platerly-subtle ring-platerly-border'
+                ? 'bg-recipzee-green/10 text-recipzee-green ring-recipzee-green/30'
+                : 'bg-recipzee-light text-recipzee-subtle ring-recipzee-border'
             }`}>
               {singlesComplete && <Check className="w-3.5 h-3.5" />}
               Required tags: <strong className="ml-1">{singlesChosen}/{singlesNeeded}</strong>
             </span>
             <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 ring-1 ${
               hasSensitivity
-                ? 'bg-platerly-green/10 text-platerly-green ring-platerly-green/30'
-                : 'bg-platerly-light text-platerly-subtle ring-platerly-border'
+                ? 'bg-recipzee-green/10 text-recipzee-green ring-recipzee-green/30'
+                : 'bg-recipzee-light text-recipzee-subtle ring-recipzee-border'
             }`}>
               {hasSensitivity && <Check className="w-3.5 h-3.5" />}
               {hasSensitivity ? 'Sensitivity' : 'Sensitivity required'}
@@ -305,7 +305,7 @@ const CreateRecipe = () => {
                     }
                   }}
                   disabled={form.ingredients.length === 1}
-                  className={`sm:col-span-1 h-[42px] rounded-xl border border-platerly-border text-red-400 hover:text-red-300 hover:bg-red-500/10 hover:border-red-500/30 transition ${form.ingredients.length === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`sm:col-span-1 h-[42px] rounded-xl border border-recipzee-border text-red-400 hover:text-red-300 hover:bg-red-500/10 hover:border-red-500/30 transition ${form.ingredients.length === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                   aria-label="Remove ingredient">
                   <X className="w-4 h-4 mx-auto" />
                 </button>
@@ -316,7 +316,7 @@ const CreateRecipe = () => {
               onClick={() =>
                 setForm((prev) => ({ ...prev, ingredients: [...(prev.ingredients || []), { name: '', quantity: '' }] }))
               }
-              className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-platerly-green/10 text-platerly-green border border-platerly-green/30 hover:bg-platerly-green/20 transition">
+              className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-recipzee-green/10 text-recipzee-green border border-recipzee-green/30 hover:bg-recipzee-green/20 transition">
               <Plus className="w-4 h-4" />
               Add Ingredient
             </button>
@@ -327,7 +327,7 @@ const CreateRecipe = () => {
             {TAG_GROUPS.map(group => (
               <div key={group.key}>
                 <label className="pl-label mb-1 block">
-                  {group.label} <span className="text-platerly-yellow/90">*</span>
+                  {group.label} <span className="text-recipzee-yellow/90">*</span>
                 </label>
                 <select
                   value={selectedGroups[group.key]}
@@ -343,7 +343,7 @@ const CreateRecipe = () => {
           {/* Multi-select Sensitivity */}
           <div>
             <label className="pl-label mb-1 block">
-              Sensitivity <span className="text-platerly-yellow/90">*</span>
+              Sensitivity <span className="text-recipzee-yellow/90">*</span>
             </label>
             <div className="flex flex-wrap gap-2">
               {SENSITIVITY_OPTIONS.map(opt => {
@@ -352,14 +352,14 @@ const CreateRecipe = () => {
                   <label key={opt}
                     className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full cursor-pointer select-none ring-1 ${
                       active
-                        ? 'bg-platerly-green/15 text-platerly-text ring-platerly-green/40'
-                        : 'bg-white/5 text-platerly-text ring-platerly-border'
+                        ? 'bg-recipzee-green/15 text-recipzee-text ring-recipzee-green/40'
+                        : 'bg-white/5 text-recipzee-text ring-recipzee-border'
                     }`}>
                     <input
                       type="checkbox"
                       checked={active}
                       onChange={() => toggleSensitivity(opt)}
-                      className="accent-platerly-green"
+                      className="accent-recipzee-green"
                     />
                     <span className="text-sm">{opt}</span>
                   </label>
@@ -376,9 +376,9 @@ const CreateRecipe = () => {
             {extraTags.length > 0 && (
               <div className="mb-3 flex flex-wrap gap-2">
                 {extraTags.map(tag => (
-                  <span key={tag} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-platerly-green/10 text-platerly-green ring-1 ring-platerly-green/30 text-sm font-medium">
+                  <span key={tag} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-recipzee-green/10 text-recipzee-green ring-1 ring-recipzee-green/30 text-sm font-medium">
                     {tag}
-                    <button type="button" onClick={() => removeExtraTag(tag)} className="text-platerly-green/60 hover:text-platerly-green transition" aria-label={`Remove ${tag}`}>
+                    <button type="button" onClick={() => removeExtraTag(tag)} className="text-recipzee-green/60 hover:text-recipzee-green transition" aria-label={`Remove ${tag}`}>
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </span>
@@ -395,20 +395,20 @@ const CreateRecipe = () => {
               className="pl-field"
             />
 
-            {tagLoading && <div className="text-xs text-platerly-muted mt-1">Searching…</div>}
+            {tagLoading && <div className="text-xs text-recipzee-muted mt-1">Searching…</div>}
             {!tagLoading && !!tagSuggestions.length && (
-              <ul className="mt-2 max-h-56 overflow-auto rounded-lg border border-platerly-border bg-platerly-card/95 backdrop-blur">
+              <ul className="mt-2 max-h-56 overflow-auto rounded-lg border border-recipzee-border bg-recipzee-card/95 backdrop-blur">
                 {tagSuggestions.map(s => {
                   const disabled = extraTags.some(t => t.toLowerCase() === s.name.toLowerCase())
                   return (
-                    <li key={s.id} className="border-b border-platerly-border last:border-none">
+                    <li key={s.id} className="border-b border-recipzee-border last:border-none">
                       <button
                         type="button"
                         disabled={disabled}
                         onClick={() => addExtraTag(s.name)}
                         title={`${s.usageCount ?? 0} uses`}
                         className={`w-full text-left px-3 py-2 text-sm hover:bg-white/5 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
-                        {s.name} <span className="text-platerly-muted">({s.usageCount ?? 0})</span>
+                        {s.name} <span className="text-recipzee-muted">({s.usageCount ?? 0})</span>
                       </button>
                     </li>
                   )
@@ -452,15 +452,15 @@ const CreateRecipe = () => {
             <label className="pl-label mb-1 block">Recipe Image</label>
             <input
               type="file" name="imageFile" accept="image/*" onChange={handleChange}
-              className="block w-full text-sm text-platerly-text file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-platerly-green file:text-black hover:file:brightness-110"
+              className="block w-full text-sm text-recipzee-text file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-recipzee-green file:text-black hover:file:brightness-110"
               required
             />
-            <p className="mt-1 text-xs text-platerly-subtle">Max size: {MAX_IMAGE_SIZE_MB}MB. Formats: JPEG, PNG, WebP, GIF</p>
+            <p className="mt-1 text-xs text-recipzee-subtle">Max size: {MAX_IMAGE_SIZE_MB}MB. Formats: JPEG, PNG, WebP, GIF</p>
             {imageError && (
               <p className="mt-2 text-sm text-red-400">{imageError}</p>
             )}
             {previewUrl && !imageError && (
-              <img src={previewUrl} alt="Preview" className="mt-4 w-full h-56 object-cover rounded-lg border border-platerly-border shadow-sm" />
+              <img src={previewUrl} alt="Preview" className="mt-4 w-full h-56 object-cover rounded-lg border border-recipzee-border shadow-sm" />
             )}
           </div>
 
@@ -478,7 +478,7 @@ const CreateRecipe = () => {
           </Button>
 
           {!canSubmit && (
-            <p className="mt-3 text-xs text-platerly-subtle text-center">
+            <p className="mt-3 text-xs text-recipzee-subtle text-center">
               Select one option for <strong>Course</strong>, <strong>Diet</strong>, <strong>Style</strong>, <strong>Healthiness</strong>, and at least one <strong>Sensitivity</strong>.
             </p>
           )}

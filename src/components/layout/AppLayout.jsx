@@ -39,24 +39,24 @@ const AppLayout = ({ children }) => {
   }, [drawerOpen])
 
   return (
-    <div className="bg-platerly-dark text-platerly-text min-h-screen w-full">
+    <div className="bg-recipzee-dark text-recipzee-text min-h-screen w-full">
       {/* ───────── Mobile top bar ───────── */}
-      <header className="lg:hidden sticky top-0 z-40 bg-platerly-card/95 backdrop-blur-md border-b border-platerly-border">
+      <header className="lg:hidden sticky top-0 z-40 bg-recipzee-card/95 backdrop-blur-md border-b border-recipzee-border">
         <div className="h-[56px] flex items-center justify-between px-4">
           <button
             onClick={() => setDrawerOpen(true)}
-            className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-platerly-light transition-colors"
+            className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-recipzee-light transition-colors"
             aria-label="Open navigation"
           >
             <Menu className="w-5 h-5" />
           </button>
-          <div className="text-base font-bold tracking-tight text-platerly-green">Platerly</div>
+          <div className="text-base font-bold tracking-tight text-recipzee-green">Recipzee</div>
           <div className="w-10" />
         </div>
       </header>
 
       {/* ───────── Desktop sidebar (fixed) ───────── */}
-      <aside className="hidden lg:block fixed left-0 top-0 bottom-0 w-[260px] border-r border-platerly-border bg-platerly-card/50 backdrop-blur-sm z-30">
+      <aside className="hidden lg:block fixed left-0 top-0 bottom-0 w-[260px] border-r border-recipzee-border bg-recipzee-card/50 backdrop-blur-sm z-30">
         <Sidebar />
       </aside>
 
@@ -72,20 +72,20 @@ const AppLayout = ({ children }) => {
 
           {/* Drawer panel */}
           <div
-            className="fixed inset-y-0 left-0 z-50 w-[85%] max-w-[320px] bg-platerly-card border-r border-platerly-border shadow-2xl flex isolate"
+            className="fixed inset-y-0 left-0 z-50 w-[85%] max-w-[320px] bg-recipzee-card border-r border-recipzee-border shadow-2xl flex isolate"
             role="dialog"
             aria-modal="true"
           >
             <div className="absolute top-3 right-3 z-10">
               <button
                 onClick={() => setDrawerOpen(false)}
-                className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-platerly-light text-platerly-subtle hover:text-platerly-text transition-colors"
+                className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-recipzee-light text-recipzee-subtle hover:text-recipzee-text transition-colors"
                 aria-label="Close navigation"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="w-full overflow-y-auto pt-12 pb-6 bg-platerly-card">
+            <div className="w-full overflow-y-auto pt-12 pb-6 bg-recipzee-card">
               <SidebarPanel />
             </div>
           </div>
@@ -93,7 +93,7 @@ const AppLayout = ({ children }) => {
       )}
 
       {/* ───────── Desktop right column ───────── */}
-      <aside className="hidden xl:block fixed right-0 top-0 bottom-0 w-[320px] border-l border-platerly-border bg-platerly-card/50 backdrop-blur-sm z-20">
+      <aside className="hidden xl:block fixed right-0 top-0 bottom-0 w-[320px] border-l border-recipzee-border bg-recipzee-card/50 backdrop-blur-sm z-20">
         <RightColumn />
       </aside>
 

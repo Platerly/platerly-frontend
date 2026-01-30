@@ -11,8 +11,8 @@ import SoftWallRoot from './components/softwall/SoftWallRoot'
 import ReactGA from "react-ga4";
 
 // Temporary canonicalization in production: force www
-if (import.meta.env.PROD && location.hostname === 'platerly.com') {
-  location.replace(`https://www.platerly.com${location.pathname}${location.search}${location.hash}`);
+if (import.meta.env.PROD && location.hostname === 'recipzee.com') {
+  location.replace(`https://www.recipzee.com${location.pathname}${location.search}${location.hash}`);
 }
 
 

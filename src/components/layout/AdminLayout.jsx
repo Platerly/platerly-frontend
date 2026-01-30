@@ -59,7 +59,7 @@ const AdminLayout = ({ children }) => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <Link to="/admin" className="flex items-center space-x-2">
-                <span className="text-xl font-bold text-orange-400">Platerly</span>
+                <span className="text-xl font-bold text-orange-400">Recipzee</span>
                 <span className="bg-red-600 text-xs px-2 py-1 rounded font-semibold">ADMIN</span>
               </Link>
             </div>

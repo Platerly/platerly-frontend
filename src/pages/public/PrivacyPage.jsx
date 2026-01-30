@@ -6,7 +6,7 @@ const PrivacyPage = () => (
     title="Privacy Policy"
     subtitle="How we collect, use, and protect your data."
   >
-    <section className="space-y-10 leading-relaxed text-platerly-text">
+    <section className="space-y-10 leading-relaxed text-recipzee-text">
       {/* What we collect */}
       <div>
         <h2 className="text-xl font-semibold mb-3">Information We Collect</h2>
@@ -24,7 +24,7 @@ const PrivacyPage = () => (
           </li>
           <li>
             <strong>Payments.</strong> Subscription status and metadata processed by Stripe.
-            <em> Platerly never stores full card numbers.</em>
+            <em> Recipzee never stores full card numbers.</em>
           </li>
         </ul>
       </div>
@@ -33,7 +33,7 @@ const PrivacyPage = () => (
       <div>
         <h2 className="text-xl font-semibold mb-3">How We Use Information</h2>
         <ul className="list-disc ml-6 space-y-2">
-          <li>Operate, secure, and improve Platerly’s features and performance.</li>
+          <li>Operate, secure, and improve Recipzee’s features and performance.</li>
           <li>Personalize feeds, discovery, and allergy-aware experiences.</li>
           <li>Communicate account updates, service changes, and security alerts.</li>
           <li>Measure engagement and fix bugs (analytics and diagnostics).</li>
@@ -127,9 +127,9 @@ const PrivacyPage = () => (
       <div>
         <h2 className="text-xl font-semibold mb-3">Children’s Privacy</h2>
         <p>
-          Platerly isn’t directed to children under the age required by your local law.
+          Recipzee isn’t directed to children under the age required by your local law.
           If you believe we collected data from a child, please{" "}
-          <a className="text-platerly-green hover:underline underline-offset-2" href="/contact">
+          <a className="text-recipzee-green hover:underline underline-offset-2" href="/contact">
             contact us
           </a>{" "}
           and we’ll take appropriate action.
@@ -151,13 +151,13 @@ const PrivacyPage = () => (
         <h2 className="text-xl font-semibold mb-3">Contact</h2>
         <p>
           Privacy questions or requests?{" "}
-          <a className="text-platerly-green hover:underline underline-offset-2" href="/contact">
+          <a className="text-recipzee-green hover:underline underline-offset-2" href="/contact">
             Contact us
           </a>.
         </p>
       </div>
 
-      <p className="pt-4 text-sm text-platerly-subtle">Last updated: Aug 26, 2025</p>
+      <p className="pt-4 text-sm text-recipzee-subtle">Last updated: Aug 26, 2025</p>
     </section>
   </PublicPage>
 );

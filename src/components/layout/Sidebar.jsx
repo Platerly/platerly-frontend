@@ -23,10 +23,10 @@ const NavItem = ({ to, icon: Icon, children, end = false, isActiveMatch, badge }
             : isActive
         return cx(
           'group flex items-center gap-4 text-base px-4 py-3 rounded-xl transition-all duration-200 outline-none',
-          'focus-visible:ring-2 focus-visible:ring-platerly-green/60 focus-visible:ring-offset-0',
+          'focus-visible:ring-2 focus-visible:ring-recipzee-green/60 focus-visible:ring-offset-0',
           active
-            ? 'bg-platerly-green text-platerly-dark font-semibold shadow-lg shadow-platerly-green/20'
-            : 'text-platerly-text hover:bg-platerly-card hover:border-platerly-green/20 hover:text-platerly-green'
+            ? 'bg-recipzee-green text-recipzee-dark font-semibold shadow-lg shadow-recipzee-green/20'
+            : 'text-recipzee-text hover:bg-recipzee-card hover:border-recipzee-green/20 hover:text-recipzee-green'
         )
       }}
       aria-label={typeof children === 'string' ? children : undefined}
@@ -41,8 +41,8 @@ const NavItem = ({ to, icon: Icon, children, end = false, isActiveMatch, badge }
             <div className={cx(
               'relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200',
               active
-                ? 'bg-platerly-dark/20'
-                : 'bg-platerly-card group-hover:bg-platerly-green/10'
+                ? 'bg-recipzee-dark/20'
+                : 'bg-recipzee-card group-hover:bg-recipzee-green/10'
             )}>
               <Icon className="w-5 h-5 shrink-0" />
               {badge > 0 && (
@@ -50,7 +50,7 @@ const NavItem = ({ to, icon: Icon, children, end = false, isActiveMatch, badge }
                   'absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center',
                   'text-[10px] font-bold rounded-full',
                   active
-                    ? 'bg-platerly-dark text-platerly-green'
+                    ? 'bg-recipzee-dark text-recipzee-green'
                     : 'bg-red-500 text-white'
                 )}>
                   {badge > 99 ? '99+' : badge}
@@ -85,10 +85,10 @@ const FeedNavItem = ({ icon: Icon }) => {
       onClick={handleClick}
       className={({ isActive }) => cx(
         'group flex items-center gap-4 text-base px-4 py-3 rounded-xl transition-all duration-200 outline-none',
-        'focus-visible:ring-2 focus-visible:ring-platerly-green/60 focus-visible:ring-offset-0',
+        'focus-visible:ring-2 focus-visible:ring-recipzee-green/60 focus-visible:ring-offset-0',
         isActive
-          ? 'bg-platerly-green text-platerly-dark font-semibold shadow-lg shadow-platerly-green/20'
-          : 'text-platerly-text hover:bg-platerly-card hover:border-platerly-green/20 hover:text-platerly-green'
+          ? 'bg-recipzee-green text-recipzee-dark font-semibold shadow-lg shadow-recipzee-green/20'
+          : 'text-recipzee-text hover:bg-recipzee-card hover:border-recipzee-green/20 hover:text-recipzee-green'
       )}
       aria-label="Feed"
     >
@@ -97,8 +97,8 @@ const FeedNavItem = ({ icon: Icon }) => {
           <div className={cx(
             'relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200',
             isActive
-              ? 'bg-platerly-dark/20'
-              : 'bg-platerly-card group-hover:bg-platerly-green/10'
+              ? 'bg-recipzee-dark/20'
+              : 'bg-recipzee-card group-hover:bg-recipzee-green/10'
           )}>
             <Icon className="w-5 h-5 shrink-0" />
           </div>
@@ -130,12 +130,12 @@ export const SidebarPanel = () => {
         {/* Logo with icon - click reloads the page */}
         <button
           onClick={() => window.location.href = homeTarget}
-          aria-label="Platerly Home"
-          title="Reload Platerly"
+          aria-label="Recipzee Home"
+          title="Reload Recipzee"
           className="flex items-center gap-3 mb-10 group cursor-pointer"
         >
-          <span className="text-3xl font-bold text-platerly-green tracking-tight">
-            Platerly
+          <span className="text-3xl font-bold text-recipzee-green tracking-tight">
+            Recipzee
           </span>
         </button>
 
@@ -169,23 +169,23 @@ export const SidebarPanel = () => {
           </nav>
         ) : (
           <div className="mt-10">
-            <p className="mb-4 text-sm text-platerly-subtle">
-              Join Platerly to create and save recipes
+            <p className="mb-4 text-sm text-recipzee-subtle">
+              Join Recipzee to create and save recipes
             </p>
             <Link
               to="/register"
-              className="block text-center bg-platerly-green hover:brightness-110 text-platerly-dark font-semibold py-3 px-4 rounded-xl shadow-lg shadow-platerly-green/20 transition-all duration-200"
+              className="block text-center bg-recipzee-green hover:brightness-110 text-recipzee-dark font-semibold py-3 px-4 rounded-xl shadow-lg shadow-recipzee-green/20 transition-all duration-200"
             >
-              Join Platerly
+              Join Recipzee
             </Link>
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <div className="pt-4 border-t border-platerly-border">
-        <div className="text-xs text-platerly-subtle">
-          &copy; {new Date().getFullYear()} Platerly
+      <div className="pt-4 border-t border-recipzee-border">
+        <div className="text-xs text-recipzee-subtle">
+          &copy; {new Date().getFullYear()} Recipzee
         </div>
       </div>
     </div>
@@ -198,7 +198,7 @@ const Sidebar = () => {
     <aside
       className={cx(
         'hidden lg:block',
-        'bg-platerly-light text-platerly-text',
+        'bg-recipzee-light text-recipzee-text',
         'w-[260px] h-screen'
       )}
       aria-label="Primary"
@@ -216,15 +216,15 @@ const MobileTabBar = ({ authed }) => {
 
   if (!authed) {
     return (
-      <div className="fixed bottom-0 inset-x-0 z-40 bg-platerly-card/95 border-t border-platerly-border backdrop-blur-md md:hidden">
+      <div className="fixed bottom-0 inset-x-0 z-40 bg-recipzee-card/95 border-t border-recipzee-border backdrop-blur-md md:hidden">
         <div className="safe-area-inset-b h-16 flex items-stretch justify-between px-4">
           <Link
             to="/register"
-            className="w-full mx-auto my-2.5 inline-flex items-center justify-center gap-2 rounded-xl bg-platerly-green text-platerly-dark font-semibold px-4 py-2.5 shadow-lg shadow-platerly-green/20"
-            aria-label="Join Platerly"
+            className="w-full mx-auto my-2.5 inline-flex items-center justify-center gap-2 rounded-xl bg-recipzee-green text-recipzee-dark font-semibold px-4 py-2.5 shadow-lg shadow-recipzee-green/20"
+            aria-label="Join Recipzee"
           >
             <Sparkles className="w-4 h-4" />
-            Join Platerly
+            Join Recipzee
           </Link>
         </div>
       </div>
@@ -240,17 +240,17 @@ const MobileTabBar = ({ authed }) => {
           to={to}
           className={cx(
             'flex-1 flex flex-col items-center justify-center gap-1 text-xs transition-colors',
-            active ? 'text-platerly-green' : 'text-platerly-subtle'
+            active ? 'text-recipzee-green' : 'text-recipzee-subtle'
           )}
           aria-label={label}
         >
           <div className={cx(
             'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200',
-            active ? 'bg-platerly-green/15' : 'bg-transparent'
+            active ? 'bg-recipzee-green/15' : 'bg-transparent'
           )}>
             <Icon className={cx('w-5 h-5', active && 'scale-110')} />
           </div>
-          <span className={cx('font-medium', active && 'text-platerly-green')}>{label}</span>
+          <span className={cx('font-medium', active && 'text-recipzee-green')}>{label}</span>
         </Link>
       </li>
     )
@@ -273,17 +273,17 @@ const MobileTabBar = ({ authed }) => {
           onClick={handleClick}
           className={cx(
             'flex-1 flex flex-col items-center justify-center gap-1 text-xs transition-colors',
-            active ? 'text-platerly-green' : 'text-platerly-subtle'
+            active ? 'text-recipzee-green' : 'text-recipzee-subtle'
           )}
           aria-label="Feed"
         >
           <div className={cx(
             'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200',
-            active ? 'bg-platerly-green/15' : 'bg-transparent'
+            active ? 'bg-recipzee-green/15' : 'bg-transparent'
           )}>
             <Icon className={cx('w-5 h-5', active && 'scale-110')} />
           </div>
-          <span className={cx('font-medium', active && 'text-platerly-green')}>Feed</span>
+          <span className={cx('font-medium', active && 'text-recipzee-green')}>Feed</span>
         </Link>
       </li>
     )
@@ -291,7 +291,7 @@ const MobileTabBar = ({ authed }) => {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-40 bg-platerly-card/95 border-t border-platerly-border backdrop-blur-md md:hidden"
+      className="fixed bottom-0 inset-x-0 z-40 bg-recipzee-card/95 border-t border-recipzee-border backdrop-blur-md md:hidden"
       role="navigation"
       aria-label="Primary mobile"
     >

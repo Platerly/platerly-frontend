@@ -6,7 +6,7 @@ const GuidelinesPage = () => (
     title="Community Guidelines"
     subtitle="A safe, respectful, and inspiring place to cook and create."
   >
-    <section className="space-y-10 leading-relaxed text-platerly-text">
+    <section className="space-y-10 leading-relaxed text-recipzee-text">
       {/* Respect & Safety */}
       <div>
         <h2 className="text-xl font-semibold mb-3">Respect & Safety</h2>
@@ -14,7 +14,7 @@ const GuidelinesPage = () => (
           <li>No harassment, hate, or discrimination of any kind.</li>
           <li>Do not post explicit, graphic, or harmful content.</li>
           <li>
-            Treat others with kindness and respect — Platerly is for everyone.
+            Treat others with kindness and respect — Recipzee is for everyone.
           </li>
         </ul>
       </div>
@@ -61,7 +61,7 @@ const GuidelinesPage = () => (
           If you believe a decision was incorrect, you can request an appeal at{" "}
           <a
             href="/contact"
-            className="text-platerly-green hover:underline underline-offset-2"
+            className="text-recipzee-green hover:underline underline-offset-2"
           >
             Contact
           </a>
@@ -70,7 +70,7 @@ const GuidelinesPage = () => (
       </div>
 
       {/* Footer */}
-      <p className="pt-8 text-sm text-platerly-subtle">
+      <p className="pt-8 text-sm text-recipzee-subtle">
         Last updated: Aug 26, 2025
       </p>
     </section>

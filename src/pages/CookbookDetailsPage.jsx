@@ -40,10 +40,10 @@ const moveIndex = (arr, from, to) => {
 const Chip = ({ children, tone = "neutral" }) => {
   const toneClass =
     tone === "success"
-      ? "bg-platerly-green/10 text-platerly-green border-platerly-green/20"
+      ? "bg-recipzee-green/10 text-recipzee-green border-recipzee-green/20"
       : tone === "danger"
       ? "bg-red-500/10 text-red-300 border-red-500/20"
-      : "bg-platerly-light text-platerly-subtle border-platerly-border";
+      : "bg-recipzee-light text-recipzee-subtle border-recipzee-border";
   return (
     <span
       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${toneClass}`}
@@ -56,10 +56,10 @@ const Chip = ({ children, tone = "neutral" }) => {
 const Section = ({ title, right, children }) => (
   <section className="mb-8">
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-      <h2 className="text-lg sm:text-xl font-semibold text-platerly-text">{title}</h2>
+      <h2 className="text-lg sm:text-xl font-semibold text-recipzee-text">{title}</h2>
       {right}
     </div>
-    <div className="bg-platerly-card border border-platerly-border rounded-2xl p-4 sm:p-6">
+    <div className="bg-recipzee-card border border-recipzee-border rounded-2xl p-4 sm:p-6">
       {children}
     </div>
   </section>
@@ -101,13 +101,13 @@ const EditCookbookModal = ({ cookbook, isOpen, onClose, onSave, saving }) => {
       />
 
       {/* Modal */}
-      <div className="relative bg-platerly-card border border-platerly-border rounded-2xl shadow-2xl w-full max-w-lg">
+      <div className="relative bg-recipzee-card border border-recipzee-border rounded-2xl shadow-2xl w-full max-w-lg">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-platerly-border">
-          <h2 className="text-xl font-semibold text-platerly-text">Edit Cookbook</h2>
+        <div className="flex items-center justify-between p-5 border-b border-recipzee-border">
+          <h2 className="text-xl font-semibold text-recipzee-text">Edit Cookbook</h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-platerly-light transition-colors text-platerly-subtle hover:text-platerly-text"
+            className="p-2 rounded-lg hover:bg-recipzee-light transition-colors text-recipzee-subtle hover:text-recipzee-text"
           >
             <X className="w-5 h-5" />
           </button>
@@ -116,7 +116,7 @@ const EditCookbookModal = ({ cookbook, isOpen, onClose, onSave, saving }) => {
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-platerly-text mb-1.5">
+            <label className="block text-sm font-medium text-recipzee-text mb-1.5">
               Title <span className="text-red-400">*</span>
             </label>
             <input
@@ -124,13 +124,13 @@ const EditCookbookModal = ({ cookbook, isOpen, onClose, onSave, saving }) => {
               value={form.title}
               onChange={(e) => setForm(prev => ({ ...prev, title: e.target.value }))}
               placeholder="My Cookbook"
-              className="w-full px-4 py-2.5 rounded-xl bg-platerly-light border border-platerly-border text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/50 focus:border-platerly-green transition"
+              className="w-full px-4 py-2.5 rounded-xl bg-recipzee-light border border-recipzee-border text-recipzee-text placeholder:text-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/50 focus:border-recipzee-green transition"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-platerly-text mb-1.5">
+            <label className="block text-sm font-medium text-recipzee-text mb-1.5">
               Description
             </label>
             <textarea
@@ -138,12 +138,12 @@ const EditCookbookModal = ({ cookbook, isOpen, onClose, onSave, saving }) => {
               onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))}
               placeholder="A collection of my favorite recipes..."
               rows={3}
-              className="w-full px-4 py-2.5 rounded-xl bg-platerly-light border border-platerly-border text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/50 focus:border-platerly-green transition resize-none"
+              className="w-full px-4 py-2.5 rounded-xl bg-recipzee-light border border-recipzee-border text-recipzee-text placeholder:text-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/50 focus:border-recipzee-green transition resize-none"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-platerly-text mb-2">
+            <label className="block text-sm font-medium text-recipzee-text mb-2">
               Visibility
             </label>
             <div className="flex gap-3">
@@ -152,8 +152,8 @@ const EditCookbookModal = ({ cookbook, isOpen, onClose, onSave, saving }) => {
                 onClick={() => setForm(prev => ({ ...prev, isPublic: false }))}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border transition-all ${
                   !form.isPublic
-                    ? 'border-platerly-green bg-platerly-green/10 text-platerly-green'
-                    : 'border-platerly-border bg-platerly-light text-platerly-subtle hover:border-platerly-green/30'
+                    ? 'border-recipzee-green bg-recipzee-green/10 text-recipzee-green'
+                    : 'border-recipzee-border bg-recipzee-light text-recipzee-subtle hover:border-recipzee-green/30'
                 }`}
               >
                 <Lock className="w-4 h-4" />
@@ -164,15 +164,15 @@ const EditCookbookModal = ({ cookbook, isOpen, onClose, onSave, saving }) => {
                 onClick={() => setForm(prev => ({ ...prev, isPublic: true }))}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border transition-all ${
                   form.isPublic
-                    ? 'border-platerly-green bg-platerly-green/10 text-platerly-green'
-                    : 'border-platerly-border bg-platerly-light text-platerly-subtle hover:border-platerly-green/30'
+                    ? 'border-recipzee-green bg-recipzee-green/10 text-recipzee-green'
+                    : 'border-recipzee-border bg-recipzee-light text-recipzee-subtle hover:border-recipzee-green/30'
                 }`}
               >
                 <Globe className="w-4 h-4" />
                 <span className="font-medium">Public</span>
               </button>
             </div>
-            <p className="mt-2 text-xs text-platerly-subtle">
+            <p className="mt-2 text-xs text-recipzee-subtle">
               {form.isPublic
                 ? 'Anyone can view this cookbook and its recipes.'
                 : 'Only you and contributors can view this cookbook.'}
@@ -185,14 +185,14 @@ const EditCookbookModal = ({ cookbook, isOpen, onClose, onSave, saving }) => {
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="px-4 py-2.5 rounded-xl text-sm font-medium text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light transition-colors disabled:opacity-50"
+              className="px-4 py-2.5 rounded-xl text-sm font-medium text-recipzee-subtle hover:text-recipzee-text hover:bg-recipzee-light transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving || !form.title.trim()}
-              className="px-5 py-2.5 rounded-xl text-sm font-medium bg-platerly-green text-platerly-dark hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-platerly-green/20"
+              className="px-5 py-2.5 rounded-xl text-sm font-medium bg-recipzee-green text-recipzee-dark hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-recipzee-green/20"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
@@ -977,12 +977,12 @@ const CookbookDetailsPage = () => {
   /* --------- Render ---------- */
   if (authLoading || loading) {
     return (
-      <div className="max-w-6xl mx-auto p-4 sm:p-6 text-platerly-text">
+      <div className="max-w-6xl mx-auto p-4 sm:p-6 text-recipzee-text">
         <div className="animate-pulse space-y-4">
-          <div className="h-40 sm:h-56 w-full rounded-2xl bg-platerly-light" />
-          <div className="h-6 w-1/2 rounded-lg bg-platerly-light" />
-          <div className="h-4 w-1/3 rounded-lg bg-platerly-light" />
-          <div className="h-24 w-full rounded-2xl bg-platerly-card" />
+          <div className="h-40 sm:h-56 w-full rounded-2xl bg-recipzee-light" />
+          <div className="h-6 w-1/2 rounded-lg bg-recipzee-light" />
+          <div className="h-4 w-1/3 rounded-lg bg-recipzee-light" />
+          <div className="h-24 w-full rounded-2xl bg-recipzee-card" />
         </div>
       </div>
     );
@@ -1002,10 +1002,10 @@ const CookbookDetailsPage = () => {
     );
 
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 text-platerly-text">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6 text-recipzee-text">
       {/* Header with cover */}
       <div className="mb-8">
-        <div className="w-full max-w-4xl aspect-[16/9] sm:aspect-[7/3] bg-platerly-card rounded-2xl overflow-hidden border border-platerly-border mx-auto relative group">
+        <div className="w-full max-w-4xl aspect-[16/9] sm:aspect-[7/3] bg-recipzee-card rounded-2xl overflow-hidden border border-recipzee-border mx-auto relative group">
           {cookbook.coverImageUrl ? (
             <img
               src={cookbook.coverImageUrl}
@@ -1014,7 +1014,7 @@ const CookbookDetailsPage = () => {
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center text-platerly-subtle gap-3">
+            <div className="w-full h-full flex flex-col items-center justify-center text-recipzee-subtle gap-3">
               <ImagePlus className="w-12 h-12 opacity-50" />
               <span>No cover image yet</span>
             </div>
@@ -1031,22 +1031,22 @@ const CookbookDetailsPage = () => {
 
         <div className="mt-5 flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold truncate text-platerly-text">
+            <h1 className="text-2xl sm:text-3xl font-bold truncate text-recipzee-text">
               {cookbook.title}
             </h1>
             {cookbook.description && (
-              <p className="mt-1 text-platerly-subtle line-clamp-2">{cookbook.description}</p>
+              <p className="mt-1 text-recipzee-subtle line-clamp-2">{cookbook.description}</p>
             )}
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-platerly-subtle">
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-recipzee-subtle">
               <Chip tone={cookbook.isPublic ? "success" : "neutral"}>
                 {cookbook.isPublic ? "Public" : "Private"}
               </Chip>
-              <span className="text-platerly-border" aria-hidden>•</span>
+              <span className="text-recipzee-border" aria-hidden>•</span>
               <span>Created {formatDate(cookbook.createdAt)}</span>
               {inlineMsg && (
                 <>
-                  <span className="text-platerly-border" aria-hidden>•</span>
-                  <span className="inline-flex items-center gap-1.5 text-platerly-green text-sm font-medium">
+                  <span className="text-recipzee-border" aria-hidden>•</span>
+                  <span className="inline-flex items-center gap-1.5 text-recipzee-green text-sm font-medium">
                     <Check className="w-4 h-4" />
                     {inlineMsg}
                   </span>
@@ -1120,31 +1120,31 @@ const CookbookDetailsPage = () => {
 
               {/* Share dropdown */}
               {showShareMenu && (
-                <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-platerly-border bg-platerly-card shadow-xl z-30">
+                <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-recipzee-border bg-recipzee-card shadow-xl z-30">
                   <button
                     onClick={copyShareLink}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-platerly-text hover:bg-platerly-light transition-colors rounded-t-xl"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-recipzee-text hover:bg-recipzee-light transition-colors rounded-t-xl"
                   >
-                    <Copy className="w-4 h-4 text-platerly-subtle" />
+                    <Copy className="w-4 h-4 text-recipzee-subtle" />
                     Copy Link
                   </button>
                   <button
                     onClick={shareToTwitter}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-platerly-text hover:bg-platerly-light transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-recipzee-text hover:bg-recipzee-light transition-colors"
                   >
                     <Twitter className="w-4 h-4 text-[#1DA1F2]" />
                     Share on X
                   </button>
                   <button
                     onClick={shareToFacebook}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-platerly-text hover:bg-platerly-light transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-recipzee-text hover:bg-recipzee-light transition-colors"
                   >
                     <Facebook className="w-4 h-4 text-[#4267B2]" />
                     Share on Facebook
                   </button>
                   <button
                     onClick={shareToPinterest}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-platerly-text hover:bg-platerly-light transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-recipzee-text hover:bg-recipzee-light transition-colors"
                   >
                     <svg className="w-4 h-4 text-[#E60023]" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 0a12 12 0 0 0-4.37 23.17c-.1-.94-.2-2.4.04-3.43l1.4-5.96s-.36-.72-.36-1.78c0-1.67.97-2.91 2.17-2.91 1.02 0 1.52.77 1.52 1.69 0 1.03-.66 2.57-.99 3.99-.28 1.19.6 2.16 1.77 2.16 2.13 0 3.76-2.24 3.76-5.48 0-2.87-2.06-4.87-5-4.87-3.4 0-5.4 2.55-5.4 5.19 0 1.03.39 2.13.89 2.73.1.12.11.22.08.34l-.33 1.34c-.05.21-.18.26-.4.16-1.5-.7-2.44-2.88-2.44-4.64 0-3.78 2.75-7.25 7.92-7.25 4.16 0 7.4 2.97 7.4 6.93 0 4.13-2.6 7.46-6.22 7.46-1.21 0-2.36-.63-2.75-1.38l-.75 2.85c-.27 1.04-1 2.35-1.49 3.15A12 12 0 1 0 12 0z"/>
@@ -1153,7 +1153,7 @@ const CookbookDetailsPage = () => {
                   </button>
                   <button
                     onClick={shareToReddit}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-platerly-text hover:bg-platerly-light transition-colors rounded-b-xl"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-recipzee-text hover:bg-recipzee-light transition-colors rounded-b-xl"
                   >
                     <svg className="w-4 h-4 text-[#FF4500]" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
@@ -1171,23 +1171,23 @@ const CookbookDetailsPage = () => {
       {isOwner && (
         <Section title="Contributors">
           {contributors.length === 0 ? (
-            <div className="flex items-center gap-3 text-platerly-subtle py-2 mb-4">
+            <div className="flex items-center gap-3 text-recipzee-subtle py-2 mb-4">
               <UserPlus className="w-5 h-5 opacity-60" />
               <span>No contributors yet. Invite someone to collaborate.</span>
             </div>
           ) : (
-            <ul className="mb-4 divide-y divide-platerly-border">
+            <ul className="mb-4 divide-y divide-recipzee-border">
               {contributors.map((c) => (
                 <li
                   key={c.userId}
                   className="py-3 flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-10 w-10 rounded-full bg-platerly-light border border-platerly-border flex items-center justify-center text-sm font-medium text-platerly-text">
+                    <div className="h-10 w-10 rounded-full bg-recipzee-light border border-recipzee-border flex items-center justify-center text-sm font-medium text-recipzee-text">
                       {(c.displayName || "U").slice(0, 1).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <div className="font-medium truncate text-platerly-text">
+                      <div className="font-medium truncate text-recipzee-text">
                         {c.displayName || c.userId}
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
@@ -1196,7 +1196,7 @@ const CookbookDetailsPage = () => {
                           onClick={() => updateContributorRole(c.userId, c.role === "Write" ? "Read" : "Write")}
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors ${
                             c.role === "Write"
-                              ? "bg-platerly-green/10 text-platerly-green hover:bg-platerly-green/20"
+                              ? "bg-recipzee-green/10 text-recipzee-green hover:bg-recipzee-green/20"
                               : "bg-amber-500/10 text-amber-400 hover:bg-amber-500/20"
                           }`}
                           title={`Click to change to ${c.role === "Write" ? "Read" : "Write"}`}
@@ -1207,7 +1207,7 @@ const CookbookDetailsPage = () => {
                             <><Eye className="w-3 h-3" /> View only</>
                           )}
                         </button>
-                        <span className="text-xs text-platerly-muted">
+                        <span className="text-xs text-recipzee-muted">
                           Added {formatDate(c.addedAt)}
                         </span>
                       </div>
@@ -1288,7 +1288,7 @@ const CookbookDetailsPage = () => {
                   }
                 }}
                 placeholder="Type a username or paste userId"
-                className="flex-1 px-4 py-2.5 rounded-xl bg-platerly-light border border-platerly-border text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/50 focus:border-platerly-green transition min-h-[44px]"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-recipzee-light border border-recipzee-border text-recipzee-text placeholder:text-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/50 focus:border-recipzee-green transition min-h-[44px]"
                 aria-label="Contributor username or user ID"
                 aria-autocomplete="list"
                 aria-expanded={sOpen}
@@ -1303,14 +1303,14 @@ const CookbookDetailsPage = () => {
                 data-bwignore="true"
                 data-form-type="other"
               />
-              <div className="flex gap-1 p-1 rounded-xl bg-platerly-light border border-platerly-border">
+              <div className="flex gap-1 p-1 rounded-xl bg-recipzee-light border border-recipzee-border">
                 <button
                   type="button"
                   onClick={() => setNewContributorRole("Write")}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                     newContributorRole === "Write"
-                      ? "bg-platerly-green text-platerly-dark"
-                      : "text-platerly-subtle hover:text-platerly-text hover:bg-platerly-card"
+                      ? "bg-recipzee-green text-recipzee-dark"
+                      : "text-recipzee-subtle hover:text-recipzee-text hover:bg-recipzee-card"
                   }`}
                   title="Can add, edit, and remove recipes"
                 >
@@ -1322,8 +1322,8 @@ const CookbookDetailsPage = () => {
                   onClick={() => setNewContributorRole("Read")}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                     newContributorRole === "Read"
-                      ? "bg-amber-500 text-platerly-dark"
-                      : "text-platerly-subtle hover:text-platerly-text hover:bg-platerly-card"
+                      ? "bg-amber-500 text-recipzee-dark"
+                      : "text-recipzee-subtle hover:text-recipzee-text hover:bg-recipzee-card"
                   }`}
                   title="Can only view the cookbook"
                 >
@@ -1346,10 +1346,10 @@ const CookbookDetailsPage = () => {
               <div
                 id="contrib-suggestions"
                 role="listbox"
-                className="absolute z-20 mt-2 w-full sm:w-[60%] max-h-72 overflow-auto rounded-xl border border-platerly-border bg-platerly-card/95 backdrop-blur shadow-xl"
+                className="absolute z-20 mt-2 w-full sm:w-[60%] max-h-72 overflow-auto rounded-xl border border-recipzee-border bg-recipzee-card/95 backdrop-blur shadow-xl"
               >
                 {sLoading ? (
-                  <div className="px-4 py-3 text-sm text-platerly-subtle">
+                  <div className="px-4 py-3 text-sm text-recipzee-subtle">
                     Searching…
                   </div>
                 ) : sError ? (
@@ -1357,7 +1357,7 @@ const CookbookDetailsPage = () => {
                     {sError}
                   </div>
                 ) : suggestions.length === 0 ? (
-                  <div className="px-4 py-3 text-sm text-platerly-subtle">
+                  <div className="px-4 py-3 text-sm text-recipzee-subtle">
                     No matches found.
                   </div>
                 ) : (
@@ -1371,8 +1371,8 @@ const CookbookDetailsPage = () => {
                       className={[
                         "flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors",
                         i === sIndex
-                          ? "bg-platerly-light"
-                          : "hover:bg-platerly-light/50",
+                          ? "bg-recipzee-light"
+                          : "hover:bg-recipzee-light/50",
                       ].join(" ")}
                     >
                       <img
@@ -1381,22 +1381,22 @@ const CookbookDetailsPage = () => {
                           "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
                         }
                         alt=""
-                        className="h-9 w-9 rounded-full border border-platerly-border object-cover flex-shrink-0"
+                        className="h-9 w-9 rounded-full border border-recipzee-border object-cover flex-shrink-0"
                         onError={(e) => {
                           e.currentTarget.src = "";
                         }}
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium truncate text-platerly-text">
+                        <div className="text-sm font-medium truncate text-recipzee-text">
                           {u.displayName}
                         </div>
-                        <div className="text-xs text-platerly-subtle truncate">
+                        <div className="text-xs text-recipzee-subtle truncate">
                           @{u.username || "user"}
                         </div>
                       </div>
                       <button
                         type="button"
-                        className="text-xs px-3 py-1.5 rounded-lg bg-platerly-green hover:bg-platerly-green/90 text-platerly-dark font-medium transition-colors"
+                        className="text-xs px-3 py-1.5 rounded-lg bg-recipzee-green hover:bg-recipzee-green/90 text-recipzee-dark font-medium transition-colors"
                         onClick={async (e) => {
                           e.stopPropagation();
                           try {
@@ -1433,7 +1433,7 @@ const CookbookDetailsPage = () => {
         <Section
           title={`Pending Requests (${pendingRequests.length})`}
           right={
-            <div className="flex items-center gap-2 text-xs text-platerly-subtle">
+            <div className="flex items-center gap-2 text-xs text-recipzee-subtle">
               <Clock className="w-4 h-4" />
               Awaiting your review
             </div>
@@ -1443,14 +1443,14 @@ const CookbookDetailsPage = () => {
             {pendingRequests.map((req) => (
               <div
                 key={req.id}
-                className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl bg-platerly-light/50 border border-platerly-border"
+                className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl bg-recipzee-light/50 border border-recipzee-border"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 text-sm">
-                    <span className="text-platerly-subtle">Recipe:</span>
+                    <span className="text-recipzee-subtle">Recipe:</span>
                     <a
                       href={`/recipe/${req.recipeId}`}
-                      className="font-medium text-platerly-green hover:underline truncate"
+                      className="font-medium text-recipzee-green hover:underline truncate"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -1458,18 +1458,18 @@ const CookbookDetailsPage = () => {
                     </a>
                   </div>
                   {req.message && (
-                    <p className="mt-1.5 text-sm text-platerly-subtle italic">
+                    <p className="mt-1.5 text-sm text-recipzee-subtle italic">
                       "{req.message}"
                     </p>
                   )}
-                  <div className="mt-2 text-xs text-platerly-muted">
+                  <div className="mt-2 text-xs text-recipzee-muted">
                     Requested {formatDate(req.createdAt)}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => approveRequest(req.id)}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-platerly-green text-platerly-dark text-sm font-medium hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-recipzee-green text-recipzee-dark text-sm font-medium hover:opacity-90 transition-opacity"
                   >
                     <CheckCircle className="w-4 h-4" />
                     Approve
@@ -1493,7 +1493,7 @@ const CookbookDetailsPage = () => {
         title={`Recipes (${recipes.length})`}
         right={
           isOwner ? (
-            <div className="text-xs text-platerly-subtle">
+            <div className="text-xs text-recipzee-subtle">
               {savingOrder
                 ? "Saving…"
                 : orderDirty
@@ -1504,15 +1504,15 @@ const CookbookDetailsPage = () => {
         }
       >
         {recipes.length === 0 ? (
-          <p className="text-platerly-subtle">No recipes saved in this cookbook yet.</p>
+          <p className="text-recipzee-subtle">No recipes saved in this cookbook yet.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {recipes.map((r, idx) => (
               <div
                 key={r.id}
                 className={[
-                  "group relative rounded-2xl border border-platerly-border bg-platerly-card overflow-hidden transition-all",
-                  dragIndex === idx ? "opacity-80 ring-2 ring-platerly-green/40 scale-[1.02]" : "",
+                  "group relative rounded-2xl border border-recipzee-border bg-recipzee-card overflow-hidden transition-all",
+                  dragIndex === idx ? "opacity-80 ring-2 ring-recipzee-green/40 scale-[1.02]" : "",
                 ].join(" ")}
                 draggable={isOwner}
                 onDragStart={isOwner ? onDragStart(idx) : undefined}
@@ -1522,7 +1522,7 @@ const CookbookDetailsPage = () => {
                 {/* Drag handle (owner only) */}
                 {isOwner && (
                   <div
-                    className="absolute top-2 left-2 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-platerly-border bg-platerly-card/90 backdrop-blur text-xs text-platerly-subtle cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-2 left-2 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-recipzee-border bg-recipzee-card/90 backdrop-blur text-xs text-recipzee-subtle cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
                     title="Drag to reorder"
                   >
                     <GripVertical className="w-4 h-4" />
@@ -1545,19 +1545,19 @@ const CookbookDetailsPage = () => {
                 {/* Attribution badge */}
                 {r.addedByUsername && (
                   <div className="absolute bottom-2 left-2 z-10 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-platerly-green">@{r.addedByUsername}</span>
+                    <span className="text-recipzee-green">@{r.addedByUsername}</span>
                     <span className="text-white/60">added</span>
                   </div>
                 )}
 
                 {/* Note display/edit */}
                 {editingNoteId === r.id ? (
-                  <div className="absolute inset-x-0 bottom-0 z-20 p-3 bg-platerly-card/95 backdrop-blur border-t border-platerly-border">
+                  <div className="absolute inset-x-0 bottom-0 z-20 p-3 bg-recipzee-card/95 backdrop-blur border-t border-recipzee-border">
                     <textarea
                       value={editingNoteText}
                       onChange={(e) => setEditingNoteText(e.target.value)}
                       placeholder="Add a personal note for this recipe..."
-                      className="w-full px-3 py-2 rounded-lg bg-platerly-light border border-platerly-border text-sm text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/50 resize-none"
+                      className="w-full px-3 py-2 rounded-lg bg-recipzee-light border border-recipzee-border text-sm text-recipzee-text placeholder:text-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/50 resize-none"
                       rows={2}
                       autoFocus
                     />
@@ -1565,7 +1565,7 @@ const CookbookDetailsPage = () => {
                       <button
                         type="button"
                         onClick={cancelEditingNote}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light transition-colors"
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-recipzee-subtle hover:text-recipzee-text hover:bg-recipzee-light transition-colors"
                       >
                         Cancel
                       </button>
@@ -1573,7 +1573,7 @@ const CookbookDetailsPage = () => {
                         type="button"
                         onClick={() => saveNote(r.id)}
                         disabled={savingNote}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-platerly-green text-platerly-dark hover:opacity-90 transition-opacity disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-recipzee-green text-recipzee-dark hover:opacity-90 transition-opacity disabled:opacity-50"
                       >
                         <Save className="w-3 h-3" />
                         {savingNote ? "Saving..." : "Save"}
@@ -1582,7 +1582,7 @@ const CookbookDetailsPage = () => {
                   </div>
                 ) : r.note ? (
                   <div
-                    className="absolute inset-x-0 bottom-0 z-10 p-2.5 bg-gradient-to-t from-platerly-dark/90 via-platerly-dark/70 to-transparent cursor-pointer"
+                    className="absolute inset-x-0 bottom-0 z-10 p-2.5 bg-gradient-to-t from-recipzee-dark/90 via-recipzee-dark/70 to-transparent cursor-pointer"
                     onClick={(e) => {
                       if (isOwner) {
                         e.stopPropagation();
@@ -1631,13 +1631,13 @@ const CookbookDetailsPage = () => {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowRequestModal(false)}
           />
-          <div className="relative bg-platerly-card border border-platerly-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="relative bg-recipzee-card border border-recipzee-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-platerly-border">
-              <h2 className="text-xl font-semibold text-platerly-text">Request to Add Recipe</h2>
+            <div className="flex items-center justify-between p-5 border-b border-recipzee-border">
+              <h2 className="text-xl font-semibold text-recipzee-text">Request to Add Recipe</h2>
               <button
                 onClick={() => setShowRequestModal(false)}
-                className="p-2 rounded-lg hover:bg-platerly-light transition-colors text-platerly-subtle hover:text-platerly-text"
+                className="p-2 rounded-lg hover:bg-recipzee-light transition-colors text-recipzee-subtle hover:text-recipzee-text"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1645,21 +1645,21 @@ const CookbookDetailsPage = () => {
 
             {/* Content */}
             <div className="p-5 overflow-y-auto flex-1">
-              <p className="text-sm text-platerly-subtle mb-4">
+              <p className="text-sm text-recipzee-subtle mb-4">
                 Select one of your recipes to request adding it to "{cookbook.title}". The cookbook owner will review your request.
               </p>
 
               {myRecipesLoading ? (
-                <div className="py-8 text-center text-platerly-subtle">Loading your recipes...</div>
+                <div className="py-8 text-center text-recipzee-subtle">Loading your recipes...</div>
               ) : myRecipes.length === 0 ? (
                 <div className="py-8 text-center">
-                  <ChefHat className="w-12 h-12 text-platerly-muted mx-auto mb-3" />
-                  <p className="text-platerly-subtle">
+                  <ChefHat className="w-12 h-12 text-recipzee-muted mx-auto mb-3" />
+                  <p className="text-recipzee-subtle">
                     You don't have any recipes to add, or all your recipes are already in this cookbook.
                   </p>
                   <Link
                     to="/create"
-                    className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-platerly-green text-platerly-dark rounded-xl font-medium hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-recipzee-green text-recipzee-dark rounded-xl font-medium hover:opacity-90 transition-opacity"
                   >
                     <PlusCircle className="w-4 h-4" />
                     Create a Recipe
@@ -1675,8 +1675,8 @@ const CookbookDetailsPage = () => {
                         onClick={() => setSelectedRecipeId(recipe.id)}
                         className={`w-full text-left p-3 rounded-xl border transition-all flex items-center gap-3 ${
                           selectedRecipeId === recipe.id
-                            ? 'border-platerly-green bg-platerly-green/10'
-                            : 'border-platerly-border bg-platerly-light/50 hover:border-platerly-green/30'
+                            ? 'border-recipzee-green bg-recipzee-green/10'
+                            : 'border-recipzee-border bg-recipzee-light/50 hover:border-recipzee-green/30'
                         }`}
                       >
                         {recipe.imageUrl ? (
@@ -1686,25 +1686,25 @@ const CookbookDetailsPage = () => {
                             className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
                           />
                         ) : (
-                          <div className="w-12 h-12 rounded-lg bg-platerly-light flex items-center justify-center flex-shrink-0">
-                            <ChefHat className="w-6 h-6 text-platerly-muted" />
+                          <div className="w-12 h-12 rounded-lg bg-recipzee-light flex items-center justify-center flex-shrink-0">
+                            <ChefHat className="w-6 h-6 text-recipzee-muted" />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-platerly-text truncate">{recipe.title}</div>
+                          <div className="font-medium text-recipzee-text truncate">{recipe.title}</div>
                           {recipe.description && (
-                            <div className="text-xs text-platerly-subtle truncate mt-0.5">{recipe.description}</div>
+                            <div className="text-xs text-recipzee-subtle truncate mt-0.5">{recipe.description}</div>
                           )}
                         </div>
                         {selectedRecipeId === recipe.id && (
-                          <CheckCircle className="w-5 h-5 text-platerly-green flex-shrink-0" />
+                          <CheckCircle className="w-5 h-5 text-recipzee-green flex-shrink-0" />
                         )}
                       </button>
                     ))}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-platerly-text mb-1.5">
+                    <label className="block text-sm font-medium text-recipzee-text mb-1.5">
                       Message (optional)
                     </label>
                     <textarea
@@ -1712,7 +1712,7 @@ const CookbookDetailsPage = () => {
                       onChange={(e) => setRequestMessage(e.target.value)}
                       placeholder="Why should this recipe be in this cookbook?"
                       rows={2}
-                      className="w-full px-4 py-2.5 rounded-xl bg-platerly-light border border-platerly-border text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/50 focus:border-platerly-green transition resize-none"
+                      className="w-full px-4 py-2.5 rounded-xl bg-recipzee-light border border-recipzee-border text-recipzee-text placeholder:text-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/50 focus:border-recipzee-green transition resize-none"
                     />
                   </div>
                 </>
@@ -1721,12 +1721,12 @@ const CookbookDetailsPage = () => {
 
             {/* Actions */}
             {myRecipes.length > 0 && (
-              <div className="flex justify-end gap-3 p-5 border-t border-platerly-border">
+              <div className="flex justify-end gap-3 p-5 border-t border-recipzee-border">
                 <button
                   type="button"
                   onClick={() => setShowRequestModal(false)}
                   disabled={submittingRequest}
-                  className="px-4 py-2.5 rounded-xl text-sm font-medium text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light transition-colors disabled:opacity-50"
+                  className="px-4 py-2.5 rounded-xl text-sm font-medium text-recipzee-subtle hover:text-recipzee-text hover:bg-recipzee-light transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -1734,7 +1734,7 @@ const CookbookDetailsPage = () => {
                   type="button"
                   onClick={submitContributionRequest}
                   disabled={!selectedRecipeId || submittingRequest}
-                  className="px-5 py-2.5 rounded-xl text-sm font-medium bg-platerly-green text-platerly-dark hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-platerly-green/20"
+                  className="px-5 py-2.5 rounded-xl text-sm font-medium bg-recipzee-green text-recipzee-dark hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-recipzee-green/20"
                 >
                   {submittingRequest ? 'Sending...' : 'Send Request'}
                 </button>

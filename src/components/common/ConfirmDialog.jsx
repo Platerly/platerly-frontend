@@ -70,7 +70,7 @@ const ConfirmDialog = ({
       )}
 
       <AlertDialogContent
-        className="border border-platerly-border bg-platerly-card text-platerly-text"
+        className="border border-recipzee-border bg-recipzee-card text-recipzee-text"
         onClick={stopBubble}
         onMouseDown={stopBubble}
         onPointerDown={stopBubble}
@@ -82,7 +82,7 @@ const ConfirmDialog = ({
             {title}
           </AlertDialogTitle>
           {description ? (
-            <AlertDialogDescription className="text-platerly-muted">
+            <AlertDialogDescription className="text-recipzee-muted">
               {description}
             </AlertDialogDescription>
           ) : null}
@@ -91,7 +91,7 @@ const ConfirmDialog = ({
         <AlertDialogFooter>
           <AlertDialogCancel
             onClick={handleCancel}
-            className="border-platerly-border bg-transparent text-platerly-text hover:bg-platerly-light"
+            className="border-recipzee-border bg-transparent text-recipzee-text hover:bg-recipzee-light"
           >
             {cancelLabel}
           </AlertDialogCancel>

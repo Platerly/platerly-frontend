@@ -14,10 +14,10 @@ const CookbookCard = ({ cookbook }) => {
   return (
     <Link
       to={`/cookbook/${cookbook.id}`}
-      className="group block rounded-2xl border border-platerly-border bg-platerly-card overflow-hidden hover:border-platerly-green/30 hover:shadow-lg hover:shadow-platerly-green/5 transition-all duration-200"
+      className="group block rounded-2xl border border-recipzee-border bg-recipzee-card overflow-hidden hover:border-recipzee-green/30 hover:shadow-lg hover:shadow-recipzee-green/5 transition-all duration-200"
     >
       {/* Cover Image */}
-      <div className="relative w-full aspect-[16/9] bg-platerly-light overflow-hidden">
+      <div className="relative w-full aspect-[16/9] bg-recipzee-light overflow-hidden">
         {cookbook.coverImageUrl ? (
           <img
             src={cookbook.coverImageUrl}
@@ -26,7 +26,7 @@ const CookbookCard = ({ cookbook }) => {
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-platerly-subtle">
+          <div className="w-full h-full flex items-center justify-center text-recipzee-subtle">
             <Book className="w-12 h-12 opacity-30" />
           </div>
         )}
@@ -39,20 +39,20 @@ const CookbookCard = ({ cookbook }) => {
 
       {/* Content */}
       <div className="p-4">
-        <h3 className="text-base font-semibold text-platerly-text group-hover:text-platerly-green transition-colors line-clamp-1">
+        <h3 className="text-base font-semibold text-recipzee-text group-hover:text-recipzee-green transition-colors line-clamp-1">
           {cookbook.title}
         </h3>
 
         {cookbook.description && (
-          <p className="mt-1 text-sm text-platerly-subtle line-clamp-2">
+          <p className="mt-1 text-sm text-recipzee-subtle line-clamp-2">
             {cookbook.description}
           </p>
         )}
 
-        <div className="mt-3 flex items-center gap-3 text-xs text-platerly-muted">
+        <div className="mt-3 flex items-center gap-3 text-xs text-recipzee-muted">
           {cookbook.ownerUsername && (
             <span className="flex items-center gap-1">
-              by <span className="text-platerly-green">@{cookbook.ownerUsername}</span>
+              by <span className="text-recipzee-green">@{cookbook.ownerUsername}</span>
             </span>
           )}
           <span className="flex items-center gap-1">
@@ -66,12 +66,12 @@ const CookbookCard = ({ cookbook }) => {
 };
 
 const SkeletonCard = () => (
-  <div className="rounded-2xl border border-platerly-border bg-platerly-card overflow-hidden animate-pulse">
-    <div className="w-full aspect-[16/9] bg-platerly-light" />
+  <div className="rounded-2xl border border-recipzee-border bg-recipzee-card overflow-hidden animate-pulse">
+    <div className="w-full aspect-[16/9] bg-recipzee-light" />
     <div className="p-4 space-y-2">
-      <div className="h-5 w-3/4 bg-platerly-light rounded" />
-      <div className="h-4 w-full bg-platerly-light/70 rounded" />
-      <div className="h-3 w-1/2 bg-platerly-light/50 rounded mt-3" />
+      <div className="h-5 w-3/4 bg-recipzee-light rounded" />
+      <div className="h-4 w-full bg-recipzee-light/70 rounded" />
+      <div className="h-3 w-1/2 bg-recipzee-light/50 rounded mt-3" />
     </div>
   </div>
 );
@@ -150,16 +150,16 @@ const ExploreCookbooksPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-platerly-dark text-platerly-text relative overflow-hidden">
+    <div className="min-h-screen bg-recipzee-dark text-recipzee-text relative overflow-hidden">
       {/* Background gradient orbs */}
-      <div className="absolute top-0 left-1/4 w-80 h-80 bg-platerly-green/5 rounded-full blur-[120px]" />
+      <div className="absolute top-0 left-1/4 w-80 h-80 bg-recipzee-green/5 rounded-full blur-[120px]" />
       <div className="absolute bottom-1/3 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-6 py-8 sm:py-12">
         {/* Back Link */}
         <Link
           to="/cookbooks"
-          className="inline-flex items-center gap-2 text-sm text-platerly-subtle hover:text-platerly-text transition-colors mb-8 focus:outline-none focus:ring-2 focus:ring-platerly-green/40 rounded-lg px-2 py-1 -ml-2"
+          className="inline-flex items-center gap-2 text-sm text-recipzee-subtle hover:text-recipzee-text transition-colors mb-8 focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 rounded-lg px-2 py-1 -ml-2"
         >
           <ArrowLeft className="w-4 h-4" />
           My Cookbooks
@@ -168,12 +168,12 @@ const ExploreCookbooksPage = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-platerly-green/20 flex items-center justify-center">
-              <Globe className="w-6 h-6 text-platerly-green" />
+            <div className="w-12 h-12 rounded-xl bg-recipzee-green/20 flex items-center justify-center">
+              <Globe className="w-6 h-6 text-recipzee-green" />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">Explore Cookbooks</h1>
-              <p className="text-platerly-subtle text-sm mt-0.5">
+              <p className="text-recipzee-subtle text-sm mt-0.5">
                 Discover public cookbooks from the community
               </p>
             </div>
@@ -183,13 +183,13 @@ const ExploreCookbooksPage = () => {
         {/* Search */}
         <div className="mb-8">
           <div className="relative max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-platerly-subtle" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-recipzee-subtle" />
             <input
               type="search"
               value={search}
               onChange={handleSearch}
               placeholder="Search cookbooks..."
-              className="w-full pl-12 pr-4 py-3 rounded-xl bg-platerly-card border border-platerly-border text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/50 focus:border-platerly-green transition"
+              className="w-full pl-12 pr-4 py-3 rounded-xl bg-recipzee-card border border-recipzee-border text-recipzee-text placeholder:text-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/50 focus:border-recipzee-green transition"
             />
           </div>
         </div>
@@ -222,18 +222,18 @@ const ExploreCookbooksPage = () => {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-platerly-border bg-platerly-card hover:bg-platerly-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-recipzee-border bg-recipzee-card hover:bg-recipzee-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   Previous
                 </button>
-                <span className="text-sm text-platerly-subtle">
+                <span className="text-sm text-recipzee-subtle">
                   Page {page} of {totalPages}
                 </span>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-platerly-border bg-platerly-card hover:bg-platerly-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-recipzee-border bg-recipzee-card hover:bg-recipzee-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Next
                   <ChevronRight className="w-4 h-4" />
@@ -242,19 +242,19 @@ const ExploreCookbooksPage = () => {
             )}
           </>
         ) : (
-          <div className="rounded-2xl border border-platerly-border bg-platerly-card/30 p-12 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-platerly-light flex items-center justify-center mx-auto mb-4">
-              <Book className="w-8 h-8 text-platerly-muted" />
+          <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/30 p-12 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-recipzee-light flex items-center justify-center mx-auto mb-4">
+              <Book className="w-8 h-8 text-recipzee-muted" />
             </div>
-            <h3 className="text-lg font-semibold text-platerly-text">No public cookbooks found</h3>
-            <p className="text-sm text-platerly-subtle mt-1 max-w-sm mx-auto">
+            <h3 className="text-lg font-semibold text-recipzee-text">No public cookbooks found</h3>
+            <p className="text-sm text-recipzee-subtle mt-1 max-w-sm mx-auto">
               {search
                 ? "Try a different search term."
                 : "Be the first to share a cookbook with the community!"}
             </p>
             <Link
               to="/cookbooks"
-              className="inline-flex items-center gap-2 mt-6 px-4 py-2 bg-platerly-green text-platerly-dark rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg shadow-platerly-green/20"
+              className="inline-flex items-center gap-2 mt-6 px-4 py-2 bg-recipzee-green text-recipzee-dark rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg shadow-recipzee-green/20"
             >
               Create a Cookbook
             </Link>

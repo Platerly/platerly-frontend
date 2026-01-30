@@ -92,15 +92,15 @@ const CookbookRecipeCard = ({ recipe = {}, cookbookId, onRemove }) => {
     <article
       className={[
         "group relative rounded-2xl overflow-hidden",
-        "border border-platerly-border bg-platerly-card",
-        "hover:border-platerly-green/30 hover:shadow-lg hover:shadow-platerly-green/5",
+        "border border-recipzee-border bg-recipzee-card",
+        "hover:border-recipzee-green/30 hover:shadow-lg hover:shadow-recipzee-green/5",
         "transition-all duration-200",
         "min-h-[44px]",
       ].join(" ")}
     >
       {/* Media (clickable) */}
       <div
-        className="relative w-full aspect-[4/3] bg-platerly-light cursor-pointer"
+        className="relative w-full aspect-[4/3] bg-recipzee-light cursor-pointer"
         onClick={goToRecipe}
         tabIndex={0}
         onKeyDown={handleKeyOpen}
@@ -154,7 +154,7 @@ const CookbookRecipeCard = ({ recipe = {}, cookbookId, onRemove }) => {
       {/* Content (title is clickable, body text is not) */}
       <div className="p-4">
         <h2
-          className="text-base font-semibold text-platerly-text mb-1 line-clamp-2 cursor-pointer group-hover:text-platerly-green transition-colors"
+          className="text-base font-semibold text-recipzee-text mb-1 line-clamp-2 cursor-pointer group-hover:text-recipzee-green transition-colors"
           onClick={goToRecipe}
           tabIndex={0}
           onKeyDown={handleKeyOpen}
@@ -164,9 +164,9 @@ const CookbookRecipeCard = ({ recipe = {}, cookbookId, onRemove }) => {
           {title}
         </h2>
         {desc ? (
-          <p className="text-sm text-platerly-subtle line-clamp-2">{desc}</p>
+          <p className="text-sm text-recipzee-subtle line-clamp-2">{desc}</p>
         ) : (
-          <p className="text-sm text-platerly-subtle/60 italic">No description</p>
+          <p className="text-sm text-recipzee-subtle/60 italic">No description</p>
         )}
       </div>
     </article>

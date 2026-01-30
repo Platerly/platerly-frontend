@@ -9,14 +9,14 @@ const Footer = ({ variant = 'full', className = '' }) => {
 
   return (
     <footer
-      className={`border-t border-white/10 bg-platerly-dark text-sm text-platerly-subtle ${className}`}
+      className={`border-t border-white/10 bg-recipzee-dark text-sm text-recipzee-subtle ${className}`}
       role="contentinfo"
     >
       <div className={`${container} py-8`}>
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           {/* copyright */}
           <p className="text-center sm:text-left text-neutral-400">
-            © {new Date().getFullYear()} <span className="text-white font-medium">Platerly</span>. All rights reserved.
+            © {new Date().getFullYear()} <span className="text-white font-medium">Recipzee</span>. All rights reserved.
           </p>
 
           {/* navigation links */}

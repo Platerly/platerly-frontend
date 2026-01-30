@@ -224,36 +224,36 @@ export default function OnboardingPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-platerly-dark flex items-center justify-center">
-        <div className="text-platerly-muted">Loading...</div>
+      <div className="min-h-screen bg-recipzee-dark flex items-center justify-center">
+        <div className="text-recipzee-muted">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-platerly-dark text-platerly-text flex items-center justify-center px-4 py-10 relative overflow-hidden">
+    <div className="min-h-screen bg-recipzee-dark text-recipzee-text flex items-center justify-center px-4 py-10 relative overflow-hidden">
       {/* Background gradient orbs - hidden on mobile for performance */}
-      <div className="hidden sm:block absolute top-1/4 -left-32 w-80 h-80 bg-platerly-green/10 rounded-full blur-[120px]" />
+      <div className="hidden sm:block absolute top-1/4 -left-32 w-80 h-80 bg-recipzee-green/10 rounded-full blur-[120px]" />
       <div className="hidden sm:block absolute bottom-1/4 -right-32 w-80 h-80 bg-emerald-500/10 rounded-full blur-[120px]" />
 
       <div className="w-full max-w-lg relative z-10">
         {/* Progress indicator */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div className={`w-3 h-3 rounded-full transition-colors ${step >= 1 ? 'bg-platerly-green' : 'bg-platerly-border'}`} />
-          <div className={`w-12 h-0.5 transition-colors ${step >= 2 ? 'bg-platerly-green' : 'bg-platerly-border'}`} />
-          <div className={`w-3 h-3 rounded-full transition-colors ${step >= 2 ? 'bg-platerly-green' : 'bg-platerly-border'}`} />
+          <div className={`w-3 h-3 rounded-full transition-colors ${step >= 1 ? 'bg-recipzee-green' : 'bg-recipzee-border'}`} />
+          <div className={`w-12 h-0.5 transition-colors ${step >= 2 ? 'bg-recipzee-green' : 'bg-recipzee-border'}`} />
+          <div className={`w-3 h-3 rounded-full transition-colors ${step >= 2 ? 'bg-recipzee-green' : 'bg-recipzee-border'}`} />
         </div>
 
-        <div className="bg-platerly-card sm:bg-platerly-card/80 sm:backdrop-blur-md border border-platerly-border rounded-2xl shadow-2xl shadow-black/20 p-6 sm:p-8">
+        <div className="bg-recipzee-card sm:bg-recipzee-card/80 sm:backdrop-blur-md border border-recipzee-border rounded-2xl shadow-2xl shadow-black/20 p-6 sm:p-8">
           {step === 1 ? (
             /* Step 1: Username & Display Name */
             <>
               <div className="text-center mb-8">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-platerly-green/20 flex items-center justify-center">
-                  <User className="w-8 h-8 text-platerly-green" />
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-recipzee-green/20 flex items-center justify-center">
+                  <User className="w-8 h-8 text-recipzee-green" />
                 </div>
-                <h1 className="text-2xl font-bold">Welcome to Platerly!</h1>
-                <p className="text-platerly-subtle mt-2">
+                <h1 className="text-2xl font-bold">Welcome to Recipzee!</h1>
+                <p className="text-recipzee-subtle mt-2">
                   Let's set up your profile
                 </p>
               </div>
@@ -271,7 +271,7 @@ export default function OnboardingPage() {
                         fetchSuggestions()
                       }}
                       disabled={loadingSuggestions}
-                      className="flex items-center gap-1.5 text-xs text-platerly-green hover:text-platerly-green/80 disabled:opacity-50"
+                      className="flex items-center gap-1.5 text-xs text-recipzee-green hover:text-recipzee-green/80 disabled:opacity-50"
                     >
                       <RefreshCw className={`w-3.5 h-3.5 ${loadingSuggestions ? 'animate-spin' : ''}`} />
                       New suggestions
@@ -293,19 +293,19 @@ export default function OnboardingPage() {
                       }
                     }}
                     placeholder="your_username"
-                    className="w-full px-4 py-3 rounded-xl bg-platerly-light border border-platerly-border text-platerly-text placeholder-platerly-muted focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
+                    className="w-full px-4 py-3 rounded-xl bg-recipzee-light border border-recipzee-border text-recipzee-text placeholder-recipzee-muted focus:outline-none focus:ring-2 focus:ring-recipzee-green/40"
                   />
                   {usernameError && (
                     <p className="mt-2 text-sm text-red-400">{usernameError}</p>
                   )}
                   {checkingUsername && (
-                    <p className="mt-2 text-sm text-platerly-subtle">Checking availability...</p>
+                    <p className="mt-2 text-sm text-recipzee-subtle">Checking availability...</p>
                   )}
 
                   {/* Username suggestions */}
                   {suggestions.length > 0 && (
                     <div className="mt-3">
-                      <p className="text-xs text-platerly-muted mb-2">Or pick one of these:</p>
+                      <p className="text-xs text-recipzee-muted mb-2">Or pick one of these:</p>
                       <div className="flex flex-wrap gap-2">
                         {suggestions.slice(0, 5).map((suggestion) => (
                           <button
@@ -318,8 +318,8 @@ export default function OnboardingPage() {
                             }}
                             className={`px-3 py-1.5 text-sm rounded-lg border transition-all ${
                               username === suggestion
-                                ? 'bg-platerly-green/20 border-platerly-green text-platerly-green'
-                                : 'bg-platerly-light border-platerly-border hover:border-platerly-green/50 text-platerly-text'
+                                ? 'bg-recipzee-green/20 border-recipzee-green text-recipzee-green'
+                                : 'bg-recipzee-light border-recipzee-border hover:border-recipzee-green/50 text-recipzee-text'
                             }`}
                           >
                             {suggestion}
@@ -329,8 +329,8 @@ export default function OnboardingPage() {
                     </div>
                   )}
 
-                  <p className="mt-3 text-xs text-platerly-muted">
-                    This will be your unique @handle on Platerly
+                  <p className="mt-3 text-xs text-recipzee-muted">
+                    This will be your unique @handle on Recipzee
                   </p>
                 </div>
 
@@ -343,9 +343,9 @@ export default function OnboardingPage() {
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="Your Name"
-                    className="w-full px-4 py-3 rounded-xl bg-platerly-light border border-platerly-border text-platerly-text placeholder-platerly-muted focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
+                    className="w-full px-4 py-3 rounded-xl bg-recipzee-light border border-recipzee-border text-recipzee-text placeholder-recipzee-muted focus:outline-none focus:ring-2 focus:ring-recipzee-green/40"
                   />
-                  <p className="mt-2 text-xs text-platerly-muted">
+                  <p className="mt-2 text-xs text-recipzee-muted">
                     This is how your name will appear on your recipes
                   </p>
                 </div>
@@ -353,7 +353,7 @@ export default function OnboardingPage() {
                 <button
                   onClick={handleUsernameStep}
                   disabled={loading || checkingUsername || !username || usernameError}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-platerly-green text-platerly-dark font-semibold hover:opacity-90 disabled:opacity-50 transition-all"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-recipzee-green text-recipzee-dark font-semibold hover:opacity-90 disabled:opacity-50 transition-all"
                 >
                   {loading ? 'Saving...' : 'Continue'}
                   <ChevronRight className="w-5 h-5" />
@@ -368,7 +368,7 @@ export default function OnboardingPage() {
                   <AlertTriangle className="w-8 h-8 text-amber-400" />
                 </div>
                 <h1 className="text-2xl font-bold">Any food allergies?</h1>
-                <p className="text-platerly-subtle mt-2">
+                <p className="text-recipzee-subtle mt-2">
                   We'll warn you about recipes with these ingredients
                 </p>
               </div>
@@ -380,17 +380,17 @@ export default function OnboardingPage() {
                     onClick={() => toggleAllergen(allergen.name)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
                       selectedAllergens.includes(allergen.name)
-                        ? 'bg-platerly-green/20 border-platerly-green text-platerly-green'
-                        : 'bg-platerly-light border-platerly-border hover:border-platerly-green/30'
+                        ? 'bg-recipzee-green/20 border-recipzee-green text-recipzee-green'
+                        : 'bg-recipzee-light border-recipzee-border hover:border-recipzee-green/30'
                     }`}
                   >
                     <div className={`w-5 h-5 rounded flex items-center justify-center border-2 shrink-0 ${
                       selectedAllergens.includes(allergen.name)
-                        ? 'bg-platerly-green border-platerly-green'
-                        : 'border-platerly-border'
+                        ? 'bg-recipzee-green border-recipzee-green'
+                        : 'border-recipzee-border'
                     }`}>
                       {selectedAllergens.includes(allergen.name) && (
-                        <Check className="w-3 h-3 text-platerly-dark" />
+                        <Check className="w-3 h-3 text-recipzee-dark" />
                       )}
                     </div>
                     <span className="text-sm font-medium">{allergen.label}</span>
@@ -402,7 +402,7 @@ export default function OnboardingPage() {
                 <button
                   onClick={handleAllergiesStep}
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-platerly-green text-platerly-dark font-semibold hover:opacity-90 disabled:opacity-50 transition-all"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-recipzee-green text-recipzee-dark font-semibold hover:opacity-90 disabled:opacity-50 transition-all"
                 >
                   {loading ? 'Saving...' : selectedAllergens.length > 0 ? 'Save & Continue' : 'Continue'}
                   <ChevronRight className="w-5 h-5" />
@@ -410,12 +410,12 @@ export default function OnboardingPage() {
 
                 <button
                   onClick={skipAllergies}
-                  className="w-full px-6 py-3 rounded-xl text-platerly-subtle hover:text-platerly-text transition-colors"
+                  className="w-full px-6 py-3 rounded-xl text-recipzee-subtle hover:text-recipzee-text transition-colors"
                 >
                   Skip for now
                 </button>
 
-                <p className="text-xs text-center text-platerly-muted">
+                <p className="text-xs text-center text-recipzee-muted">
                   You can always update this in Settings
                 </p>
               </div>

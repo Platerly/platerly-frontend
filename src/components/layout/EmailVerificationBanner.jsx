@@ -81,10 +81,10 @@ const EmailVerificationBanner = () => {
 
   return (
     <div className="mx-auto max-w-4xl my-3 px-4">
-      <div className="flex items-start gap-3 rounded-xl border border-platerly-light bg-platerly-card p-3 sm:p-4">
+      <div className="flex items-start gap-3 rounded-xl border border-recipzee-light bg-recipzee-card p-3 sm:p-4">
         <div className="flex-1 text-sm">
-          <div className="font-medium mb-1">Verify your email to unlock all Platerly features.</div>
-          <div className="text-platerly-subtle">
+          <div className="font-medium mb-1">Verify your email to unlock all Recipzee features.</div>
+          <div className="text-recipzee-subtle">
             We sent a link to <b>{user?.email}</b>. Didn’t get it?
           </div>
         </div>
@@ -92,13 +92,13 @@ const EmailVerificationBanner = () => {
           <button
             onClick={handleResend}
             disabled={sending}
-            className="rounded-md bg-platerly-green text-platerly-dark px-3 py-1.5 text-sm font-medium hover:opacity-90 disabled:opacity-60"
+            className="rounded-md bg-recipzee-green text-recipzee-dark px-3 py-1.5 text-sm font-medium hover:opacity-90 disabled:opacity-60"
           >
             {sending ? 'Sending…' : 'Resend verification'}
           </button>
           <button
             onClick={() => setDismissed(true)}
-            className="rounded-md px-2 py-1.5 text-sm text-platerly-subtle hover:text-platerly-text hover:bg-white/5"
+            className="rounded-md px-2 py-1.5 text-sm text-recipzee-subtle hover:text-recipzee-text hover:bg-white/5"
           >
             ✕
           </button>

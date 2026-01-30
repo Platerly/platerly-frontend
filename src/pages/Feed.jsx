@@ -9,11 +9,11 @@ import { logger } from '../utils/logger'
 const PAGE_SIZE = 20
 
 const SkeletonPost = () => (
-  <div className="rounded-xl bg-platerly-card border border-platerly-light p-4 animate-pulse">
-    <div className="w-full h-40 rounded-lg bg-platerly-light/40 mb-4" />
-    <div className="h-4 w-2/3 bg-platerly-light/60 rounded mb-2" />
-    <div className="h-3 w-1/2 bg-platerly-light/40 rounded mb-2" />
-    <div className="h-3 w-3/4 bg-platerly-light/30 rounded" />
+  <div className="rounded-xl bg-recipzee-card border border-recipzee-light p-4 animate-pulse">
+    <div className="w-full h-40 rounded-lg bg-recipzee-light/40 mb-4" />
+    <div className="h-4 w-2/3 bg-recipzee-light/60 rounded mb-2" />
+    <div className="h-3 w-1/2 bg-recipzee-light/40 rounded mb-2" />
+    <div className="h-3 w-3/4 bg-recipzee-light/30 rounded" />
   </div>
 )
 
@@ -260,16 +260,16 @@ const Feed = () => {
   const renderList = tab === 'following' ? filteredFollowing : recipes
 
   return (
-    <div className="flex flex-col bg-platerly-dark text-platerly-text min-h-screen">
+    <div className="flex flex-col bg-recipzee-dark text-recipzee-text min-h-screen">
       {/* Sticky tabs */}
-      <div className="sticky top-0 z-20 bg-platerly-dark/95 backdrop-blur py-3 border-b border-platerly-light">
+      <div className="sticky top-0 z-20 bg-recipzee-dark/95 backdrop-blur py-3 border-b border-recipzee-light">
         <div className="max-w-4xl mx-auto px-4 flex justify-center gap-2 sm:gap-4">
           <button
             onClick={goExplore}
-            className={`px-5 sm:px-6 py-2.5 sm:py-2 rounded-full text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-platerly-green/40 active:scale-95
+            className={`px-5 sm:px-6 py-2.5 sm:py-2 rounded-full text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 active:scale-95
               ${tab === 'explore'
-                ? 'bg-platerly-green text-platerly-dark shadow'
-                : 'bg-platerly-card text-platerly-subtle active:bg-platerly-light'}`}
+                ? 'bg-recipzee-green text-recipzee-dark shadow'
+                : 'bg-recipzee-card text-recipzee-subtle active:bg-recipzee-light'}`}
           >
             Explore
           </button>
@@ -277,10 +277,10 @@ const Feed = () => {
           {authed && (
             <button
               onClick={goFollowing}
-              className={`px-5 sm:px-6 py-2.5 sm:py-2 rounded-full text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-platerly-green/40 active:scale-95
+              className={`px-5 sm:px-6 py-2.5 sm:py-2 rounded-full text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 active:scale-95
                 ${tab === 'following'
-                  ? 'bg-platerly-green text-platerly-dark shadow'
-                  : 'bg-platerly-card text-platerly-subtle active:bg-platerly-light'}`}
+                  ? 'bg-recipzee-green text-recipzee-dark shadow'
+                  : 'bg-recipzee-card text-recipzee-subtle active:bg-recipzee-light'}`}
             >
               Following
             </button>
@@ -297,8 +297,8 @@ const Feed = () => {
               onClick={() => updateParams({ recipeType: type || undefined })}
               className={`px-4 py-2 rounded-full text-sm font-medium transition active:scale-95
                 ${recipeType === type || (!recipeType && !type)
-                  ? 'bg-platerly-green text-platerly-dark'
-                  : 'bg-platerly-card text-platerly-subtle active:bg-platerly-light'}`}
+                  ? 'bg-recipzee-green text-recipzee-dark'
+                  : 'bg-recipzee-card text-recipzee-subtle active:bg-recipzee-light'}`}
             >
               {type || 'All'}
             </button>
@@ -315,11 +315,11 @@ const Feed = () => {
         )}
 
         {!loading && !authLoading && error && (
-          <div className="rounded-xl border border-platerly-light bg-platerly-card p-6 text-center">
-            <p className="text-platerly-subtle">{error}</p>
+          <div className="rounded-xl border border-recipzee-light bg-recipzee-card p-6 text-center">
+            <p className="text-recipzee-subtle">{error}</p>
             <button
               onClick={fetchFeed}
-              className="mt-4 inline-flex items-center rounded-md bg-platerly-green text-platerly-dark px-4 py-2 hover:opacity-90"
+              className="mt-4 inline-flex items-center rounded-md bg-recipzee-green text-recipzee-dark px-4 py-2 hover:opacity-90"
             >
               Try again
             </button>
@@ -327,8 +327,8 @@ const Feed = () => {
         )}
 
         {!loading && !authLoading && !error && renderList.length === 0 && (
-          <div className="rounded-xl border border-platerly-light bg-platerly-card p-6 text-center">
-            <p className="text-platerly-subtle">No recipes found.</p>
+          <div className="rounded-xl border border-recipzee-light bg-recipzee-card p-6 text-center">
+            <p className="text-recipzee-subtle">No recipes found.</p>
           </div>
         )}
 
@@ -377,14 +377,14 @@ const Feed = () => {
         {!loading && !authLoading && !error && renderList.length > 0 && (
           <div ref={loaderRef} className="py-8 flex justify-center">
             {loadingMore ? (
-              <div className="flex items-center gap-2 text-platerly-subtle">
-                <div className="w-5 h-5 border-2 border-platerly-green border-t-transparent rounded-full animate-spin" />
+              <div className="flex items-center gap-2 text-recipzee-subtle">
+                <div className="w-5 h-5 border-2 border-recipzee-green border-t-transparent rounded-full animate-spin" />
                 <span className="text-sm">Loading more...</span>
               </div>
             ) : hasMore ? (
               <div className="h-10" />
             ) : (
-              <p className="text-sm text-platerly-subtle">You've reached the end</p>
+              <p className="text-sm text-recipzee-subtle">You've reached the end</p>
             )}
           </div>
         )}

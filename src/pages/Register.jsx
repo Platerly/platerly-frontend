@@ -127,18 +127,18 @@ const Register = () => {
   }
 
   return (
-    <div className="min-h-[100svh] bg-platerly-dark text-platerly-text flex items-center justify-center px-4 py-10 relative overflow-hidden">
+    <div className="min-h-[100svh] bg-recipzee-dark text-recipzee-text flex items-center justify-center px-4 py-10 relative overflow-hidden">
       {/* Background gradient orbs - hidden on mobile for performance */}
-      <div className="hidden sm:block absolute top-1/4 -right-32 w-80 h-80 bg-platerly-green/10 rounded-full blur-[120px]" />
+      <div className="hidden sm:block absolute top-1/4 -right-32 w-80 h-80 bg-recipzee-green/10 rounded-full blur-[120px]" />
       <div className="hidden sm:block absolute bottom-1/4 -left-32 w-80 h-80 bg-emerald-500/10 rounded-full blur-[120px]" />
 
       <div className="w-full max-w-md relative z-10">
-        <div className="bg-platerly-card sm:bg-platerly-card/80 sm:backdrop-blur-md border border-platerly-border rounded-2xl shadow-2xl shadow-black/20 p-6 sm:p-8">
+        <div className="bg-recipzee-card sm:bg-recipzee-card/80 sm:backdrop-blur-md border border-recipzee-border rounded-2xl shadow-2xl shadow-black/20 p-6 sm:p-8">
           <div className="text-center mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              Join <span className="text-platerly-accent">Platerly</span>
+              Join <span className="text-recipzee-accent">Recipzee</span>
             </h1>
-            <p className="text-sm text-platerly-muted mt-2">One click to get started</p>
+            <p className="text-sm text-recipzee-muted mt-2">One click to get started</p>
           </div>
 
           {/* Social Login - Primary Option */}
@@ -171,7 +171,7 @@ const Register = () => {
             <button
               type="button"
               onClick={() => setShowEmailForm(!showEmailForm)}
-              className="w-full flex items-center justify-center gap-2 py-3 text-sm text-platerly-muted hover:text-platerly-text transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 text-sm text-recipzee-muted hover:text-recipzee-text transition-colors"
             >
               <span>Or use email instead</span>
               {showEmailForm ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -226,12 +226,12 @@ const Register = () => {
                         className={`h-1 flex-1 rounded-full transition-colors ${
                           i < getPasswordStrength(form.password).score
                             ? getPasswordStrength(form.password).color
-                            : 'bg-platerly-border'
+                            : 'bg-recipzee-border'
                         }`}
                       />
                     ))}
                   </div>
-                  <p className="text-xs text-platerly-muted">
+                  <p className="text-xs text-recipzee-muted">
                     {getPasswordStrength(form.password).label}
                     {getPasswordStrength(form.password).score < 3 && (
                       <span className="ml-1">— Try adding uppercase, numbers, or symbols</span>
@@ -259,13 +259,13 @@ const Register = () => {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-platerly-muted mt-6">
+          <p className="text-center text-sm text-recipzee-muted mt-6">
             Already have an account?{' '}
-            <Link to="/login" className="text-platerly-accent hover:underline">Log in</Link>
+            <Link to="/login" className="text-recipzee-accent hover:underline">Log in</Link>
           </p>
         </div>
 
-        <p className="text-center text-xs text-platerly-muted mt-4">
+        <p className="text-center text-xs text-recipzee-muted mt-4">
           By signing up, you agree to our{' '}
           <Link to="/terms" className="underline hover:no-underline">Terms</Link> &{' '}
           <Link to="/privacy" className="underline hover:no-underline">Privacy</Link>.

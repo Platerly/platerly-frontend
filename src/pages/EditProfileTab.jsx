@@ -153,13 +153,13 @@ const EditProfileTab = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 text-platerly-text">
-      <div className="bg-platerly-card/80 backdrop-blur-sm border border-platerly-border rounded-2xl p-4 sm:p-6 space-y-6">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 text-recipzee-text">
+      <div className="bg-recipzee-card/80 backdrop-blur-sm border border-recipzee-border rounded-2xl p-4 sm:p-6 space-y-6">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-platerly-green/20 flex items-center justify-center">
-            <User className="w-5 h-5 text-platerly-green" />
+          <div className="w-10 h-10 rounded-xl bg-recipzee-green/20 flex items-center justify-center">
+            <User className="w-5 h-5 text-recipzee-green" />
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-platerly-text">Edit Profile</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-recipzee-text">Edit Profile</h2>
         </div>
 
         {errorText && (
@@ -168,7 +168,7 @@ const EditProfileTab = () => {
           </div>
         )}
         {successMessage && (
-          <div className="text-sm text-platerly-green bg-platerly-green/10 border border-platerly-green/20 rounded-xl p-3">
+          <div className="text-sm text-recipzee-green bg-recipzee-green/10 border border-recipzee-green/20 rounded-xl p-3">
             {successMessage}
           </div>
         )}
@@ -179,18 +179,18 @@ const EditProfileTab = () => {
               <img
                 src={preview}
                 alt="Profile preview"
-                className="h-24 w-24 sm:h-28 sm:w-28 object-cover rounded-2xl border-2 border-platerly-border group-hover:border-platerly-green/30 transition-colors"
+                className="h-24 w-24 sm:h-28 sm:w-28 object-cover rounded-2xl border-2 border-recipzee-border group-hover:border-recipzee-green/30 transition-colors"
                 loading="lazy"
               />
             ) : (
-              <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl bg-platerly-light border-2 border-platerly-border group-hover:border-platerly-green/30 transition-colors grid place-items-center text-platerly-subtle">
+              <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl bg-recipzee-light border-2 border-recipzee-border group-hover:border-recipzee-green/30 transition-colors grid place-items-center text-recipzee-subtle">
                 <User className="w-10 h-10" />
               </div>
             )}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-platerly-green text-platerly-dark flex items-center justify-center shadow-lg shadow-platerly-green/20 hover:opacity-90 transition-opacity"
+              className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-recipzee-green text-recipzee-dark flex items-center justify-center shadow-lg shadow-recipzee-green/20 hover:opacity-90 transition-opacity"
               aria-label="Change profile picture"
             >
               <Camera className="w-4 h-4" />
@@ -198,15 +198,15 @@ const EditProfileTab = () => {
           </div>
 
           <div className="flex-1">
-            <label className="block text-sm font-medium text-platerly-text mb-1">Profile Picture</label>
+            <label className="block text-sm font-medium text-recipzee-text mb-1">Profile Picture</label>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              className="block w-full text-sm text-platerly-subtle file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-platerly-green file:text-platerly-dark hover:file:opacity-90 file:transition-opacity file:cursor-pointer"
+              className="block w-full text-sm text-recipzee-subtle file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-recipzee-green file:text-recipzee-dark hover:file:opacity-90 file:transition-opacity file:cursor-pointer"
             />
-            <p className="mt-1 text-xs text-platerly-muted">JPG/PNG/WebP, up to {MAX_IMG_MB} MB.</p>
+            <p className="mt-1 text-xs text-recipzee-muted">JPG/PNG/WebP, up to {MAX_IMG_MB} MB.</p>
           </div>
         </div>
 
@@ -231,7 +231,7 @@ const EditProfileTab = () => {
           <Button size="lg" onClick={handleSave} disabled={loading} className="min-h-[44px]">
             {loading ? 'Saving…' : 'Save Changes'}
           </Button>
-          {loading && <span className="text-sm text-platerly-subtle" aria-live="polite">Updating…</span>}
+          {loading && <span className="text-sm text-recipzee-subtle" aria-live="polite">Updating…</span>}
         </div>
       </div>
     </div>

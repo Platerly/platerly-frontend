@@ -66,24 +66,24 @@ function BottomSheet({ open, onClose, title, icon: Icon, children }) {
         ref={sheetRef}
         role="dialog"
         aria-modal="true"
-        className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-3xl border-t border-platerly-border bg-platerly-card p-5 shadow-2xl animate-[slide-up_180ms_ease-out]"
+        className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-3xl border-t border-recipzee-border bg-recipzee-card p-5 shadow-2xl animate-[slide-up_180ms_ease-out]"
       >
         {/* Handle bar */}
-        <div className="w-10 h-1 rounded-full bg-platerly-border mx-auto mb-4" />
+        <div className="w-10 h-1 rounded-full bg-recipzee-border mx-auto mb-4" />
 
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {Icon && (
-              <div className="w-10 h-10 rounded-xl bg-platerly-green/20 flex items-center justify-center">
-                <Icon className="w-5 h-5 text-platerly-green" />
+              <div className="w-10 h-10 rounded-xl bg-recipzee-green/20 flex items-center justify-center">
+                <Icon className="w-5 h-5 text-recipzee-green" />
               </div>
             )}
-            <h3 className="text-lg font-semibold text-platerly-text">{title}</h3>
+            <h3 className="text-lg font-semibold text-recipzee-text">{title}</h3>
           </div>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-platerly-subtle hover:bg-platerly-light hover:text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 transition-colors"
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-recipzee-subtle hover:bg-recipzee-light hover:text-recipzee-text focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -247,8 +247,8 @@ const RightColumn = () => {
   /* ---------- shared UI blocks ---------- */
   const SearchBox = (
     <form onSubmit={handleSearchSubmit} className="relative" role="search">
-      <div className="flex items-center gap-3 rounded-xl border border-platerly-border bg-platerly-light/50 px-4 py-3 transition-all duration-200 focus-within:border-platerly-green/40 focus-within:ring-2 focus-within:ring-platerly-green/20 focus-within:bg-platerly-light">
-        <Search className="h-5 w-5 text-platerly-subtle shrink-0" />
+      <div className="flex items-center gap-3 rounded-xl border border-recipzee-border bg-recipzee-light/50 px-4 py-3 transition-all duration-200 focus-within:border-recipzee-green/40 focus-within:ring-2 focus-within:ring-recipzee-green/20 focus-within:bg-recipzee-light">
+        <Search className="h-5 w-5 text-recipzee-subtle shrink-0" />
         <input
           type="text"
           placeholder="Search recipes or users..."
@@ -256,24 +256,24 @@ const RightColumn = () => {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query && setShowDropdown(true)}
           onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-          className="w-full bg-transparent text-sm text-platerly-text placeholder-platerly-subtle focus:outline-none"
+          className="w-full bg-transparent text-sm text-recipzee-text placeholder-recipzee-subtle focus:outline-none"
           aria-label="Search recipes or users"
         />
       </div>
       {showDropdown && (
         <div
-          className="absolute top-14 left-0 right-0 z-50 max-h-80 overflow-y-auto rounded-xl border border-platerly-border bg-platerly-card shadow-xl shadow-black/20"
+          className="absolute top-14 left-0 right-0 z-50 max-h-80 overflow-y-auto rounded-xl border border-recipzee-border bg-recipzee-card shadow-xl shadow-black/20"
           role="listbox"
         >
           {loadingSearch ? (
             <div className="p-6 text-center">
-              <div className="w-6 h-6 border-2 border-platerly-green/30 border-t-platerly-green rounded-full animate-spin mx-auto mb-2" />
-              <p className="text-sm text-platerly-subtle">Searching...</p>
+              <div className="w-6 h-6 border-2 border-recipzee-green/30 border-t-recipzee-green rounded-full animate-spin mx-auto mb-2" />
+              <p className="text-sm text-recipzee-subtle">Searching...</p>
             </div>
           ) : suggestions.length === 0 ? (
             <div className="p-6 text-center">
-              <Search className="w-8 h-8 text-platerly-subtle mx-auto mb-2" />
-              <p className="text-sm text-platerly-subtle">No results found</p>
+              <Search className="w-8 h-8 text-recipzee-subtle mx-auto mb-2" />
+              <p className="text-sm text-recipzee-subtle">No results found</p>
             </div>
           ) : (
             <ul className="py-2">
@@ -282,27 +282,27 @@ const RightColumn = () => {
                   <button
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleSelect(item)}
-                    className="flex items-center gap-3 w-full px-4 py-3 text-left text-sm hover:bg-platerly-green/10 transition-colors"
+                    className="flex items-center gap-3 w-full px-4 py-3 text-left text-sm hover:bg-recipzee-green/10 transition-colors"
                     role="option"
                   >
                     {item.type === 'user' ? (
                       <>
-                        <div className="w-8 h-8 rounded-lg bg-platerly-light flex items-center justify-center text-platerly-subtle">
+                        <div className="w-8 h-8 rounded-lg bg-recipzee-light flex items-center justify-center text-recipzee-subtle">
                           👤
                         </div>
                         <div>
-                          <div className="text-platerly-text font-medium">
+                          <div className="text-recipzee-text font-medium">
                             @<Highlight text={item.username} query={query} />
                           </div>
-                          <div className="text-xs text-platerly-subtle">{item.displayName}</div>
+                          <div className="text-xs text-recipzee-subtle">{item.displayName}</div>
                         </div>
                       </>
                     ) : (
                       <>
-                        <div className="w-8 h-8 rounded-lg bg-platerly-light flex items-center justify-center text-platerly-subtle">
+                        <div className="w-8 h-8 rounded-lg bg-recipzee-light flex items-center justify-center text-recipzee-subtle">
                           🍽️
                         </div>
-                        <div className="text-platerly-text font-medium">
+                        <div className="text-recipzee-text font-medium">
                           <Highlight text={item.title} query={query} />
                         </div>
                       </>
@@ -318,22 +318,22 @@ const RightColumn = () => {
   )
 
   const Filters = authed && (
-    <div className="rounded-2xl border border-platerly-border bg-platerly-card/60 backdrop-blur-sm p-5">
+    <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/60 backdrop-blur-sm p-5">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 rounded-xl bg-platerly-green/15 flex items-center justify-center">
-          <SlidersHorizontal className="w-4 h-4 text-platerly-green" />
+        <div className="w-9 h-9 rounded-xl bg-recipzee-green/15 flex items-center justify-center">
+          <SlidersHorizontal className="w-4 h-4 text-recipzee-green" />
         </div>
-        <h3 className="text-sm font-semibold text-platerly-text">Refine Feed</h3>
+        <h3 className="text-sm font-semibold text-recipzee-text">Refine Feed</h3>
       </div>
 
       <div className="space-y-4 text-sm">
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-platerly-subtle">Difficulty</label>
+          <label className="mb-1.5 block text-xs font-medium text-recipzee-subtle">Difficulty</label>
           <select
             value={difficulty}
             onChange={handleDifficulty}
-            className="w-full rounded-xl border border-platerly-border bg-platerly-light px-3 py-2.5 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green/50 transition-all"
+            className="w-full rounded-xl border border-recipzee-border bg-recipzee-light px-3 py-2.5 text-recipzee-text focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 focus:border-recipzee-green/50 transition-all"
           >
             <option value="any">Any</option>
             <option value="easy">Easy</option>
@@ -343,30 +343,30 @@ const RightColumn = () => {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-platerly-subtle">Tags (comma-separated)</label>
+          <label className="mb-1.5 block text-xs font-medium text-recipzee-subtle">Tags (comma-separated)</label>
           <input
             type="text"
             value={tags}
             onChange={handleTags}
             placeholder="vegan, low nickel"
-            className="w-full rounded-xl border border-platerly-border bg-platerly-light px-3 py-2.5 text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green/50 transition-all"
+            className="w-full rounded-xl border border-recipzee-border bg-recipzee-light px-3 py-2.5 text-recipzee-text placeholder:text-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 focus:border-recipzee-green/50 transition-all"
           />
         </div>
 
         <div className="space-y-2.5 pt-1">
           <label className="flex items-center gap-3 cursor-pointer group">
-            <input type="checkbox" checked={requireAllTags} onChange={handleRequireAll} className="w-4 h-4 rounded border-platerly-border text-platerly-green focus:ring-platerly-green/40" />
-            <span className="text-platerly-text/90 group-hover:text-platerly-text transition-colors">Require all tags</span>
+            <input type="checkbox" checked={requireAllTags} onChange={handleRequireAll} className="w-4 h-4 rounded border-recipzee-border text-recipzee-green focus:ring-recipzee-green/40" />
+            <span className="text-recipzee-text/90 group-hover:text-recipzee-text transition-colors">Require all tags</span>
           </label>
 
           <label className="flex items-center gap-3 cursor-pointer group">
-            <input type="checkbox" checked={hideRemixes} onChange={handleHideRemixes} className="w-4 h-4 rounded border-platerly-border text-platerly-green focus:ring-platerly-green/40" />
-            <span className="text-platerly-text/90 group-hover:text-platerly-text transition-colors">Hide remixes</span>
+            <input type="checkbox" checked={hideRemixes} onChange={handleHideRemixes} className="w-4 h-4 rounded border-recipzee-border text-recipzee-green focus:ring-recipzee-green/40" />
+            <span className="text-recipzee-text/90 group-hover:text-recipzee-text transition-colors">Hide remixes</span>
           </label>
 
           <label className="flex items-center gap-3 cursor-pointer group">
-            <input type="checkbox" checked={hideMyAllergens} onChange={handleHideAllergens} className="w-4 h-4 rounded border-platerly-border text-platerly-green focus:ring-platerly-green/40" />
-            <span className="text-platerly-text/90 group-hover:text-platerly-text transition-colors">Hide my allergens</span>
+            <input type="checkbox" checked={hideMyAllergens} onChange={handleHideAllergens} className="w-4 h-4 rounded border-recipzee-border text-recipzee-green focus:ring-recipzee-green/40" />
+            <span className="text-recipzee-text/90 group-hover:text-recipzee-text transition-colors">Hide my allergens</span>
           </label>
         </div>
       </div>
@@ -376,13 +376,13 @@ const RightColumn = () => {
   const periodLabels = { today: 'Today', week: 'Week', month: 'Month' }
 
   const Trending = (
-    <div className="rounded-2xl border border-platerly-border bg-platerly-card/60 backdrop-blur-sm p-5">
+    <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/60 backdrop-blur-sm p-5">
       {/* Header */}
       <div className="flex items-center gap-3 mb-3">
         <div className="w-9 h-9 rounded-xl bg-orange-500/15 flex items-center justify-center">
           <Flame className="w-4 h-4 text-orange-400" />
         </div>
-        <h3 className="text-sm font-semibold text-platerly-text">Trending Now</h3>
+        <h3 className="text-sm font-semibold text-recipzee-text">Trending Now</h3>
       </div>
 
       {/* Period Tabs */}
@@ -394,8 +394,8 @@ const RightColumn = () => {
             className={classNames(
               'flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors',
               trendingPeriod === p
-                ? 'bg-platerly-green text-platerly-dark'
-                : 'bg-platerly-light text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light/80'
+                ? 'bg-recipzee-green text-recipzee-dark'
+                : 'bg-recipzee-light text-recipzee-subtle hover:text-recipzee-text hover:bg-recipzee-light/80'
             )}
           >
             {periodLabels[p]}
@@ -408,10 +408,10 @@ const RightColumn = () => {
           {[...Array(5)].map((_, i) => (
             <li key={i} className="animate-pulse">
               <div className="flex items-center gap-3">
-                <div className="h-14 w-14 rounded-xl bg-platerly-light shrink-0" />
+                <div className="h-14 w-14 rounded-xl bg-recipzee-light shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 w-3/4 rounded-lg bg-platerly-light" />
-                  <div className="h-3 w-1/2 rounded-lg bg-platerly-light/70" />
+                  <div className="h-4 w-3/4 rounded-lg bg-recipzee-light" />
+                  <div className="h-3 w-1/2 rounded-lg bg-recipzee-light/70" />
                 </div>
               </div>
             </li>
@@ -432,11 +432,11 @@ const RightColumn = () => {
               <li key={it.id}>
                 <button
                   onClick={() => navigate(`/recipe/${it.id}`)}
-                  className="group w-full text-left p-2 -mx-2 rounded-xl hover:bg-platerly-light/50 transition-colors"
+                  className="group w-full text-left p-2 -mx-2 rounded-xl hover:bg-recipzee-light/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     {/* thumb */}
-                    <div className="relative h-14 w-14 overflow-hidden rounded-xl border border-platerly-border shrink-0 group-hover:border-platerly-green/30 transition-colors">
+                    <div className="relative h-14 w-14 overflow-hidden rounded-xl border border-recipzee-border shrink-0 group-hover:border-recipzee-green/30 transition-colors">
                       {it.imageUrl ? (
                         <img
                           src={it.imageUrl}
@@ -445,8 +445,8 @@ const RightColumn = () => {
                           loading="lazy"
                         />
                       ) : (
-                        <div className="h-full w-full bg-platerly-light flex items-center justify-center">
-                          <Flame className="w-5 h-5 text-platerly-subtle" />
+                        <div className="h-full w-full bg-recipzee-light flex items-center justify-center">
+                          <Flame className="w-5 h-5 text-recipzee-subtle" />
                         </div>
                       )}
                       <span className="absolute left-1 top-1 rounded-md bg-gradient-to-r from-orange-500 to-amber-500 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
@@ -456,14 +456,14 @@ const RightColumn = () => {
 
                     {/* text */}
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-semibold text-platerly-text group-hover:text-platerly-green transition-colors">
+                      <div className="truncate text-sm font-semibold text-recipzee-text group-hover:text-recipzee-green transition-colors">
                         {it.title}
                       </div>
-                      <div className="mt-0.5 text-xs text-platerly-subtle">
-                        by <span className="font-medium text-platerly-text/80">{it.username}</span>
+                      <div className="mt-0.5 text-xs text-recipzee-subtle">
+                        by <span className="font-medium text-recipzee-text/80">{it.username}</span>
                       </div>
                       {/* Engagement metrics */}
-                      <div className="mt-1 flex items-center gap-3 text-xs text-platerly-subtle">
+                      <div className="mt-1 flex items-center gap-3 text-xs text-recipzee-subtle">
                         {it.likeCount > 0 && (
                           <span className="flex items-center gap-1">
                             <Heart className="w-3 h-3" />
@@ -486,7 +486,7 @@ const RightColumn = () => {
           </ul>
           <button
             onClick={() => navigate('/trending')}
-            className="w-full mt-4 py-2 text-sm font-medium text-platerly-subtle hover:text-orange-400 transition-colors flex items-center justify-center gap-1.5"
+            className="w-full mt-4 py-2 text-sm font-medium text-recipzee-subtle hover:text-orange-400 transition-colors flex items-center justify-center gap-1.5"
           >
             View all trending
             <ChevronRight className="w-4 h-4" />
@@ -498,14 +498,14 @@ const RightColumn = () => {
 
   // Trending Ingredients (Premium Feature)
   const TrendingIngredients = authed && (
-    <div className="rounded-2xl border border-platerly-border bg-platerly-card/60 backdrop-blur-sm p-5 relative overflow-hidden">
+    <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/60 backdrop-blur-sm p-5 relative overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
         <div className="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center">
           <Carrot className="w-4 h-4 text-emerald-400" />
         </div>
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-platerly-text">Trending Ingredients</h3>
+          <h3 className="text-sm font-semibold text-recipzee-text">Trending Ingredients</h3>
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-[10px] font-bold text-amber-400 border border-amber-500/20">
             <Sparkles className="w-2.5 h-2.5" />
             PRO
@@ -520,8 +520,8 @@ const RightColumn = () => {
             <div className="space-y-2">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="animate-pulse flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-platerly-light" />
-                  <div className="flex-1 h-4 rounded bg-platerly-light" />
+                  <div className="w-8 h-8 rounded-lg bg-recipzee-light" />
+                  <div className="flex-1 h-4 rounded bg-recipzee-light" />
                 </div>
               ))}
             </div>
@@ -534,15 +534,15 @@ const RightColumn = () => {
           {!tiLoading && !tiError && trendingIngredients.length > 0 && (
             <ul className="space-y-2">
               {trendingIngredients.map((ing, idx) => (
-                <li key={idx} className="flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-platerly-light/50 transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-platerly-light flex items-center justify-center text-lg">
+                <li key={idx} className="flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-recipzee-light/50 transition-colors">
+                  <div className="w-8 h-8 rounded-lg bg-recipzee-light flex items-center justify-center text-lg">
                     🥬
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-platerly-text truncate capitalize">
+                    <div className="text-sm font-medium text-recipzee-text truncate capitalize">
                       {ing.ingredient}
                     </div>
-                    <div className="text-xs text-platerly-subtle">
+                    <div className="text-xs text-recipzee-subtle">
                       {ing.recipeCount} recipe{ing.recipeCount !== 1 ? 's' : ''}
                     </div>
                   </div>
@@ -557,7 +557,7 @@ const RightColumn = () => {
             </ul>
           )}
           {!tiLoading && !tiError && trendingIngredients.length === 0 && (
-            <p className="text-sm text-platerly-subtle text-center py-4">No trending ingredients data available.</p>
+            <p className="text-sm text-recipzee-subtle text-center py-4">No trending ingredients data available.</p>
           )}
         </>
       ) : (
@@ -569,10 +569,10 @@ const RightColumn = () => {
               <ul className="space-y-2 opacity-60">
                 {['Avocado', 'Kimchi', 'Tahini', 'Miso', 'Sriracha'].map((name, i) => (
                   <li key={i} className="flex items-center gap-3 p-2">
-                    <div className="w-8 h-8 rounded-lg bg-platerly-light flex items-center justify-center text-lg">🥬</div>
+                    <div className="w-8 h-8 rounded-lg bg-recipzee-light flex items-center justify-center text-lg">🥬</div>
                     <div className="flex-1">
-                      <div className="text-sm font-medium text-platerly-text">{name}</div>
-                      <div className="text-xs text-platerly-subtle">{Math.floor(Math.random() * 50 + 10)} recipes</div>
+                      <div className="text-sm font-medium text-recipzee-text">{name}</div>
+                      <div className="text-xs text-recipzee-subtle">{Math.floor(Math.random() * 50 + 10)} recipes</div>
                     </div>
                   </li>
                 ))}
@@ -580,10 +580,10 @@ const RightColumn = () => {
             </div>
 
             {/* Overlay CTA */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-platerly-card/80 rounded-xl">
-              <Lock className="w-8 h-8 text-platerly-subtle mb-3" />
-              <p className="text-sm font-medium text-platerly-text mb-1">Premium Feature</p>
-              <p className="text-xs text-platerly-subtle text-center mb-3 px-4">
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-recipzee-card/80 rounded-xl">
+              <Lock className="w-8 h-8 text-recipzee-subtle mb-3" />
+              <p className="text-sm font-medium text-recipzee-text mb-1">Premium Feature</p>
+              <p className="text-xs text-recipzee-subtle text-center mb-3 px-4">
                 See what ingredients are trending in recipes
               </p>
               <button
@@ -605,7 +605,7 @@ const RightColumn = () => {
   return (
     <>
       {/* Desktop right rail */}
-      <aside className="bg-platerly-card/50 backdrop-blur-sm text-platerly-text fixed right-0 top-0 hidden h-screen w-[320px] overflow-y-auto border-l border-platerly-border px-5 py-8 lg:block">
+      <aside className="bg-recipzee-card/50 backdrop-blur-sm text-recipzee-text fixed right-0 top-0 hidden h-screen w-[320px] overflow-y-auto border-l border-recipzee-border px-5 py-8 lg:block">
         <div className="space-y-5">
           {SearchBox}
           {Filters}
@@ -619,7 +619,7 @@ const RightColumn = () => {
         {/* FAB */}
         <button
           onClick={() => setOpenSheet(true)}
-          className="fixed bottom-20 right-4 inline-flex items-center gap-2 rounded-xl bg-platerly-green px-5 py-3.5 text-sm font-semibold text-platerly-dark shadow-lg shadow-platerly-green/25 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-platerly-green/50 focus:ring-offset-2 focus:ring-offset-platerly-dark transition-all duration-200 active:scale-95"
+          className="fixed bottom-20 right-4 inline-flex items-center gap-2 rounded-xl bg-recipzee-green px-5 py-3.5 text-sm font-semibold text-recipzee-dark shadow-lg shadow-recipzee-green/25 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-recipzee-green/50 focus:ring-offset-2 focus:ring-offset-recipzee-dark transition-all duration-200 active:scale-95"
           aria-label="Open explore panel"
         >
           <Search className="h-4 w-4" />

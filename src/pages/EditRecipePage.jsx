@@ -279,17 +279,17 @@ export default function EditRecipePage() {
   }
 
   /* ───────────────── UI ───────────────── */
-  if (loading) return <div className="p-6 text-platerly-subtle">Loading…</div>
+  if (loading) return <div className="p-6 text-recipzee-subtle">Loading…</div>
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 text-platerly-text">
+    <div className="max-w-3xl mx-auto px-4 py-8 text-recipzee-text">
       <h1 className="text-2xl font-semibold mb-6">Edit Recipe</h1>
 
       {/* Image picker */}
       <div className="mb-6">
-        <label className="block text-sm mb-1 text-platerly-subtle">Image</label>
+        <label className="block text-sm mb-1 text-recipzee-subtle">Image</label>
         <div
-          className="relative group w-full h-48 sm:h-56 rounded-lg border border-platerly-light overflow-hidden bg-platerly-card cursor-pointer"
+          className="relative group w-full h-48 sm:h-56 rounded-lg border border-recipzee-light overflow-hidden bg-recipzee-card cursor-pointer"
           onClick={() => inputRef.current && inputRef.current.click()}
           role="button"
           tabIndex={0}
@@ -316,14 +316,14 @@ export default function EditRecipePage() {
               )}
             </>
           ) : (
-            <div className="flex h-full items-center justify-center text-platerly-subtle">
+            <div className="flex h-full items-center justify-center text-recipzee-subtle">
               <Upload className="w-5 h-5 mr-2" />
               Tap to choose an image
             </div>
           )}
         </div>
         <input ref={inputRef} type="file" accept="image/*" onChange={onPickFile} className="hidden" />
-        <p className="mt-1 text-xs text-platerly-subtle">Max size: {MAX_IMAGE_SIZE_MB}MB. Formats: JPEG, PNG, WebP, GIF</p>
+        <p className="mt-1 text-xs text-recipzee-subtle">Max size: {MAX_IMAGE_SIZE_MB}MB. Formats: JPEG, PNG, WebP, GIF</p>
         {imageError && (
           <p className="mt-2 text-sm text-red-400">{imageError}</p>
         )}
@@ -332,42 +332,42 @@ export default function EditRecipePage() {
       <form onSubmit={onSubmit} className="space-y-6">
         {/* Title */}
         <div>
-          <label className="block text-sm mb-1 text-platerly-subtle">Title</label>
+          <label className="block text-sm mb-1 text-recipzee-subtle">Title</label>
           <input
             name="title"
             value={form.title}
             onChange={onChange}
-            className="w-full h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            className="w-full h-11 bg-recipzee-card border border-recipzee-light rounded-md px-3 text-recipzee-text placeholder-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/30"
           />
         </div>
 
         {/* Description */}
         <div>
-          <label className="block text-sm mb-1 text-platerly-subtle">Description</label>
+          <label className="block text-sm mb-1 text-recipzee-subtle">Description</label>
           <textarea
             rows={3}
             name="description"
             value={form.description}
             onChange={onChange}
-            className="w-full min-h-[88px] bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            className="w-full min-h-[88px] bg-recipzee-card border border-recipzee-light rounded-md px-3 py-2 text-recipzee-text placeholder-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/30"
           />
         </div>
 
         {/* Instructions */}
         <div>
-          <label className="block text-sm mb-1 text-platerly-subtle">Instructions</label>
+          <label className="block text-sm mb-1 text-recipzee-subtle">Instructions</label>
           <textarea
             rows={6}
             name="instructions"
             value={form.instructions}
             onChange={onChange}
-            className="w-full min-h-[140px] bg-platerly-card border border-platerly-light rounded-md px-3 py-2 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            className="w-full min-h-[140px] bg-recipzee-card border border-recipzee-light rounded-md px-3 py-2 text-recipzee-text placeholder-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/30"
           />
         </div>
 
         {/* Ingredients editor — responsive grid */}
         <div>
-          <label className="block text-sm mb-2 text-platerly-subtle">Ingredients</label>
+          <label className="block text-sm mb-2 text-recipzee-subtle">Ingredients</label>
           <div className="space-y-2">
             {ingredients.map((ing, idx) => (
               <div key={idx} className="grid grid-cols-12 gap-2">
@@ -377,7 +377,7 @@ export default function EditRecipePage() {
                   placeholder="Ingredient name"
                   value={ing.name}
                   onChange={(e) => changeIngredient(idx, 'name', e.target.value)}
-                  className="col-span-12 sm:col-span-7 h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+                  className="col-span-12 sm:col-span-7 h-11 bg-recipzee-card border border-recipzee-light rounded-md px-3 text-recipzee-text placeholder-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/30"
                 />
                 {/* Quantity */}
                 <input
@@ -385,7 +385,7 @@ export default function EditRecipePage() {
                   placeholder="Quantity"
                   value={ing.quantity}
                   onChange={(e) => changeIngredient(idx, 'quantity', e.target.value)}
-                  className="col-span-9 sm:col-span-3 h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+                  className="col-span-9 sm:col-span-3 h-11 bg-recipzee-card border border-recipzee-light rounded-md px-3 text-recipzee-text placeholder-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/30"
                 />
                 {/* Remove */}
                 <button
@@ -394,8 +394,8 @@ export default function EditRecipePage() {
                   disabled={ingredients.length === 1}
                   className={`col-span-3 sm:col-span-2 h-11 rounded-md border text-sm transition-colors ${
                     ingredients.length === 1
-                      ? 'opacity-50 cursor-not-allowed border-platerly-light text-platerly-subtle'
-                      : 'border-platerly-light text-platerly-text hover:bg-platerly-light/40'
+                      ? 'opacity-50 cursor-not-allowed border-recipzee-light text-recipzee-subtle'
+                      : 'border-recipzee-light text-recipzee-text hover:bg-recipzee-light/40'
                   }`}
                   title="Remove ingredient"
                   aria-label="Remove ingredient"
@@ -409,7 +409,7 @@ export default function EditRecipePage() {
           <button
             type="button"
             onClick={addIngredient}
-            className="mt-3 h-11 px-3 rounded-full text-sm bg-platerly-green text-platerly-dark hover:opacity-90 active:opacity-80"
+            className="mt-3 h-11 px-3 rounded-full text-sm bg-recipzee-green text-recipzee-dark hover:opacity-90 active:opacity-80"
           >
             + Add Ingredient
           </button>
@@ -418,34 +418,34 @@ export default function EditRecipePage() {
         {/* Region / times */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm mb-1 text-platerly-subtle">Region</label>
+            <label className="block text-sm mb-1 text-recipzee-subtle">Region</label>
             <input
               name="region"
               value={form.region}
               onChange={onChange}
-              className="w-full h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+              className="w-full h-11 bg-recipzee-card border border-recipzee-light rounded-md px-3 text-recipzee-text placeholder-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/30"
             />
           </div>
           <div>
-            <label className="block text-sm mb-1 text-platerly-subtle">Prep (min)</label>
+            <label className="block text-sm mb-1 text-recipzee-subtle">Prep (min)</label>
             <input
               type="number"
               min="0"
               name="prepTimeMinutes"
               value={form.prepTimeMinutes}
               onChange={onChange}
-              className="w-full h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+              className="w-full h-11 bg-recipzee-card border border-recipzee-light rounded-md px-3 text-recipzee-text focus:outline-none focus:ring-2 focus:ring-recipzee-green/30"
             />
           </div>
           <div>
-            <label className="block text-sm mb-1 text-platerly-subtle">Cook (min)</label>
+            <label className="block text-sm mb-1 text-recipzee-subtle">Cook (min)</label>
             <input
               type="number"
               min="0"
               name="cookTimeMinutes"
               value={form.cookTimeMinutes}
               onChange={onChange}
-              className="w-full h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+              className="w-full h-11 bg-recipzee-card border border-recipzee-light rounded-md px-3 text-recipzee-text focus:outline-none focus:ring-2 focus:ring-recipzee-green/30"
             />
           </div>
         </div>
@@ -454,11 +454,11 @@ export default function EditRecipePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {TAG_GROUPS.map(group => (
             <div key={group.key}>
-              <label className="block text-sm mb-1 text-platerly-subtle">{group.label}</label>
+              <label className="block text-sm mb-1 text-recipzee-subtle">{group.label}</label>
               <select
                 value={selectedGroups[group.key]}
                 onChange={(e) => handleGroupChange(group.key, e.target.value)}
-                className="w-full h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+                className="w-full h-11 bg-recipzee-card border border-recipzee-light rounded-md px-3 text-recipzee-text focus:outline-none focus:ring-2 focus:ring-recipzee-green/30"
                 aria-label={group.label}
               >
                 <option value="">{group.placeholder}</option>
@@ -470,7 +470,7 @@ export default function EditRecipePage() {
 
         {/* Sensitivities */}
         <div>
-          <label className="block text-sm mb-1 text-platerly-subtle">Sensitivity</label>
+          <label className="block text-sm mb-1 text-recipzee-subtle">Sensitivity</label>
           <div className="flex flex-wrap gap-2">
             {SENSITIVITY_OPTIONS.map(opt => {
               const checked = selectedSensitivities.includes(opt)
@@ -478,7 +478,7 @@ export default function EditRecipePage() {
                 <label
                   key={opt}
                   className={`inline-flex items-center gap-2 px-3 h-11 rounded-full border transition-colors ${
-                    checked ? 'border-platerly-green bg-platerly-green/10' : 'border-platerly-light bg-platerly-card'
+                    checked ? 'border-recipzee-green bg-recipzee-green/10' : 'border-recipzee-light bg-recipzee-card'
                   }`}
                 >
                   <input
@@ -496,20 +496,20 @@ export default function EditRecipePage() {
 
         {/* Extra tags + autocomplete */}
         <div className="relative">
-          <label className="block text-sm mb-1 text-platerly-subtle">Extra Tags (optional)</label>
+          <label className="block text-sm mb-1 text-recipzee-subtle">Extra Tags (optional)</label>
 
           {extraTags.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-2">
               {extraTags.map(tag => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-2 px-3 h-9 rounded-full border border-platerly-light bg-platerly-card text-platerly-text text-sm"
+                  className="inline-flex items-center gap-2 px-3 h-9 rounded-full border border-recipzee-light bg-recipzee-card text-recipzee-text text-sm"
                 >
                   {tag}
                   <button
                     type="button"
                     onClick={() => removeExtraTag(tag)}
-                    className="text-platerly-subtle hover:text-platerly-text"
+                    className="text-recipzee-subtle hover:text-recipzee-text"
                     aria-label={`Remove ${tag}`}
                   >
                     ×
@@ -525,26 +525,26 @@ export default function EditRecipePage() {
             onChange={(e) => setTagQuery(e.target.value)}
             onKeyDown={handleExtraTagKeyDown}
             placeholder="Type to search tags… press Enter to add"
-            className="w-full h-11 rounded-lg bg-platerly-card border border-platerly-light px-3 text-sm text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            className="w-full h-11 rounded-lg bg-recipzee-card border border-recipzee-light px-3 text-sm text-recipzee-text placeholder-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/30"
           />
 
-          {tagLoading && <div className="text-xs text-platerly-subtle mt-1">Searching…</div>}
+          {tagLoading && <div className="text-xs text-recipzee-subtle mt-1">Searching…</div>}
           {!tagLoading && !!tagSuggestions.length && (
-            <ul className="absolute z-20 mt-2 w-full max-h-72 overflow-auto rounded-lg border border-platerly-light bg-platerly-card/95 backdrop-blur">
+            <ul className="absolute z-20 mt-2 w-full max-h-72 overflow-auto rounded-lg border border-recipzee-light bg-recipzee-card/95 backdrop-blur">
               {tagSuggestions.map(s => {
                 const disabled = lowerExtraSet.has(s.name.toLowerCase())
                 return (
-                  <li key={s.id} className="border-b border-platerly-light last:border-none">
+                  <li key={s.id} className="border-b border-recipzee-light last:border-none">
                     <button
                       type="button"
                       disabled={disabled}
                       onClick={() => addExtraTag(s.name)}
                       title={`${s.usageCount ?? 0} uses`}
-                      className={`w-full text-left px-3 py-2 text-sm hover:bg-platerly-light/30 ${
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-recipzee-light/30 ${
                         disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                       }`}
                     >
-                      {s.name} <span className="text-platerly-subtle">({s.usageCount ?? 0})</span>
+                      {s.name} <span className="text-recipzee-subtle">({s.usageCount ?? 0})</span>
                     </button>
                   </li>
                 )
@@ -556,12 +556,12 @@ export default function EditRecipePage() {
         {/* Difficulty */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm mb-1 text-platerly-subtle">Difficulty</label>
+            <label className="block text-sm mb-1 text-recipzee-subtle">Difficulty</label>
             <select
               name="difficulty"
               value={form.difficulty}
               onChange={onChange}
-              className="w-full h-11 bg-platerly-card border border-platerly-light rounded-md px-3 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+              className="w-full h-11 bg-recipzee-card border border-recipzee-light rounded-md px-3 text-recipzee-text focus:outline-none focus:ring-2 focus:ring-recipzee-green/30"
             >
               {DIFFICULTY_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
@@ -582,14 +582,14 @@ export default function EditRecipePage() {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="h-11 px-4 rounded-md border border-platerly-light text-platerly-text hover:bg-platerly-light/40 focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            className="h-11 px-4 rounded-md border border-recipzee-light text-recipzee-text hover:bg-recipzee-light/40 focus:outline-none focus:ring-2 focus:ring-recipzee-green/30"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="h-11 px-4 rounded-md bg-platerly-green text-platerly-dark hover:opacity-90 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-platerly-green/30"
+            className="h-11 px-4 rounded-md bg-recipzee-green text-recipzee-dark hover:opacity-90 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-recipzee-green/30"
           >
             {saving ? 'Saving…' : 'Save Changes'}
           </button>
@@ -598,20 +598,20 @@ export default function EditRecipePage() {
         {/* Mobile sticky action bar */}
         <div className="md:hidden h-[72px]" />
         <div
-          className="md:hidden fixed bottom-0 inset-x-0 border-t border-platerly-light bg-platerly-dark/95 backdrop-blur px-4 py-3 flex items-center justify-end gap-2"
+          className="md:hidden fixed bottom-0 inset-x-0 border-t border-recipzee-light bg-recipzee-dark/95 backdrop-blur px-4 py-3 flex items-center justify-end gap-2"
           style={{ paddingBottom: 'max(0px, env(safe-area-inset-bottom))' }}
         >
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="h-11 px-4 rounded-md border border-platerly-light text-platerly-text"
+            className="h-11 px-4 rounded-md border border-recipzee-light text-recipzee-text"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="h-11 px-4 rounded-md bg-platerly-green text-platerly-dark disabled:opacity-60"
+            className="h-11 px-4 rounded-md bg-recipzee-green text-recipzee-dark disabled:opacity-60"
           >
             {saving ? 'Saving…' : 'Save'}
           </button>

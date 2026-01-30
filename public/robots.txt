@@ -25,4 +25,4 @@ Disallow: /admin
 User-agent: YandexBot
 Disallow: /admin
 
-Sitemap: https://www.platerly.com/sitemap.xml
+Sitemap: https://www.recipzee.com/sitemap.xml

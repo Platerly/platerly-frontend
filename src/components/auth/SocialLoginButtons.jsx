@@ -107,7 +107,7 @@ export default function SocialLoginButtons({ onSuccess, onError, disabled = fals
         type="button"
         onClick={handleGoogleLogin}
         disabled={isDisabled}
-        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg border border-platerly-border bg-white text-gray-800 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg border border-recipzee-border bg-white text-gray-800 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? (
           <span className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
@@ -126,10 +126,10 @@ export default function SocialLoginButtons({ onSuccess, onError, disabled = fals
       {showDivider && (
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-platerly-border" />
+            <div className="w-full border-t border-recipzee-border" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-platerly-card text-platerly-muted">or continue with email</span>
+            <span className="px-4 bg-recipzee-card text-recipzee-muted">or continue with email</span>
           </div>
         </div>
       )}

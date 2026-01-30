@@ -51,10 +51,10 @@ const TabBtn = ({ id, active, onClick, children }) => {
       aria-controls={`${id}-panel`}
       id={`${id}-tab`}
       onClick={onClick}
-      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-platerly-green/50 ${
+      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-recipzee-green/50 ${
         active
-          ? "bg-platerly-green text-platerly-dark shadow-lg shadow-platerly-green/20"
-          : "bg-platerly-card border border-platerly-border text-platerly-text/80 hover:bg-platerly-light hover:border-platerly-green/30"
+          ? "bg-recipzee-green text-recipzee-dark shadow-lg shadow-recipzee-green/20"
+          : "bg-recipzee-card border border-recipzee-border text-recipzee-text/80 hover:bg-recipzee-light hover:border-recipzee-green/30"
       }`}
     >
       <Icon className="w-4 h-4" />
@@ -65,16 +65,16 @@ const TabBtn = ({ id, active, onClick, children }) => {
 
 const Field = ({ label, hint, children }) => (
   <div>
-    <label className="block text-sm mb-2 text-platerly-text/80">{label}</label>
+    <label className="block text-sm mb-2 text-recipzee-text/80">{label}</label>
     {children}
-    {hint && <div className="text-xs text-platerly-subtle mt-1">{hint}</div>}
+    {hint && <div className="text-xs text-recipzee-subtle mt-1">{hint}</div>}
   </div>
 );
 
 const Skeleton = () => (
   <div className="space-y-4 animate-pulse">
     {[...Array(5)].map((_, i) => (
-      <div key={i} className="h-10 bg-platerly-card rounded-lg border border-platerly-border" />
+      <div key={i} className="h-10 bg-recipzee-card rounded-lg border border-recipzee-border" />
     ))}
   </div>
 );
@@ -91,7 +91,7 @@ const TabPanel = ({ id, active, children }) => (
   </div>
 );
 
-const inputClasses = "w-full bg-platerly-card border border-platerly-border rounded-xl px-3 py-2 text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/40";
+const inputClasses = "w-full bg-recipzee-card border border-recipzee-border rounded-xl px-3 py-2 text-recipzee-text placeholder:text-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/40";
 
 // Password strength validation
 const PASSWORD_MIN_LENGTH = 8;
@@ -273,7 +273,7 @@ const AccountSecurityTab = ({ token, user }) => {
       <button
         type="button"
         onClick={() => setShow(!show)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-platerly-subtle hover:text-platerly-text"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-recipzee-subtle hover:text-recipzee-text"
       >
         {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
       </button>
@@ -290,14 +290,14 @@ const AccountSecurityTab = ({ token, user }) => {
             <div
               key={i}
               className={`h-1 flex-1 rounded-full transition-colors ${
-                i < strength ? colors[strength - 1] : "bg-platerly-border"
+                i < strength ? colors[strength - 1] : "bg-recipzee-border"
               }`}
             />
           ))}
         </div>
         <ul className="text-xs space-y-1">
           {validation.rules.map((rule, i) => (
-            <li key={i} className={rule.test ? "text-platerly-green" : "text-platerly-subtle"}>
+            <li key={i} className={rule.test ? "text-recipzee-green" : "text-recipzee-subtle"}>
               {rule.test ? "✓" : "○"} {rule.label}
             </li>
           ))}
@@ -309,30 +309,30 @@ const AccountSecurityTab = ({ token, user }) => {
   return (
     <div className="space-y-8">
       {/* Current Email Display */}
-      <div className="bg-platerly-card border border-platerly-border rounded-xl p-4">
+      <div className="bg-recipzee-card border border-recipzee-border rounded-xl p-4">
         <div className="flex items-center gap-3 mb-2">
-          <Mail className="w-5 h-5 text-platerly-green" />
+          <Mail className="w-5 h-5 text-recipzee-green" />
           <span className="text-sm font-medium">Current Email</span>
         </div>
-        <p className="text-platerly-text">{user?.email}</p>
+        <p className="text-recipzee-text">{user?.email}</p>
         {user?.isEmailVerified ? (
-          <span className="inline-flex items-center gap-1 text-xs text-platerly-green mt-1">
+          <span className="inline-flex items-center gap-1 text-xs text-recipzee-green mt-1">
             <Check className="w-3 h-3" /> Verified
           </span>
         ) : (
           <span className="text-xs text-yellow-500 mt-1">Not verified</span>
         )}
         {isOAuthUser && (
-          <p className="text-xs text-platerly-subtle mt-2">
+          <p className="text-xs text-recipzee-subtle mt-2">
             Signed in with {user.authProvider.charAt(0).toUpperCase() + user.authProvider.slice(1)}
           </p>
         )}
       </div>
 
       {/* Change Email */}
-      <div className="bg-platerly-card border border-platerly-border rounded-xl p-6">
+      <div className="bg-recipzee-card border border-recipzee-border rounded-xl p-6">
         <div className="flex items-center gap-3 mb-4">
-          <Mail className="w-5 h-5 text-platerly-green" />
+          <Mail className="w-5 h-5 text-recipzee-green" />
           <h3 className="text-lg font-semibold">Change Email</h3>
         </div>
         <form onSubmit={handleChangeEmail} className="space-y-4">
@@ -364,7 +364,7 @@ const AccountSecurityTab = ({ token, user }) => {
             </div>
           )}
           {emailSuccess && (
-            <div className="flex items-center gap-2 text-sm text-platerly-green bg-platerly-green/10 border border-platerly-green/20 rounded-xl px-4 py-3">
+            <div className="flex items-center gap-2 text-sm text-recipzee-green bg-recipzee-green/10 border border-recipzee-green/20 rounded-xl px-4 py-3">
               <Check className="w-4 h-4" />
               {emailSuccess}
             </div>
@@ -377,9 +377,9 @@ const AccountSecurityTab = ({ token, user }) => {
       </div>
 
       {/* Change Password or Set Password */}
-      <div className="bg-platerly-card border border-platerly-border rounded-xl p-6">
+      <div className="bg-recipzee-card border border-recipzee-border rounded-xl p-6">
         <div className="flex items-center gap-3 mb-4">
-          <Lock className="w-5 h-5 text-platerly-green" />
+          <Lock className="w-5 h-5 text-recipzee-green" />
           <h3 className="text-lg font-semibold">
             {isOAuthUser && !hasPassword ? "Set Password" : "Change Password"}
           </h3>
@@ -388,7 +388,7 @@ const AccountSecurityTab = ({ token, user }) => {
         {isOAuthUser && !hasPassword ? (
           // Set password form for OAuth users
           <form onSubmit={handleSetPassword} className="space-y-4">
-            <p className="text-sm text-platerly-subtle mb-4">
+            <p className="text-sm text-recipzee-subtle mb-4">
               Set a password to enable email login in addition to {user?.authProvider} sign-in.
             </p>
             <Field label="New Password">
@@ -420,7 +420,7 @@ const AccountSecurityTab = ({ token, user }) => {
               </div>
             )}
             {initPwdSuccess && (
-              <div className="flex items-center gap-2 text-sm text-platerly-green bg-platerly-green/10 border border-platerly-green/20 rounded-xl px-4 py-3">
+              <div className="flex items-center gap-2 text-sm text-recipzee-green bg-recipzee-green/10 border border-recipzee-green/20 rounded-xl px-4 py-3">
                 <Check className="w-4 h-4" />
                 {initPwdSuccess}
               </div>
@@ -471,7 +471,7 @@ const AccountSecurityTab = ({ token, user }) => {
               </div>
             )}
             {pwdSuccess && (
-              <div className="flex items-center gap-2 text-sm text-platerly-green bg-platerly-green/10 border border-platerly-green/20 rounded-xl px-4 py-3">
+              <div className="flex items-center gap-2 text-sm text-recipzee-green bg-recipzee-green/10 border border-recipzee-green/20 rounded-xl px-4 py-3">
                 <Check className="w-4 h-4" />
                 {pwdSuccess}
               </div>
@@ -629,25 +629,25 @@ const SettingsPage = () => {
   const photo = profileForm.profileImageUrl || "/placeholder-avatar.png";
 
   return (
-    <div className="min-h-screen bg-platerly-dark text-platerly-text relative overflow-hidden">
+    <div className="min-h-screen bg-recipzee-dark text-recipzee-text relative overflow-hidden">
       {/* Background gradient orbs */}
-      <div className="absolute top-0 left-1/4 w-80 h-80 bg-platerly-green/5 rounded-full blur-[120px]" />
+      <div className="absolute top-0 left-1/4 w-80 h-80 bg-recipzee-green/5 rounded-full blur-[120px]" />
       <div className="absolute bottom-1/3 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
 
       <div className="relative z-10 max-w-4xl mx-auto py-8 sm:py-12 px-4">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-platerly-green/20 flex items-center justify-center">
-              <Settings className="w-5 h-5 text-platerly-green" />
+            <div className="w-10 h-10 rounded-xl bg-recipzee-green/20 flex items-center justify-center">
+              <Settings className="w-5 h-5 text-recipzee-green" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold">Settings</h1>
           </div>
-          <p className="text-platerly-subtle">Manage your profile, allergies, and subscription</p>
+          <p className="text-recipzee-subtle">Manage your profile, allergies, and subscription</p>
         </div>
 
         {/* Tab Switcher */}
-        <div role="tablist" aria-label="Settings sections" className="flex flex-wrap gap-2 border-b border-platerly-border pb-4 mb-8">
+        <div role="tablist" aria-label="Settings sections" className="flex flex-wrap gap-2 border-b border-recipzee-border pb-4 mb-8">
           <TabBtn id="profile" active={activeTab === "profile"} onClick={() => setActiveTab("profile")}>
             Profile
           </TabBtn>
@@ -673,7 +673,7 @@ const SettingsPage = () => {
               <img
                 src={photo}
                 alt="Profile"
-                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border border-platerly-border"
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border border-recipzee-border"
               />
               <div>
                 <label className="block text-sm mb-2">Profile Picture</label>
@@ -688,7 +688,7 @@ const SettingsPage = () => {
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  className="px-4 py-2 rounded-lg bg-platerly-green text-platerly-dark font-medium hover:bg-platerly-green/90 transition-colors"
+                  className="px-4 py-2 rounded-lg bg-recipzee-green text-recipzee-dark font-medium hover:bg-recipzee-green/90 transition-colors"
                 >
                   Choose Image
                 </button>
@@ -722,7 +722,7 @@ const SettingsPage = () => {
 
             <Field label="Region Preference" hint="Used for regional trending content">
               <div className="relative">
-                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-platerly-subtle pointer-events-none" />
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-recipzee-subtle pointer-events-none" />
                 <select
                   name="region"
                   value={profileForm.region}
@@ -736,7 +736,7 @@ const SettingsPage = () => {
                   ))}
                 </select>
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <svg className="w-4 h-4 text-platerly-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-4 h-4 text-recipzee-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -757,7 +757,7 @@ const SettingsPage = () => {
                     href={withScheme(profileForm.websiteUrl)}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-xs underline text-platerly-subtle hover:text-platerly-text mt-1 inline-block"
+                    className="text-xs underline text-recipzee-subtle hover:text-recipzee-text mt-1 inline-block"
                   >
                     Preview: {withScheme(profileForm.websiteUrl)}
                   </a>
@@ -802,7 +802,7 @@ const SettingsPage = () => {
               </div>
             )}
             {ok && (
-              <div className="flex items-center gap-2 text-sm text-platerly-green bg-platerly-green/10 border border-platerly-green/20 rounded-xl px-4 py-3">
+              <div className="flex items-center gap-2 text-sm text-recipzee-green bg-recipzee-green/10 border border-recipzee-green/20 rounded-xl px-4 py-3">
                 <Check className="w-4 h-4" />
                 {ok}
               </div>
@@ -834,8 +834,8 @@ const SettingsPage = () => {
       </TabPanel>
 
         {/* Logout */}
-        <div className="border-t border-platerly-border pt-6 mt-8 flex items-center justify-between">
-          <div className="text-sm text-platerly-subtle">
+        <div className="border-t border-recipzee-border pt-6 mt-8 flex items-center justify-between">
+          <div className="text-sm text-recipzee-subtle">
             Need to sign out?
           </div>
           <Button onClick={handleLogout} variant="danger">

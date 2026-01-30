@@ -2,7 +2,7 @@ import React from 'react'
 import classNames from 'classnames'
 
 /**
- * Premium button component with consistent Platerly styling.
+ * Premium button component with consistent Recipzee styling.
  * Supports multiple variants, sizes, and loading states.
  */
 const Button = ({
@@ -19,7 +19,7 @@ const Button = ({
   const baseStyles = classNames(
     'inline-flex items-center justify-center font-semibold',
     'rounded-xl', // Consistent with card styling
-    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-platerly-dark',
+    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-recipzee-dark',
     'transition-all duration-200 ease-out',
     'min-h-[44px] select-none',
     'active:scale-[0.98]' // Subtle press feedback
@@ -27,16 +27,16 @@ const Button = ({
 
   const variantStyles = {
     primary: classNames(
-      'bg-platerly-green text-platerly-dark',
-      'hover:bg-platerly-green/90 hover:shadow-lg hover:shadow-platerly-green/20',
-      'focus:ring-platerly-green/50',
-      'disabled:bg-platerly-green/50 disabled:shadow-none'
+      'bg-recipzee-green text-recipzee-dark',
+      'hover:bg-recipzee-green/90 hover:shadow-lg hover:shadow-recipzee-green/20',
+      'focus:ring-recipzee-green/50',
+      'disabled:bg-recipzee-green/50 disabled:shadow-none'
     ),
     secondary: classNames(
-      'bg-platerly-card text-platerly-text border border-platerly-border',
-      'hover:bg-platerly-light hover:border-platerly-green/30',
-      'focus:ring-platerly-green/30',
-      'disabled:bg-platerly-card/50 disabled:border-platerly-border/50'
+      'bg-recipzee-card text-recipzee-text border border-recipzee-border',
+      'hover:bg-recipzee-light hover:border-recipzee-green/30',
+      'focus:ring-recipzee-green/30',
+      'disabled:bg-recipzee-card/50 disabled:border-recipzee-border/50'
     ),
     danger: classNames(
       'bg-red-600 text-white',
@@ -45,16 +45,16 @@ const Button = ({
       'disabled:bg-red-600/50 disabled:shadow-none'
     ),
     ghost: classNames(
-      'bg-transparent text-platerly-text',
+      'bg-transparent text-recipzee-text',
       'hover:bg-white/5',
-      'focus:ring-platerly-green/30',
-      'disabled:text-platerly-subtle'
+      'focus:ring-recipzee-green/30',
+      'disabled:text-recipzee-subtle'
     ),
     outline: classNames(
-      'bg-transparent text-platerly-green border border-platerly-green',
-      'hover:bg-platerly-green/10',
-      'focus:ring-platerly-green/30',
-      'disabled:border-platerly-green/30 disabled:text-platerly-green/50'
+      'bg-transparent text-recipzee-green border border-recipzee-green',
+      'hover:bg-recipzee-green/10',
+      'focus:ring-recipzee-green/30',
+      'disabled:border-recipzee-green/30 disabled:text-recipzee-green/50'
     ),
   }
 

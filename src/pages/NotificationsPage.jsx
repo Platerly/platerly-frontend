@@ -34,15 +34,15 @@ const getNotificationIcon = (type, size = 'normal') => {
     case 'like': return <Heart className={`${iconClass} text-red-400`} />
     case 'comment': return <MessageSquare className={`${iconClass} text-blue-400`} />
     case 'reply': return <MessageSquare className={`${iconClass} text-purple-400`} />
-    case 'follow': return <UserPlus className={`${iconClass} text-platerly-green`} />
-    case 'repost': return <Repeat2 className={`${iconClass} text-platerly-green`} />
+    case 'follow': return <UserPlus className={`${iconClass} text-recipzee-green`} />
+    case 'repost': return <Repeat2 className={`${iconClass} text-recipzee-green`} />
     case 'mention': return <AtSign className={`${iconClass} text-amber-400`} />
-    case 'cookbookinvite': return <Book className={`${iconClass} text-platerly-green`} />
+    case 'cookbookinvite': return <Book className={`${iconClass} text-recipzee-green`} />
     case 'cookbookreciperequest': return <Book className={`${iconClass} text-blue-400`} />
-    case 'cookbookrequestapproved': return <CheckCircle className={`${iconClass} text-platerly-green`} />
+    case 'cookbookrequestapproved': return <CheckCircle className={`${iconClass} text-recipzee-green`} />
     case 'cookbookrequestrejected': return <XCircle className={`${iconClass} text-red-400`} />
     case 'recipetrending': return <Flame className={`${iconClass} text-orange-400`} />
-    default: return <Bell className={`${iconClass} text-platerly-subtle`} />
+    default: return <Bell className={`${iconClass} text-recipzee-subtle`} />
   }
 }
 
@@ -120,8 +120,8 @@ const NotificationCard = ({ notification, onMarkRead, onDelete }) => {
     <div
       className={`group relative rounded-2xl border transition-all duration-200 ${
         notification.isRead
-          ? 'border-platerly-border bg-platerly-card/50 hover:bg-platerly-card/80'
-          : 'border-platerly-green/30 bg-platerly-green/5 hover:bg-platerly-green/10'
+          ? 'border-recipzee-border bg-recipzee-card/50 hover:bg-recipzee-card/80'
+          : 'border-recipzee-green/30 bg-recipzee-green/5 hover:bg-recipzee-green/10'
       }`}
     >
       <button
@@ -132,7 +132,7 @@ const NotificationCard = ({ notification, onMarkRead, onDelete }) => {
           {/* Icon */}
           <div className="shrink-0">
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-              notification.isRead ? 'bg-platerly-light/50' : 'bg-platerly-light'
+              notification.isRead ? 'bg-recipzee-light/50' : 'bg-recipzee-light'
             }`}>
               {getNotificationIcon(notification.type, 'large')}
             </div>
@@ -142,26 +142,26 @@ const NotificationCard = ({ notification, onMarkRead, onDelete }) => {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <p className={`text-sm sm:text-base ${
-                notification.isRead ? 'text-platerly-subtle' : 'text-platerly-text font-medium'
+                notification.isRead ? 'text-recipzee-subtle' : 'text-recipzee-text font-medium'
               }`}>
                 {getNotificationMessage(notification)}
               </p>
               {!notification.isRead && (
                 <div className="shrink-0 mt-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-platerly-green shadow-lg shadow-platerly-green/30" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-recipzee-green shadow-lg shadow-recipzee-green/30" />
                 </div>
               )}
             </div>
 
             <div className="flex items-center gap-3 mt-2">
-              <span className="text-xs text-platerly-muted">
+              <span className="text-xs text-recipzee-muted">
                 {formatRelativeTime(notification.createdAt)}
               </span>
               {notification.actorUsername && (
                 <Link
                   to={`/profile/${notification.actorUsername}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="text-xs text-platerly-green hover:underline"
+                  className="text-xs text-recipzee-green hover:underline"
                 >
                   @{notification.actorUsername}
                 </Link>
@@ -176,7 +176,7 @@ const NotificationCard = ({ notification, onMarkRead, onDelete }) => {
         {!notification.isRead && (
           <button
             onClick={(e) => { e.stopPropagation(); onMarkRead(notification.id) }}
-            className="p-2 rounded-lg bg-platerly-card/80 hover:bg-platerly-light text-platerly-subtle hover:text-platerly-text transition-colors"
+            className="p-2 rounded-lg bg-recipzee-card/80 hover:bg-recipzee-light text-recipzee-subtle hover:text-recipzee-text transition-colors"
             title="Mark as read"
           >
             <Check className="w-4 h-4" />
@@ -184,7 +184,7 @@ const NotificationCard = ({ notification, onMarkRead, onDelete }) => {
         )}
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(notification.id) }}
-          className="p-2 rounded-lg bg-platerly-card/80 hover:bg-red-500/20 text-platerly-subtle hover:text-red-400 transition-colors"
+          className="p-2 rounded-lg bg-recipzee-card/80 hover:bg-red-500/20 text-recipzee-subtle hover:text-red-400 transition-colors"
           title="Delete notification"
         >
           <Trash2 className="w-4 h-4" />
@@ -195,12 +195,12 @@ const NotificationCard = ({ notification, onMarkRead, onDelete }) => {
 }
 
 const SkeletonCard = () => (
-  <div className="rounded-2xl border border-platerly-border bg-platerly-card/50 p-5 animate-pulse">
+  <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/50 p-5 animate-pulse">
     <div className="flex gap-4">
-      <div className="w-12 h-12 rounded-xl bg-platerly-light" />
+      <div className="w-12 h-12 rounded-xl bg-recipzee-light" />
       <div className="flex-1 space-y-2">
-        <div className="h-4 w-3/4 bg-platerly-light rounded" />
-        <div className="h-3 w-1/4 bg-platerly-light/70 rounded" />
+        <div className="h-4 w-3/4 bg-recipzee-light rounded" />
+        <div className="h-3 w-1/4 bg-recipzee-light/70 rounded" />
       </div>
     </div>
   </div>
@@ -220,20 +220,20 @@ const NotificationsPage = () => {
   } = useNotifications()
 
   useEffect(() => {
-    document.title = 'Notifications - Platerly'
+    document.title = 'Notifications - Recipzee'
   }, [])
 
   // Redirect if not logged in
   if (!authed) {
     return (
-      <div className="min-h-screen bg-platerly-dark text-platerly-text flex items-center justify-center px-4">
+      <div className="min-h-screen bg-recipzee-dark text-recipzee-text flex items-center justify-center px-4">
         <div className="text-center">
-          <Bell className="w-12 h-12 text-platerly-muted mx-auto mb-4" />
+          <Bell className="w-12 h-12 text-recipzee-muted mx-auto mb-4" />
           <h2 className="text-xl font-semibold mb-2">Sign in to view notifications</h2>
-          <p className="text-platerly-subtle mb-4">Stay updated on activity related to your recipes and profile.</p>
+          <p className="text-recipzee-subtle mb-4">Stay updated on activity related to your recipes and profile.</p>
           <Link
             to="/login"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-platerly-green text-platerly-dark rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg shadow-platerly-green/20"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-recipzee-green text-recipzee-dark rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg shadow-recipzee-green/20"
           >
             Log in
           </Link>
@@ -243,16 +243,16 @@ const NotificationsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-platerly-dark text-platerly-text relative overflow-hidden">
+    <div className="min-h-screen bg-recipzee-dark text-recipzee-text relative overflow-hidden">
       {/* Background gradient orbs */}
-      <div className="absolute top-0 left-1/4 w-80 h-80 bg-platerly-green/5 rounded-full blur-[120px]" />
+      <div className="absolute top-0 left-1/4 w-80 h-80 bg-recipzee-green/5 rounded-full blur-[120px]" />
       <div className="absolute bottom-1/3 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 md:px-6 py-8 sm:py-12">
         {/* Back Link */}
         <Link
           to="/feed"
-          className="inline-flex items-center gap-2 text-sm text-platerly-subtle hover:text-platerly-text transition-colors mb-8 focus:outline-none focus:ring-2 focus:ring-platerly-green/40 rounded-lg px-2 py-1 -ml-2"
+          className="inline-flex items-center gap-2 text-sm text-recipzee-subtle hover:text-recipzee-text transition-colors mb-8 focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 rounded-lg px-2 py-1 -ml-2"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to feed
@@ -261,12 +261,12 @@ const NotificationsPage = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-platerly-green/20 flex items-center justify-center">
-              <Bell className="w-6 h-6 text-platerly-green" />
+            <div className="w-12 h-12 rounded-xl bg-recipzee-green/20 flex items-center justify-center">
+              <Bell className="w-6 h-6 text-recipzee-green" />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">Notifications</h1>
-              <p className="text-platerly-subtle text-sm mt-0.5">
+              <p className="text-recipzee-subtle text-sm mt-0.5">
                 {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
               </p>
             </div>
@@ -275,7 +275,7 @@ const NotificationsPage = () => {
           {unreadCount > 0 && (
             <button
               onClick={markAllAsRead}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-platerly-border bg-platerly-card/50 hover:bg-platerly-light/50 text-sm font-medium transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-recipzee-border bg-recipzee-card/50 hover:bg-recipzee-light/50 text-sm font-medium transition-colors"
             >
               <CheckCheck className="w-4 h-4" />
               Mark all as read
@@ -311,7 +311,7 @@ const NotificationsPage = () => {
                   <button
                     onClick={loadMore}
                     disabled={loading}
-                    className="px-6 py-2.5 rounded-xl border border-platerly-border bg-platerly-card/50 hover:bg-platerly-light/50 text-sm font-medium transition-colors disabled:opacity-50"
+                    className="px-6 py-2.5 rounded-xl border border-recipzee-border bg-recipzee-card/50 hover:bg-recipzee-light/50 text-sm font-medium transition-colors disabled:opacity-50"
                   >
                     {loading ? 'Loading...' : 'Load more'}
                   </button>
@@ -320,17 +320,17 @@ const NotificationsPage = () => {
             </>
           ) : (
             // Empty state
-            <div className="rounded-2xl border border-platerly-border bg-platerly-card/30 p-12 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-platerly-light flex items-center justify-center mx-auto mb-4">
-                <Bell className="w-8 h-8 text-platerly-muted" />
+            <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/30 p-12 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-recipzee-light flex items-center justify-center mx-auto mb-4">
+                <Bell className="w-8 h-8 text-recipzee-muted" />
               </div>
-              <h3 className="text-lg font-semibold text-platerly-text">No notifications yet</h3>
-              <p className="text-sm text-platerly-subtle mt-1 max-w-sm mx-auto">
+              <h3 className="text-lg font-semibold text-recipzee-text">No notifications yet</h3>
+              <p className="text-sm text-recipzee-subtle mt-1 max-w-sm mx-auto">
                 When someone likes, comments, or interacts with your content, you'll see it here.
               </p>
               <Link
                 to="/feed"
-                className="inline-flex items-center gap-2 mt-6 px-4 py-2 bg-platerly-green text-platerly-dark rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg shadow-platerly-green/20"
+                className="inline-flex items-center gap-2 mt-6 px-4 py-2 bg-recipzee-green text-recipzee-dark rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg shadow-recipzee-green/20"
               >
                 Explore recipes
               </Link>

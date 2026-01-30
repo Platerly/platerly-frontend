@@ -7,10 +7,10 @@ import AdminLayout from '../components/layout/AdminLayout'
 
 // Loading fallback component
 const PageLoader = () => (
-  <div className="min-h-screen bg-platerly-dark flex items-center justify-center">
+  <div className="min-h-screen bg-recipzee-dark flex items-center justify-center">
     <div className="flex flex-col items-center gap-4">
-      <div className="w-10 h-10 border-3 border-platerly-accent border-t-transparent rounded-full animate-spin" />
-      <span className="text-platerly-muted text-sm">Loading...</span>
+      <div className="w-10 h-10 border-3 border-recipzee-accent border-t-transparent rounded-full animate-spin" />
+      <span className="text-recipzee-muted text-sm">Loading...</span>
     </div>
   </div>
 )

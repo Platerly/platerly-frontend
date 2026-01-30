@@ -13,30 +13,30 @@ const UserRow = ({ u, onFollowToggle, busy, isOwnProfile }) => {
   const showFollowButton = typeof u.isFollowing === "boolean" && onFollowToggle && !isOwnProfile;
 
   return (
-    <div className="group flex items-center justify-between gap-4 p-4 rounded-2xl border border-platerly-border bg-platerly-card/80 backdrop-blur-sm
-                    transition-all duration-200 hover:border-platerly-green/30 hover:bg-platerly-light/50 hover:shadow-lg hover:shadow-platerly-green/5">
+    <div className="group flex items-center justify-between gap-4 p-4 rounded-2xl border border-recipzee-border bg-recipzee-card/80 backdrop-blur-sm
+                    transition-all duration-200 hover:border-recipzee-green/30 hover:bg-recipzee-light/50 hover:shadow-lg hover:shadow-recipzee-green/5">
       <Link
         to={`/profile/${u.username}`}
-        className="flex items-center gap-4 min-w-0 flex-1 focus:outline-none focus:ring-2 focus:ring-platerly-green/40 rounded-xl"
+        className="flex items-center gap-4 min-w-0 flex-1 focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 rounded-xl"
       >
         {u.profileImageUrl ? (
           <img
             src={u.profileImageUrl}
             alt={`${display} avatar`}
-            className="w-14 h-14 rounded-xl object-cover border-2 border-platerly-border group-hover:border-platerly-green/30 transition-colors shadow-md"
+            className="w-14 h-14 rounded-xl object-cover border-2 border-recipzee-border group-hover:border-recipzee-green/30 transition-colors shadow-md"
             loading="lazy"
           />
         ) : (
-          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-platerly-green/20 to-platerly-light flex items-center justify-center font-bold text-lg text-platerly-text border-2 border-platerly-border group-hover:border-platerly-green/30 transition-colors">
+          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-recipzee-green/20 to-recipzee-light flex items-center justify-center font-bold text-lg text-recipzee-text border-2 border-recipzee-border group-hover:border-recipzee-green/30 transition-colors">
             {u.username?.[0]?.toUpperCase() ?? "U"}
           </div>
         )}
 
         <div className="min-w-0 flex-1">
-          <div className="font-semibold truncate text-platerly-text group-hover:text-platerly-green transition-colors">
+          <div className="font-semibold truncate text-recipzee-text group-hover:text-recipzee-green transition-colors">
             {display}
           </div>
-          <div className="text-sm text-platerly-subtle truncate">@{u.username}</div>
+          <div className="text-sm text-recipzee-subtle truncate">@{u.username}</div>
         </div>
       </Link>
 
@@ -71,14 +71,14 @@ const Skeleton = () => (
     {Array.from({ length: 6 }).map((_, i) => (
       <div
         key={i}
-        className="flex items-center gap-4 p-4 rounded-2xl bg-platerly-card border border-platerly-border animate-pulse"
+        className="flex items-center gap-4 p-4 rounded-2xl bg-recipzee-card border border-recipzee-border animate-pulse"
       >
-        <div className="w-14 h-14 rounded-xl bg-platerly-light" />
+        <div className="w-14 h-14 rounded-xl bg-recipzee-light" />
         <div className="flex-1 space-y-2">
-          <div className="h-5 w-32 bg-platerly-light rounded-lg" />
-          <div className="h-4 w-24 bg-platerly-light/70 rounded-lg" />
+          <div className="h-5 w-32 bg-recipzee-light rounded-lg" />
+          <div className="h-4 w-24 bg-recipzee-light/70 rounded-lg" />
         </div>
-        <div className="h-10 w-24 bg-platerly-light rounded-xl hidden sm:block" />
+        <div className="h-10 w-24 bg-recipzee-light rounded-xl hidden sm:block" />
       </div>
     ))}
   </div>
@@ -233,16 +233,16 @@ const FollowListPage = ({ type }) => {
   const Icon = isFollowers ? Users : UserPlus;
 
   return (
-    <div className="min-h-screen bg-platerly-dark text-platerly-text relative overflow-hidden">
+    <div className="min-h-screen bg-recipzee-dark text-recipzee-text relative overflow-hidden">
       {/* Background gradient orbs */}
-      <div className="absolute top-0 left-1/4 w-80 h-80 bg-platerly-green/5 rounded-full blur-[120px]" />
+      <div className="absolute top-0 left-1/4 w-80 h-80 bg-recipzee-green/5 rounded-full blur-[120px]" />
       <div className="absolute bottom-1/3 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 md:px-6 py-8 sm:py-12">
         {/* Back Link */}
         <Link
           to={`/profile/${username}`}
-          className="inline-flex items-center gap-2 text-sm text-platerly-subtle hover:text-platerly-text transition-colors mb-8 focus:outline-none focus:ring-2 focus:ring-platerly-green/40 rounded-lg px-2 py-1 -ml-2"
+          className="inline-flex items-center gap-2 text-sm text-recipzee-subtle hover:text-recipzee-text transition-colors mb-8 focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 rounded-lg px-2 py-1 -ml-2"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to profile
@@ -251,12 +251,12 @@ const FollowListPage = ({ type }) => {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-xl bg-platerly-green/20 flex items-center justify-center">
-              <Icon className="w-6 h-6 text-platerly-green" />
+            <div className="w-12 h-12 rounded-xl bg-recipzee-green/20 flex items-center justify-center">
+              <Icon className="w-6 h-6 text-recipzee-green" />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold capitalize">{type}</h1>
-              <p className="text-platerly-subtle">@{headerUser?.username || username}</p>
+              <p className="text-recipzee-subtle">@{headerUser?.username || username}</p>
             </div>
           </div>
         </div>
@@ -279,13 +279,13 @@ const FollowListPage = ({ type }) => {
             </div>
           ) : (
             <div className="py-16 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-platerly-light flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-platerly-subtle" />
+              <div className="w-16 h-16 rounded-2xl bg-recipzee-light flex items-center justify-center mx-auto mb-4">
+                <Users className="w-8 h-8 text-recipzee-subtle" />
               </div>
-              <h3 className="text-lg font-semibold text-platerly-text">
+              <h3 className="text-lg font-semibold text-recipzee-text">
                 {isFollowers ? "No followers yet" : "Not following anyone"}
               </h3>
-              <p className="text-sm text-platerly-subtle mt-1 max-w-sm mx-auto">
+              <p className="text-sm text-recipzee-subtle mt-1 max-w-sm mx-auto">
                 {isFollowers
                   ? "When people follow this account, they'll show up here."
                   : "When this account follows people, they'll show up here."}

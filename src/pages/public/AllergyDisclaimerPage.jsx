@@ -4,11 +4,11 @@ import PublicPage from "./PublicPage";
 const AllergyDisclaimerPage = () => (
   <PublicPage
     title="Allergy & Medical Disclaimer"
-    subtitle="Platerly provides tools — not medical advice. Always verify ingredients."
+    subtitle="Recipzee provides tools — not medical advice. Always verify ingredients."
   >
-    <section className="space-y-4 leading-relaxed text-platerly-text">
+    <section className="space-y-4 leading-relaxed text-recipzee-text">
       <p>
-        Platerly includes community-generated recipes, ingredient data, and helpful
+        Recipzee includes community-generated recipes, ingredient data, and helpful
         allergy-aware features. While these tools are designed to support safer
         cooking and discovery, they are not substitutes for professional medical or
         dietary guidance.
@@ -28,7 +28,7 @@ const AllergyDisclaimerPage = () => (
         </li>
         <li>
           Community-submitted recipes may not reflect personal allergens or medical
-          needs. Use Platerly as guidance, not a guarantee.
+          needs. Use Recipzee as guidance, not a guarantee.
         </li>
         <li>
           You are solely responsible for evaluating the safety of any dish or
@@ -36,7 +36,7 @@ const AllergyDisclaimerPage = () => (
         </li>
       </ul>
 
-      <p className="pt-6 text-sm text-platerly-subtle">
+      <p className="pt-6 text-sm text-recipzee-subtle">
         Last updated: Aug 26, 2025
       </p>
     </section>

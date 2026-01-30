@@ -30,10 +30,10 @@ const getNotificationIcon = (type) => {
     case 'like': return <Heart className="w-4 h-4 text-red-400" />
     case 'comment': return <MessageSquare className="w-4 h-4 text-blue-400" />
     case 'reply': return <MessageSquare className="w-4 h-4 text-purple-400" />
-    case 'follow': return <UserPlus className="w-4 h-4 text-platerly-green" />
-    case 'repost': return <Repeat2 className="w-4 h-4 text-platerly-green" />
+    case 'follow': return <UserPlus className="w-4 h-4 text-recipzee-green" />
+    case 'repost': return <Repeat2 className="w-4 h-4 text-recipzee-green" />
     case 'mention': return <AtSign className="w-4 h-4 text-amber-400" />
-    default: return <Bell className="w-4 h-4 text-platerly-subtle" />
+    default: return <Bell className="w-4 h-4 text-recipzee-subtle" />
   }
 }
 
@@ -96,31 +96,31 @@ const NotificationItem = ({ notification, onMarkRead, onClick }) => {
       onClick={handleClick}
       className={`w-full text-left p-3 rounded-xl transition-all ${
         notification.isRead
-          ? 'bg-transparent hover:bg-platerly-light/30'
-          : 'bg-platerly-green/5 hover:bg-platerly-green/10'
+          ? 'bg-transparent hover:bg-recipzee-light/30'
+          : 'bg-recipzee-green/5 hover:bg-recipzee-green/10'
       }`}
     >
       <div className="flex gap-3">
         <div className="shrink-0 mt-0.5">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            notification.isRead ? 'bg-platerly-light/50' : 'bg-platerly-light'
+            notification.isRead ? 'bg-recipzee-light/50' : 'bg-recipzee-light'
           }`}>
             {getNotificationIcon(notification.type)}
           </div>
         </div>
         <div className="flex-1 min-w-0">
           <p className={`text-sm line-clamp-2 ${
-            notification.isRead ? 'text-platerly-subtle' : 'text-platerly-text'
+            notification.isRead ? 'text-recipzee-subtle' : 'text-recipzee-text'
           }`}>
             {getNotificationMessage(notification)}
           </p>
-          <p className="text-xs text-platerly-muted mt-0.5">
+          <p className="text-xs text-recipzee-muted mt-0.5">
             {formatRelativeTime(notification.createdAt)}
           </p>
         </div>
         {!notification.isRead && (
           <div className="shrink-0">
-            <div className="w-2 h-2 rounded-full bg-platerly-green" />
+            <div className="w-2 h-2 rounded-full bg-recipzee-green" />
           </div>
         )}
       </div>
@@ -164,9 +164,9 @@ const NotificationBell = ({ variant = 'default' }) => {
         to="/notifications"
         className="relative p-2"
       >
-        <Bell className="w-6 h-6 text-platerly-subtle" />
+        <Bell className="w-6 h-6 text-recipzee-subtle" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-platerly-green text-platerly-dark text-[10px] font-bold px-1">
+          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-recipzee-green text-recipzee-dark text-[10px] font-bold px-1">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -178,13 +178,13 @@ const NotificationBell = ({ variant = 'default' }) => {
     <div ref={dropdownRef} className="relative">
       <button
         onClick={(e) => { e.stopPropagation(); setOpen(v => !v) }}
-        className="relative p-2 rounded-xl hover:bg-platerly-light/50 transition-colors focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
+        className="relative p-2 rounded-xl hover:bg-recipzee-light/50 transition-colors focus:outline-none focus:ring-2 focus:ring-recipzee-green/40"
         aria-label={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ''}`}
         aria-expanded={open}
       >
-        <Bell className={`w-5 h-5 transition-colors ${open ? 'text-platerly-green' : 'text-platerly-subtle hover:text-platerly-text'}`} />
+        <Bell className={`w-5 h-5 transition-colors ${open ? 'text-recipzee-green' : 'text-recipzee-subtle hover:text-recipzee-text'}`} />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-platerly-green text-platerly-dark text-[10px] font-bold px-1 shadow-lg shadow-platerly-green/30">
+          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-recipzee-green text-recipzee-dark text-[10px] font-bold px-1 shadow-lg shadow-recipzee-green/30">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -192,15 +192,15 @@ const NotificationBell = ({ variant = 'default' }) => {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute right-0 mt-2 w-80 max-h-[70vh] rounded-2xl border border-platerly-border bg-platerly-card/95 backdrop-blur-md shadow-2xl overflow-hidden z-50">
+        <div className="absolute right-0 mt-2 w-80 max-h-[70vh] rounded-2xl border border-recipzee-border bg-recipzee-card/95 backdrop-blur-md shadow-2xl overflow-hidden z-50">
           {/* Header */}
-          <div className="sticky top-0 bg-platerly-card border-b border-platerly-border px-4 py-3 flex items-center justify-between">
-            <h3 className="font-semibold text-platerly-text">Notifications</h3>
+          <div className="sticky top-0 bg-recipzee-card border-b border-recipzee-border px-4 py-3 flex items-center justify-between">
+            <h3 className="font-semibold text-recipzee-text">Notifications</h3>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
                 <button
                   onClick={(e) => { e.stopPropagation(); markAllAsRead() }}
-                  className="text-xs text-platerly-green hover:underline flex items-center gap-1"
+                  className="text-xs text-recipzee-green hover:underline flex items-center gap-1"
                 >
                   <Check className="w-3.5 h-3.5" />
                   Mark all read
@@ -208,7 +208,7 @@ const NotificationBell = ({ variant = 'default' }) => {
               )}
               <button
                 onClick={(e) => { e.stopPropagation(); setOpen(false) }}
-                className="p-1 rounded-lg hover:bg-platerly-light/50 text-platerly-subtle hover:text-platerly-text transition-colors"
+                className="p-1 rounded-lg hover:bg-recipzee-light/50 text-recipzee-subtle hover:text-recipzee-text transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -221,10 +221,10 @@ const NotificationBell = ({ variant = 'default' }) => {
               <div className="p-4 space-y-3">
                 {[1, 2, 3].map(i => (
                   <div key={i} className="flex gap-3 animate-pulse">
-                    <div className="w-8 h-8 rounded-full bg-platerly-light" />
+                    <div className="w-8 h-8 rounded-full bg-recipzee-light" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-4 w-3/4 bg-platerly-light rounded" />
-                      <div className="h-3 w-1/4 bg-platerly-light/70 rounded" />
+                      <div className="h-4 w-3/4 bg-recipzee-light rounded" />
+                      <div className="h-3 w-1/4 bg-recipzee-light/70 rounded" />
                     </div>
                   </div>
                 ))}
@@ -242,9 +242,9 @@ const NotificationBell = ({ variant = 'default' }) => {
               </div>
             ) : (
               <div className="p-8 text-center">
-                <Bell className="w-10 h-10 text-platerly-muted mx-auto mb-3" />
-                <p className="text-sm text-platerly-subtle">No notifications yet</p>
-                <p className="text-xs text-platerly-muted mt-1">
+                <Bell className="w-10 h-10 text-recipzee-muted mx-auto mb-3" />
+                <p className="text-sm text-recipzee-subtle">No notifications yet</p>
+                <p className="text-xs text-recipzee-muted mt-1">
                   When someone interacts with you, you'll see it here
                 </p>
               </div>
@@ -253,11 +253,11 @@ const NotificationBell = ({ variant = 'default' }) => {
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="sticky bottom-0 bg-platerly-card border-t border-platerly-border px-4 py-2">
+            <div className="sticky bottom-0 bg-recipzee-card border-t border-recipzee-border px-4 py-2">
               <Link
                 to="/notifications"
                 onClick={() => setOpen(false)}
-                className="block text-center text-sm text-platerly-green hover:underline font-medium"
+                className="block text-center text-sm text-recipzee-green hover:underline font-medium"
               >
                 View all notifications
               </Link>

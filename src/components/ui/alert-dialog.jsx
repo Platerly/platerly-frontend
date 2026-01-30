@@ -32,7 +32,7 @@ export const AlertDialogContent = React.forwardRef(function Content(
         ref={ref}
         className={
           "fixed z-50 left-1/2 top-1/2 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 " +
-          "rounded-2xl border border-platerly-border bg-platerly-card p-5 shadow-xl " +
+          "rounded-2xl border border-recipzee-border bg-recipzee-card p-5 shadow-xl " +
           "focus:outline-none " +
           className
         }
@@ -56,7 +56,7 @@ export const AlertDialogTitle = React.forwardRef(function Title(
   return (
     <AlertDialogPrimitive.Title
       ref={ref}
-      className={"text-lg font-semibold text-platerly-text " + className}
+      className={"text-lg font-semibold text-recipzee-text " + className}
       {...props}
     />
   )
@@ -69,7 +69,7 @@ export const AlertDialogDescription = React.forwardRef(function Description(
   return (
     <AlertDialogPrimitive.Description
       ref={ref}
-      className={"text-sm text-platerly-muted " + className}
+      className={"text-sm text-recipzee-muted " + className}
       {...props}
     />
   )
@@ -102,8 +102,8 @@ export const AlertDialogCancel = React.forwardRef(function Cancel(
       ref={ref}
       className={
         "inline-flex items-center justify-center rounded-xl px-4 py-2 " +
-        "border border-platerly-border bg-transparent text-platerly-text " +
-        "hover:bg-platerly-light focus:ring-2 focus:ring-emerald-400 " +
+        "border border-recipzee-border bg-transparent text-recipzee-text " +
+        "hover:bg-recipzee-light focus:ring-2 focus:ring-emerald-400 " +
         "disabled:opacity-60 " +
         className
       }

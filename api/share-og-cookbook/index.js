@@ -2,7 +2,7 @@
 module.exports = async function (context, _req) {
   try {
     const id = context.bindingData.id;
-    const PUBLIC_BASE = (process.env.PublicBaseUrl || "https://www.platerly.com").replace(/\/+$/, "");
+    const PUBLIC_BASE = (process.env.PublicBaseUrl || "https://www.recipzee.com").replace(/\/+$/, "");
     const BACKEND_BASE = (process.env.BackendBaseUrl || "").replace(/\/+$/, "");
     const fallback = `${PUBLIC_BASE}/og-preview.png`;
 
@@ -19,7 +19,7 @@ module.exports = async function (context, _req) {
     return redirect(imageUrl || fallback);
   } catch (e) {
     context.log.error(e);
-    const PUBLIC_BASE = (process.env.PublicBaseUrl || "https://www.platerly.com").replace(/\/+$/, "");
+    const PUBLIC_BASE = (process.env.PublicBaseUrl || "https://www.recipzee.com").replace(/\/+$/, "");
     return redirect(`${PUBLIC_BASE}/og-preview.png`);
   }
 };

@@ -97,7 +97,7 @@ const RecipeLineage = ({ recipeId, isRemix, remixCount = 0 }) => {
   const hasRemixes = remixes.length > 0
 
   return (
-    <div className="rounded-2xl border border-platerly-border bg-gradient-to-br from-platerly-card via-platerly-card to-purple-900/10 overflow-hidden">
+    <div className="rounded-2xl border border-recipzee-border bg-gradient-to-br from-recipzee-card via-recipzee-card to-purple-900/10 overflow-hidden">
       {/* Header - Always visible */}
       <button
         onClick={() => setExpanded(!expanded)}
@@ -108,7 +108,7 @@ const RecipeLineage = ({ recipeId, isRemix, remixCount = 0 }) => {
             <GitBranch className="w-5 h-5 text-purple-400" />
           </div>
           <div className="text-left">
-            <h3 className="font-semibold text-platerly-text flex items-center gap-2">
+            <h3 className="font-semibold text-recipzee-text flex items-center gap-2">
               Recipe Evolution
               {!isPremium && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-xs font-medium">
@@ -117,7 +117,7 @@ const RecipeLineage = ({ recipeId, isRemix, remixCount = 0 }) => {
                 </span>
               )}
             </h3>
-            <p className="text-sm text-platerly-subtle">
+            <p className="text-sm text-recipzee-subtle">
               {isRemix && 'This recipe was remixed from another'}
               {isRemix && remixCount > 0 && ' • '}
               {remixCount > 0 && `${remixCount} remix${remixCount !== 1 ? 'es' : ''}`}
@@ -126,17 +126,17 @@ const RecipeLineage = ({ recipeId, isRemix, remixCount = 0 }) => {
           </div>
         </div>
         <ChevronRight className={cx(
-          'w-5 h-5 text-platerly-muted transition-transform duration-300',
+          'w-5 h-5 text-recipzee-muted transition-transform duration-300',
           expanded && 'rotate-90'
         )} />
       </button>
 
       {/* Expanded Content */}
       {expanded && (
-        <div className="border-t border-platerly-border">
+        <div className="border-t border-recipzee-border">
           {loading ? (
             <div className="px-5 py-8 flex items-center justify-center">
-              <div className="flex items-center gap-3 text-platerly-subtle">
+              <div className="flex items-center gap-3 text-recipzee-subtle">
                 <div className="w-5 h-5 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
                 <span>Loading evolution...</span>
               </div>
@@ -149,7 +149,7 @@ const RecipeLineage = ({ recipeId, isRemix, remixCount = 0 }) => {
                 <div className="mb-6">
                   <div className="flex items-center gap-2 mb-4">
                     <HoloDot color="purple" size="sm" />
-                    <span className="text-sm font-medium text-platerly-subtle uppercase tracking-wider">Ancestry</span>
+                    <span className="text-sm font-medium text-recipzee-subtle uppercase tracking-wider">Ancestry</span>
                   </div>
 
                   <div className="relative pl-6">
@@ -157,7 +157,7 @@ const RecipeLineage = ({ recipeId, isRemix, remixCount = 0 }) => {
                     <div className="absolute left-[11px] top-3 bottom-3 w-px bg-gradient-to-b from-purple-500/50 via-blue-500/50 to-emerald-500/50" />
 
                     {/* Scrollable ancestry list - shows ~2 items */}
-                    <div className="space-y-3 max-h-[220px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-platerly-border scrollbar-track-transparent">
+                    <div className="space-y-3 max-h-[220px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-recipzee-border scrollbar-track-transparent">
                       {lineage.map((recipe, index) => {
                         const isCurrent = recipe.id === recipeId || recipe.recipeId === recipeId
                         const isOriginal = index === 0
@@ -189,8 +189,8 @@ const RecipeLineage = ({ recipeId, isRemix, remixCount = 0 }) => {
                                     className="w-14 h-14 rounded-lg object-cover hover:ring-2 hover:ring-purple-400/50 transition-all"
                                   />
                                 ) : (
-                                  <div className="w-14 h-14 rounded-lg bg-platerly-border flex items-center justify-center hover:ring-2 hover:ring-purple-400/50 transition-all">
-                                    <Sparkles className="w-6 h-6 text-platerly-muted" />
+                                  <div className="w-14 h-14 rounded-lg bg-recipzee-border flex items-center justify-center hover:ring-2 hover:ring-purple-400/50 transition-all">
+                                    <Sparkles className="w-6 h-6 text-recipzee-muted" />
                                   </div>
                                 )}
                               </Link>
@@ -209,11 +209,11 @@ const RecipeLineage = ({ recipeId, isRemix, remixCount = 0 }) => {
                                   )}
                                 </div>
                                 <Link to={`/recipe/${recipe.id || recipe.recipeId}`}>
-                                  <h4 className="font-semibold text-platerly-text truncate mt-1 hover:text-purple-300 transition-colors">
+                                  <h4 className="font-semibold text-recipzee-text truncate mt-1 hover:text-purple-300 transition-colors">
                                     {recipe.title}
                                   </h4>
                                 </Link>
-                                <div className="flex items-center gap-3 mt-1 text-xs text-platerly-subtle">
+                                <div className="flex items-center gap-3 mt-1 text-xs text-recipzee-subtle">
                                   {username ? (
                                     <Link
                                       to={`/profile/${username}`}
@@ -250,7 +250,7 @@ const RecipeLineage = ({ recipeId, isRemix, remixCount = 0 }) => {
                 <div>
                   <div className="flex items-center gap-2 mb-4">
                     <HoloDot color="green" size="sm" />
-                    <span className="text-sm font-medium text-platerly-subtle uppercase tracking-wider">
+                    <span className="text-sm font-medium text-recipzee-subtle uppercase tracking-wider">
                       Remixes ({remixes.length})
                     </span>
                   </div>
@@ -271,26 +271,26 @@ const RecipeLineage = ({ recipeId, isRemix, remixCount = 0 }) => {
                                 className="w-12 h-12 rounded-lg object-cover hover:ring-2 hover:ring-green-400/50 transition-all"
                               />
                             ) : (
-                              <div className="w-12 h-12 rounded-lg bg-platerly-border flex items-center justify-center hover:ring-2 hover:ring-green-400/50 transition-all">
-                                <Sparkles className="w-5 h-5 text-platerly-muted" />
+                              <div className="w-12 h-12 rounded-lg bg-recipzee-border flex items-center justify-center hover:ring-2 hover:ring-green-400/50 transition-all">
+                                <Sparkles className="w-5 h-5 text-recipzee-muted" />
                               </div>
                             )}
                           </Link>
                           <div className="flex-1 min-w-0">
                             <Link to={`/recipe/${remix.id}`}>
-                              <h4 className="font-medium text-platerly-text text-sm truncate hover:text-green-300 transition-colors">
+                              <h4 className="font-medium text-recipzee-text text-sm truncate hover:text-green-300 transition-colors">
                                 {remix.title}
                               </h4>
                             </Link>
                             {remixUsername ? (
                               <Link
                                 to={`/profile/${remixUsername}`}
-                                className="text-xs text-platerly-subtle hover:text-green-300 transition-colors"
+                                className="text-xs text-recipzee-subtle hover:text-green-300 transition-colors"
                               >
                                 by @{remixUsername}
                               </Link>
                             ) : (
-                              <p className="text-xs text-platerly-subtle">
+                              <p className="text-xs text-recipzee-subtle">
                                 by @unknown
                               </p>
                             )}
@@ -301,7 +301,7 @@ const RecipeLineage = ({ recipeId, isRemix, remixCount = 0 }) => {
                   </div>
 
                   {remixes.length > 6 && (
-                    <p className="text-center text-sm text-platerly-subtle mt-3">
+                    <p className="text-center text-sm text-recipzee-subtle mt-3">
                       +{remixes.length - 6} more remixes
                     </p>
                   )}
@@ -313,8 +313,8 @@ const RecipeLineage = ({ recipeId, isRemix, remixCount = 0 }) => {
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center mx-auto mb-4">
                     <Sparkles className="w-8 h-8 text-purple-400" />
                   </div>
-                  <h4 className="font-semibold text-platerly-text mb-2">Original Recipe</h4>
-                  <p className="text-sm text-platerly-subtle mb-4">
+                  <h4 className="font-semibold text-recipzee-text mb-2">Original Recipe</h4>
+                  <p className="text-sm text-recipzee-subtle mb-4">
                     This recipe hasn't been remixed yet. Be the first to put your own spin on it!
                   </p>
                   <Link
@@ -335,15 +335,15 @@ const RecipeLineage = ({ recipeId, isRemix, remixCount = 0 }) => {
                 <div className="blur-sm opacity-50 pointer-events-none">
                   <div className="flex items-center gap-2 mb-4">
                     <HoloDot color="purple" size="sm" />
-                    <span className="text-sm font-medium text-platerly-subtle uppercase tracking-wider">Ancestry</span>
+                    <span className="text-sm font-medium text-recipzee-subtle uppercase tracking-wider">Ancestry</span>
                   </div>
                   <div className="space-y-3 pl-6">
                     {[1, 2, 3].map(i => (
                       <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
-                        <div className="w-14 h-14 rounded-lg bg-platerly-border" />
+                        <div className="w-14 h-14 rounded-lg bg-recipzee-border" />
                         <div className="flex-1">
-                          <div className="h-4 w-32 bg-platerly-border rounded" />
-                          <div className="h-3 w-24 bg-platerly-border rounded mt-2" />
+                          <div className="h-4 w-32 bg-recipzee-border rounded" />
+                          <div className="h-3 w-24 bg-recipzee-border rounded mt-2" />
                         </div>
                       </div>
                     ))}
@@ -352,19 +352,19 @@ const RecipeLineage = ({ recipeId, isRemix, remixCount = 0 }) => {
 
                 {/* Upgrade overlay */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center p-6 rounded-2xl bg-platerly-card/95 border border-amber-500/30 shadow-2xl max-w-sm">
+                  <div className="text-center p-6 rounded-2xl bg-recipzee-card/95 border border-amber-500/30 shadow-2xl max-w-sm">
                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center mx-auto mb-4">
                       <Lock className="w-7 h-7 text-amber-400" />
                     </div>
-                    <h4 className="text-lg font-bold text-platerly-text mb-2">
+                    <h4 className="text-lg font-bold text-recipzee-text mb-2">
                       Unlock Recipe Evolution
                     </h4>
-                    <p className="text-sm text-platerly-subtle mb-4">
+                    <p className="text-sm text-recipzee-subtle mb-4">
                       See how this recipe evolved from its original, explore the full lineage tree, and discover all community remixes.
                     </p>
                     <Link
                       to="/settings?tab=subscription"
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-platerly-dark font-semibold hover:brightness-110 transition-all"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-recipzee-dark font-semibold hover:brightness-110 transition-all"
                     >
                       <Crown className="w-4 h-4" />
                       Upgrade to Premium

@@ -4,16 +4,16 @@ import PublicPage from "./PublicPage";
 const TermsPage = () => (
   <PublicPage
     title="Terms of Service"
-    subtitle="The rules of using Platerly. Please read carefully."
+    subtitle="The rules of using Recipzee. Please read carefully."
   >
-    <section className="space-y-10 leading-relaxed text-platerly-text">
+    <section className="space-y-10 leading-relaxed text-recipzee-text">
       {/* 1. Acceptance */}
       <div>
         <h2 className="text-xl font-semibold mb-3">1. Acceptance of Terms</h2>
         <p>
-          By creating an account or browsing public content on Platerly, you agree to these
+          By creating an account or browsing public content on Recipzee, you agree to these
           Terms and to our <a href="/privacy">Privacy Policy</a>. If you do not agree, do not
-          use Platerly.
+          use Recipzee.
         </p>
       </div>
 
@@ -21,7 +21,7 @@ const TermsPage = () => (
       <div>
         <h2 className="text-xl font-semibold mb-3">2. Service Description</h2>
         <p>
-          Platerly is a recipe-sharing social network with allergy-aware features, remixing
+          Recipzee is a recipe-sharing social network with allergy-aware features, remixing
           (derivative recipes), and subscription access. Features may evolve over time; we may
           add, modify, or remove functionality.
         </p>
@@ -33,8 +33,8 @@ const TermsPage = () => (
         <ul className="list-disc ml-6 space-y-2">
           <li>You must provide accurate information and keep credentials secure.</li>
           <li>You are responsible for all activity under your account.</li>
-          <li>You must comply with applicable laws where you use Platerly.</li>
-          <li>Platerly is not directed to children below the age required by your local law.</li>
+          <li>You must comply with applicable laws where you use Recipzee.</li>
+          <li>Recipzee is not directed to children below the age required by your local law.</li>
         </ul>
       </div>
 
@@ -43,9 +43,9 @@ const TermsPage = () => (
         <h2 className="text-xl font-semibold mb-3">4. User Content & Licenses</h2>
         <p className="mb-2">
           You retain ownership of content you post (recipes, photos, notes). By posting, you
-          grant Platerly a worldwide, non-exclusive, royalty-free license to host, display,
+          grant Recipzee a worldwide, non-exclusive, royalty-free license to host, display,
           store, cache, reproduce, and distribute your content within the service for the
-          purpose of operating, promoting, and improving Platerly.
+          purpose of operating, promoting, and improving Recipzee.
         </p>
         <p>
           You also grant other users a non-exclusive license to remix your recipes within
@@ -90,7 +90,7 @@ const TermsPage = () => (
       <div>
         <h2 className="text-xl font-semibold mb-3">8. Disclaimers</h2>
         <p className="mb-2">
-          Platerly is provided “as is.” We do not guarantee uninterrupted or error-free service,
+          Recipzee is provided “as is.” We do not guarantee uninterrupted or error-free service,
           and we disclaim warranties to the fullest extent permitted by law.
         </p>
         <p>
@@ -105,7 +105,7 @@ const TermsPage = () => (
       <div>
         <h2 className="text-xl font-semibold mb-3">9. Limitation of Liability</h2>
         <p>
-          To the maximum extent permitted by law, Platerly and its affiliates will not be liable
+          To the maximum extent permitted by law, Recipzee and its affiliates will not be liable
           for indirect, incidental, special, consequential, or punitive damages, or any loss of
           profits or data, arising from or related to your use of the service.
         </p>
@@ -115,7 +115,7 @@ const TermsPage = () => (
       <div>
         <h2 className="text-xl font-semibold mb-3">10. Indemnification</h2>
         <p>
-          You agree to defend, indemnify, and hold harmless Platerly and its affiliates from
+          You agree to defend, indemnify, and hold harmless Recipzee and its affiliates from
           claims, liabilities, damages, and expenses (including reasonable legal fees) arising
           from your content, your use of the service, or your breach of these Terms.
         </p>
@@ -126,7 +126,7 @@ const TermsPage = () => (
         <h2 className="text-xl font-semibold mb-3">11. Termination</h2>
         <p>
           We may suspend or terminate access for violations of these Terms or to protect users,
-          our platform, or third parties. You may stop using Platerly at any time.
+          our platform, or third parties. You may stop using Recipzee at any time.
         </p>
       </div>
 
@@ -155,7 +155,7 @@ const TermsPage = () => (
         <ul className="list-disc ml-6 space-y-2">
           <li><strong>Severability:</strong> If a term is unenforceable, the rest remain in effect.</li>
           <li><strong>Waiver:</strong> A failure to enforce a provision is not a waiver.</li>
-          <li><strong>Entire Agreement:</strong> These Terms plus referenced policies form the whole agreement between you and Platerly.</li>
+          <li><strong>Entire Agreement:</strong> These Terms plus referenced policies form the whole agreement between you and Recipzee.</li>
         </ul>
       </div>
 
@@ -167,7 +167,7 @@ const TermsPage = () => (
         </p>
       </div>
 
-      <p className="pt-4 text-sm text-platerly-subtle">Last updated: Aug 26, 2025</p>
+      <p className="pt-4 text-sm text-recipzee-subtle">Last updated: Aug 26, 2025</p>
     </section>
   </PublicPage>
 );

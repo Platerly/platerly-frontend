@@ -4,8 +4,8 @@
 
 /* App background + base text */
 html, body {
-  background-color: #0B1F1F; /* platerly-dark */
-  color: #FAF3E6;           /* platerly-text */
+  background-color: #0B1F1F; /* recipzee-dark */
+  color: #FAF3E6;           /* recipzee-text */
   margin: 0;
   min-height: 100vh;
 }
@@ -13,16 +13,16 @@ html, body {
 /* --- Brand form components (no gray!) --- */
 @layer components {
   /* Labels + helpers */
-  .pl-label { @apply text-sm font-medium text-platerly-muted; }
-  .pl-help  { @apply text-xs text-platerly-muted; }
+  .pl-label { @apply text-sm font-medium text-recipzee-muted; }
+  .pl-help  { @apply text-xs text-recipzee-muted; }
 
   /* Inputs / Textareas */
   .pl-field {
     @apply w-full rounded-lg px-3 py-2.5
-           bg-platerly-card/80
-           border border-platerly-border
-           text-platerly-text placeholder:text-platerly-muted
-           focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green/50;
+           bg-recipzee-card/80
+           border border-recipzee-border
+           text-recipzee-text placeholder:text-recipzee-muted
+           focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 focus:border-recipzee-green/50;
   }
   textarea.pl-field { @apply resize-y; }
 
@@ -44,36 +44,36 @@ html, body {
   /* Chips (e.g., Sensitivity options) */
   .pl-chip {
     @apply inline-flex items-center gap-2 rounded-full px-3 py-1
-           bg-platerly-green/10 text-platerly-green ring-1 ring-platerly-green/30;
+           bg-recipzee-green/10 text-recipzee-green ring-1 ring-recipzee-green/30;
   }
   .pl-chip-muted {
-    @apply bg-platerly-light text-platerly-subtle ring-1 ring-platerly-border;
+    @apply bg-recipzee-light text-recipzee-subtle ring-1 ring-recipzee-border;
   }
   .pl-chip-active {
-    @apply bg-platerly-green/15 text-platerly-text ring-1 ring-platerly-green/40;
+    @apply bg-recipzee-green/15 text-recipzee-text ring-1 ring-recipzee-green/40;
   }
 
   /* Buttons */
   .pl-btn {
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2
-           font-medium transition focus:outline-none focus:ring-2 focus:ring-platerly-green/40;
+           font-medium transition focus:outline-none focus:ring-2 focus:ring-recipzee-green/40;
   }
   .pl-btn-primary {
-    @apply pl-btn bg-platerly-green text-black hover:brightness-110;
+    @apply pl-btn bg-recipzee-green text-black hover:brightness-110;
   }
   .pl-btn-secondary {
-    @apply pl-btn bg-white/5 text-platerly-text border border-platerly-border hover:bg-white/10;
+    @apply pl-btn bg-white/5 text-recipzee-text border border-recipzee-border hover:bg-white/10;
   }
 
   /* Form card container */
   .pl-card {
-    @apply bg-platerly-card border border-platerly-border rounded-2xl shadow-xl;
+    @apply bg-recipzee-card border border-recipzee-border rounded-2xl shadow-xl;
   }
 }
 
 /* Brand accent for native controls (checkbox/radio) */
 input[type="checkbox"],
-input[type="radio"] { accent-color: #22C55E; } /* platerly-green */
+input[type="radio"] { accent-color: #22C55E; } /* recipzee-green */
 
 /* Hide scrollbars utility */
 .no-scrollbar::-webkit-scrollbar { display: none; }

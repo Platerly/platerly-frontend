@@ -45,15 +45,15 @@ const FollowButton = ({
   };
 
   const baseStyles =
-    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-platerly-dark select-none min-h-[44px]";
+    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-recipzee-dark select-none min-h-[44px]";
 
   const variants = {
     outline: isFollowing
-      ? "text-platerly-subtle border border-platerly-border bg-transparent hover:text-platerly-text hover:border-platerly-green/30 hover:bg-platerly-light/50 focus:ring-platerly-green/50"
-      : "text-platerly-green border border-platerly-green/50 hover:bg-platerly-green/10 focus:ring-platerly-green/50",
+      ? "text-recipzee-subtle border border-recipzee-border bg-transparent hover:text-recipzee-text hover:border-recipzee-green/30 hover:bg-recipzee-light/50 focus:ring-recipzee-green/50"
+      : "text-recipzee-green border border-recipzee-green/50 hover:bg-recipzee-green/10 focus:ring-recipzee-green/50",
     solid: isFollowing
-      ? "bg-platerly-light text-platerly-subtle border border-platerly-border hover:bg-platerly-light/70 hover:border-platerly-green/30 focus:ring-platerly-green/50"
-      : "bg-platerly-green text-platerly-dark border border-transparent hover:brightness-110 focus:ring-platerly-green/50",
+      ? "bg-recipzee-light text-recipzee-subtle border border-recipzee-border hover:bg-recipzee-light/70 hover:border-recipzee-green/30 focus:ring-recipzee-green/50"
+      : "bg-recipzee-green text-recipzee-dark border border-transparent hover:brightness-110 focus:ring-recipzee-green/50",
   };
 
   return (

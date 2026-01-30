@@ -45,9 +45,9 @@ const StatusBadge = ({ status }) => {
 /* ---------- skeleton ---------- */
 const Skeleton = () => (
   <div className="animate-pulse space-y-3">
-    <div className="h-5 w-40 bg-platerly-border/50 rounded" />
-    <div className="h-4 w-56 bg-platerly-border/40 rounded" />
-    <div className="h-10 w-44 bg-platerly-border/40 rounded-xl" />
+    <div className="h-5 w-40 bg-recipzee-border/50 rounded" />
+    <div className="h-4 w-56 bg-recipzee-border/40 rounded" />
+    <div className="h-10 w-44 bg-recipzee-border/40 rounded-xl" />
   </div>
 );
 
@@ -137,11 +137,11 @@ export default function BillingPanel() {
 
   const actionBtn = (label, onClick, variant = "primary", disabled = false) => {
     const base =
-      "px-4 py-2 rounded-xl transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-platerly-green/60";
+      "px-4 py-2 rounded-xl transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-recipzee-green/60";
     const styles = {
-      primary: "bg-platerly-green hover:bg-platerly-green/90 text-white disabled:opacity-50",
+      primary: "bg-recipzee-green hover:bg-recipzee-green/90 text-white disabled:opacity-50",
       neutral:
-        "bg-platerly-card hover:bg-platerly-card/80 text-platerly-text border border-platerly-border disabled:opacity-50",
+        "bg-recipzee-card hover:bg-recipzee-card/80 text-recipzee-text border border-recipzee-border disabled:opacity-50",
     };
     return (
       <button
@@ -206,14 +206,14 @@ export default function BillingPanel() {
       <section
         className={cx(
           "rounded-2xl border p-5 md:p-6",
-          "bg-platerly-card border-platerly-border text-platerly-text"
+          "bg-recipzee-card border-recipzee-border text-recipzee-text"
         )}
         aria-labelledby="billing-title"
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 id="billing-title" className="text-xl font-semibold tracking-tight">
-              Platerly Premium
+              Recipzee Premium
             </h3>
             <p className="text-sm opacity-70 mt-1">{headerNote}</p>
           </div>

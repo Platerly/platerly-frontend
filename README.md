@@ -1,3 +1,3 @@
-# Platerly
+# Recipzee
 
-This is Platerly.com Frontend repo. 
+This is Recipzee.com Frontend repo. 

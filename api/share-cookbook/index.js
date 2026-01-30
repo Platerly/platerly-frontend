@@ -15,9 +15,9 @@ module.exports = async function (context, req) {
       return;
     }
 
-    const PUBLIC_BASE = (process.env.PublicBaseUrl || "https://www.platerly.com").replace(/\/+$/, "");
+    const PUBLIC_BASE = (process.env.PublicBaseUrl || "https://www.recipzee.com").replace(/\/+$/, "");
     const BACKEND_BASE = (process.env.BackendBaseUrl || "").replace(/\/+$/, "");
-    const site = "Platerly";
+    const site = "Recipzee";
 
     if (!BACKEND_BASE) {
       context.res = {
@@ -35,7 +35,7 @@ module.exports = async function (context, req) {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'User-Agent': 'Platerly-ShareBot/1.0'
+        'User-Agent': 'Recipzee-ShareBot/1.0'
       }
     });
     if (!r.ok) {
@@ -96,8 +96,8 @@ module.exports = async function (context, req) {
 <meta name="twitter:description" content="${E(desc)}">
 <meta name="twitter:image" content="${E(shareImage)}">
 <meta name="twitter:url" content="${canonicalUrl}">
-<meta name="twitter:domain" content="platerly.com">
-<meta name="twitter:site" content="@platerlyinc">
+<meta name="twitter:domain" content="recipzee.com">
+<meta name="twitter:site" content="@recipzee">
 
 <meta http-equiv="refresh" content="0; url=${canonicalUrl}">
 <style>

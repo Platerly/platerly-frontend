@@ -47,7 +47,7 @@ const renderWithMentions = (text) => {
         <Link
           key={i}
           to={`/profile/${username}`}
-          className="text-platerly-green hover:underline font-medium"
+          className="text-recipzee-green hover:underline font-medium"
           onClick={(e) => e.stopPropagation()}
         >
           {part}
@@ -222,17 +222,17 @@ const CommentInput = ({
           }}
           placeholder={placeholder}
           disabled={loading}
-          className="w-full bg-platerly-light/50 border border-platerly-border text-platerly-text rounded-xl p-3 text-sm placeholder:text-platerly-muted focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green/30 transition-all resize-none disabled:opacity-50"
+          className="w-full bg-recipzee-light/50 border border-recipzee-border text-recipzee-text rounded-xl p-3 text-sm placeholder:text-recipzee-muted focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 focus:border-recipzee-green/30 transition-all resize-none disabled:opacity-50"
         />
 
         {/* Mention autocomplete dropdown */}
         {mentionState.isOpen && (mentionState.results.length > 0 || mentionState.loading) && (
           <div
             ref={dropdownRef}
-            className="absolute left-0 right-0 bottom-full mb-1 z-20 bg-platerly-card border border-platerly-border rounded-xl shadow-xl overflow-hidden"
+            className="absolute left-0 right-0 bottom-full mb-1 z-20 bg-recipzee-card border border-recipzee-border rounded-xl shadow-xl overflow-hidden"
           >
             {mentionState.loading && mentionState.results.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-platerly-subtle">Searching...</div>
+              <div className="px-3 py-2 text-sm text-recipzee-subtle">Searching...</div>
             ) : (
               <ul className="max-h-48 overflow-y-auto">
                 {mentionState.results.map((user, idx) => (
@@ -245,27 +245,27 @@ const CommentInput = ({
                       }}
                       className={`w-full flex items-center gap-3 px-3 py-2 text-left transition-colors ${
                         idx === mentionState.selectedIndex
-                          ? 'bg-platerly-green/10 text-platerly-green'
-                          : 'hover:bg-platerly-light/50'
+                          ? 'bg-recipzee-green/10 text-recipzee-green'
+                          : 'hover:bg-recipzee-light/50'
                       }`}
                     >
                       {user.profileImageUrl ? (
                         <img
                           src={user.profileImageUrl}
                           alt=""
-                          className="w-8 h-8 rounded-full object-cover border border-platerly-border"
+                          className="w-8 h-8 rounded-full object-cover border border-recipzee-border"
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-platerly-green/20 flex items-center justify-center text-xs font-bold text-platerly-green">
+                        <div className="w-8 h-8 rounded-full bg-recipzee-green/20 flex items-center justify-center text-xs font-bold text-recipzee-green">
                           {user.username?.[0]?.toUpperCase() || 'U'}
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-platerly-text truncate">
+                        <div className="text-sm font-medium text-recipzee-text truncate">
                           @{user.username}
                         </div>
                         {user.displayName && (
-                          <div className="text-xs text-platerly-subtle truncate">
+                          <div className="text-xs text-recipzee-subtle truncate">
                             {user.displayName}
                           </div>
                         )}
@@ -279,7 +279,7 @@ const CommentInput = ({
         )}
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-xs text-platerly-muted">
+        <span className="text-xs text-recipzee-muted">
           Tip: Type @ to mention someone. Ctrl+Enter to post.
         </span>
         <div className="flex items-center gap-2">
@@ -287,7 +287,7 @@ const CommentInput = ({
             <button
               onClick={onCancel}
               disabled={loading}
-              className="px-3 py-1.5 text-sm text-platerly-subtle hover:text-platerly-text transition-colors disabled:opacity-50"
+              className="px-3 py-1.5 text-sm text-recipzee-subtle hover:text-recipzee-text transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
@@ -295,7 +295,7 @@ const CommentInput = ({
           <button
             onClick={onSubmit}
             disabled={loading || !value.trim()}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-platerly-green text-platerly-dark rounded-lg font-medium text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-platerly-green/20"
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-recipzee-green text-recipzee-dark rounded-lg font-medium text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-recipzee-green/20"
           >
             <Send className="w-3.5 h-3.5" />
             {loading ? 'Posting...' : submitLabel}
@@ -430,8 +430,8 @@ const Comment = ({
   }
 
   return (
-    <div className={`${depth > 0 ? 'ml-8 pl-4 border-l-2 border-platerly-border/50' : ''}`}>
-      <div className="rounded-xl border border-platerly-border bg-platerly-card/50 backdrop-blur-sm p-4 transition-all hover:border-platerly-border/80">
+    <div className={`${depth > 0 ? 'ml-8 pl-4 border-l-2 border-recipzee-border/50' : ''}`}>
+      <div className="rounded-xl border border-recipzee-border bg-recipzee-card/50 backdrop-blur-sm p-4 transition-all hover:border-recipzee-border/80">
         {/* Header */}
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -443,22 +443,22 @@ const Comment = ({
                 <img
                   src={comment.profileImageUrl}
                   alt={comment.username}
-                  className="w-8 h-8 rounded-full object-cover border border-platerly-border group-hover:border-platerly-green/30 transition-colors"
+                  className="w-8 h-8 rounded-full object-cover border border-recipzee-border group-hover:border-recipzee-green/30 transition-colors"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-platerly-green/20 flex items-center justify-center text-xs font-bold text-platerly-green">
+                <div className="w-8 h-8 rounded-full bg-recipzee-green/20 flex items-center justify-center text-xs font-bold text-recipzee-green">
                   {comment.username?.[0]?.toUpperCase() || 'U'}
                 </div>
               )}
-              <span className="font-medium text-sm text-platerly-text group-hover:text-platerly-green transition-colors">
+              <span className="font-medium text-sm text-recipzee-text group-hover:text-recipzee-green transition-colors">
                 @{comment.username}
               </span>
             </Link>
-            <span className="text-xs text-platerly-muted">
+            <span className="text-xs text-recipzee-muted">
               {formatRelativeTime(comment.createdAt)}
             </span>
             {comment.updatedAt && (
-              <span className="text-xs text-platerly-muted italic">(edited)</span>
+              <span className="text-xs text-recipzee-muted italic">(edited)</span>
             )}
           </div>
 
@@ -467,21 +467,21 @@ const Comment = ({
             <div ref={menuRef} className="relative">
               <button
                 onClick={(e) => { e.stopPropagation(); setMenuOpen(v => !v) }}
-                className="p-1.5 rounded-lg text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light/50 transition-colors"
+                className="p-1.5 rounded-lg text-recipzee-subtle hover:text-recipzee-text hover:bg-recipzee-light/50 transition-colors"
               >
                 <MoreHorizontal className="w-4 h-4" />
               </button>
               {menuOpen && (
-                <div className="absolute right-0 mt-1 w-32 rounded-xl bg-platerly-card border border-platerly-border shadow-xl overflow-hidden z-10">
+                <div className="absolute right-0 mt-1 w-32 rounded-xl bg-recipzee-card border border-recipzee-border shadow-xl overflow-hidden z-10">
                   <button
                     onClick={() => { setIsEditing(true); setMenuOpen(false) }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-platerly-light/50 transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-recipzee-light/50 transition-colors"
                   >
                     <Pencil className="w-3.5 h-3.5" /> Edit
                   </button>
                   <button
                     onClick={() => { handleDelete(); setMenuOpen(false) }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-platerly-light/50 transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-recipzee-light/50 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" /> Delete
                   </button>
@@ -503,21 +503,21 @@ const Comment = ({
             autoFocus
           />
         ) : (
-          <p className="text-sm text-platerly-text/90 whitespace-pre-wrap">
+          <p className="text-sm text-recipzee-text/90 whitespace-pre-wrap">
             {renderWithMentions(comment.content)}
           </p>
         )}
 
         {/* Actions */}
         {!isEditing && (
-          <div className="flex items-center gap-4 mt-3 pt-2 border-t border-platerly-border/50">
+          <div className="flex items-center gap-4 mt-3 pt-2 border-t border-recipzee-border/50">
             <button
               onClick={handleLike}
               disabled={!token}
               className={`inline-flex items-center gap-1.5 text-xs transition-colors ${
                 isLiked
                   ? 'text-red-400'
-                  : 'text-platerly-subtle hover:text-red-400'
+                  : 'text-recipzee-subtle hover:text-red-400'
               } disabled:opacity-50`}
             >
               <Heart className={`w-4 h-4 ${isLiked ? 'fill-red-400' : ''}`} />
@@ -527,7 +527,7 @@ const Comment = ({
             {depth === 0 && token && (
               <button
                 onClick={() => setShowReplyInput(v => !v)}
-                className="inline-flex items-center gap-1.5 text-xs text-platerly-subtle hover:text-platerly-green transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs text-recipzee-subtle hover:text-recipzee-green transition-colors"
               >
                 <Reply className="w-4 h-4" />
                 Reply
@@ -537,7 +537,7 @@ const Comment = ({
             {replies.length > 0 && (
               <button
                 onClick={() => setShowReplies(v => !v)}
-                className="inline-flex items-center gap-1 text-xs text-platerly-subtle hover:text-platerly-text transition-colors ml-auto"
+                className="inline-flex items-center gap-1 text-xs text-recipzee-subtle hover:text-recipzee-text transition-colors ml-auto"
               >
                 {showReplies ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 {replies.length} {replies.length === 1 ? 'reply' : 'replies'}
@@ -718,18 +718,18 @@ const CommentsSection = ({ recipeId, initialComments = [] }) => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-platerly-green/20 flex items-center justify-center">
-          <MessageSquare className="w-5 h-5 text-platerly-green" />
+        <div className="w-10 h-10 rounded-xl bg-recipzee-green/20 flex items-center justify-center">
+          <MessageSquare className="w-5 h-5 text-recipzee-green" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-platerly-text">Comments</h3>
-          <p className="text-sm text-platerly-subtle">{comments.length} {comments.length === 1 ? 'comment' : 'comments'}</p>
+          <h3 className="text-lg font-semibold text-recipzee-text">Comments</h3>
+          <p className="text-sm text-recipzee-subtle">{comments.length} {comments.length === 1 ? 'comment' : 'comments'}</p>
         </div>
       </div>
 
       {/* New Comment Form */}
       {token ? (
-        <div className="rounded-2xl border border-platerly-border bg-platerly-card/70 backdrop-blur-sm p-4">
+        <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/70 backdrop-blur-sm p-4">
           <CommentInput
             value={newComment}
             onChange={setNewComment}
@@ -738,9 +738,9 @@ const CommentsSection = ({ recipeId, initialComments = [] }) => {
           />
         </div>
       ) : (
-        <div className="rounded-2xl border border-platerly-border bg-platerly-card/50 p-4 text-center">
-          <p className="text-sm text-platerly-subtle">
-            <Link to="/login" className="text-platerly-green hover:underline font-medium">Log in</Link> to join the conversation.
+        <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/50 p-4 text-center">
+          <p className="text-sm text-recipzee-subtle">
+            <Link to="/login" className="text-recipzee-green hover:underline font-medium">Log in</Link> to join the conversation.
           </p>
         </div>
       )}
@@ -763,9 +763,9 @@ const CommentsSection = ({ recipeId, initialComments = [] }) => {
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-platerly-border bg-platerly-card/30 p-8 text-center">
-          <MessageSquare className="w-10 h-10 text-platerly-muted mx-auto mb-3" />
-          <p className="text-platerly-subtle">No comments yet. Be the first to share your thoughts!</p>
+        <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/30 p-8 text-center">
+          <MessageSquare className="w-10 h-10 text-recipzee-muted mx-auto mb-3" />
+          <p className="text-recipzee-subtle">No comments yet. Be the first to share your thoughts!</p>
         </div>
       )}
 

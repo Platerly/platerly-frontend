@@ -86,20 +86,20 @@ const Login = () => {
 
 
   return (
-    <div className="min-h-[100svh] bg-platerly-dark text-platerly-text flex items-center justify-center px-4 py-10 relative overflow-hidden">
+    <div className="min-h-[100svh] bg-recipzee-dark text-recipzee-text flex items-center justify-center px-4 py-10 relative overflow-hidden">
       {/* Background gradient orbs - hidden on mobile for performance */}
-      <div className="hidden sm:block absolute top-1/4 -left-32 w-80 h-80 bg-platerly-green/10 rounded-full blur-[120px]" />
+      <div className="hidden sm:block absolute top-1/4 -left-32 w-80 h-80 bg-recipzee-green/10 rounded-full blur-[120px]" />
       <div className="hidden sm:block absolute bottom-1/4 -right-32 w-80 h-80 bg-emerald-500/10 rounded-full blur-[120px]" />
 
       <div className="w-full max-w-md relative z-10">
         {/* Card - no backdrop-blur on mobile for performance */}
-        <div className="bg-platerly-card sm:bg-platerly-card/80 sm:backdrop-blur-md border border-platerly-border rounded-2xl shadow-2xl shadow-black/20 p-6 sm:p-8">
+        <div className="bg-recipzee-card sm:bg-recipzee-card/80 sm:backdrop-blur-md border border-recipzee-border rounded-2xl shadow-2xl shadow-black/20 p-6 sm:p-8">
           {/* Header */}
           <div className="text-center mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              Welcome back to <span className="text-platerly-accent">Platerly</span>
+              Welcome back to <span className="text-recipzee-accent">Recipzee</span>
             </h1>
-            <p className="text-sm text-platerly-muted mt-2">
+            <p className="text-sm text-recipzee-muted mt-2">
               One click to sign in
             </p>
           </div>
@@ -138,7 +138,7 @@ const Login = () => {
             <button
               type="button"
               onClick={() => setShowEmailForm(!showEmailForm)}
-              className="w-full flex items-center justify-center gap-2 py-3 text-sm text-platerly-muted hover:text-platerly-text transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 text-sm text-recipzee-muted hover:text-recipzee-text transition-colors"
             >
               <span>Or use email instead</span>
               {showEmailForm ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -174,13 +174,13 @@ const Login = () => {
                   <input
                     id="remember"
                     type="checkbox"
-                    className="h-4 w-4 rounded border-platerly-border bg-transparent"
+                    className="h-4 w-4 rounded border-recipzee-border bg-transparent"
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
                   />
-                  <span className="text-platerly-muted">Remember me</span>
+                  <span className="text-recipzee-muted">Remember me</span>
                 </label>
-                <Link to="/forgot-password" className="text-platerly-accent hover:underline">
+                <Link to="/forgot-password" className="text-recipzee-accent hover:underline">
                   Forgot password?
                 </Link>
               </div>
@@ -191,16 +191,16 @@ const Login = () => {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-platerly-muted mt-6">
+          <p className="text-center text-sm text-recipzee-muted mt-6">
             Don’t have an account?{' '}
-            <Link to="/register" className="text-platerly-accent hover:underline">
-              Join Platerly
+            <Link to="/register" className="text-recipzee-accent hover:underline">
+              Join Recipzee
             </Link>
           </p>
         </div>
 
         {/* Footer tiny text */}
-        <p className="text-center text-xs text-platerly-muted mt-4">By continuing, you agree to our{' '}
+        <p className="text-center text-xs text-recipzee-muted mt-4">By continuing, you agree to our{' '}
           <Link to="/terms" className="underline hover:no-underline">Terms</Link> &{' '}
           <Link to="/privacy" className="underline hover:no-underline">Privacy</Link>.
         </p>

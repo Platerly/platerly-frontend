@@ -57,8 +57,8 @@ const severityTextClass = (severity) => {
   switch ((severity || '').toLowerCase()) {
     case 'high':   return 'text-red-400 font-semibold'
     case 'medium': return 'text-amber-400 font-medium'
-    case 'low':    return 'text-platerly-green'
-    default:       return 'text-platerly-subtle'
+    case 'low':    return 'text-recipzee-green'
+    default:       return 'text-recipzee-subtle'
   }
 }
 // Allergen helpers imported from utils/allergenHelpers.js
@@ -257,7 +257,7 @@ const RecipeCard = ({
       whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + shareUrl)}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
       reddit: `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(title)}`,
-      email: `mailto:?subject=${encodeURIComponent('Check this recipe on Platerly')}&body=${encodeURIComponent(text + '\n\n' + shareUrl)}`
+      email: `mailto:?subject=${encodeURIComponent('Check this recipe on Recipzee')}&body=${encodeURIComponent(text + '\n\n' + shareUrl)}`
     }
     const u = links[platform]
     if (u) window.open(u, '_blank', 'noopener,noreferrer')
@@ -278,7 +278,7 @@ const RecipeCard = ({
     <Comp
       className={[
         'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium',
-        'bg-platerly-green/20 text-platerly-text border border-platerly-green/20',
+        'bg-recipzee-green/20 text-recipzee-text border border-recipzee-green/20',
         'backdrop-blur-sm shadow-sm transition-all duration-150',
         'whitespace-nowrap select-none',
         className
@@ -296,7 +296,7 @@ const RecipeCard = ({
   return (
     <div
       onClick={handleCardClick}
-      className="relative rounded-2xl bg-platerly-card border border-platerly-border shadow-md hover:shadow-lg cursor-pointer transition"
+      className="relative rounded-2xl bg-recipzee-card border border-recipzee-border shadow-md hover:shadow-lg cursor-pointer transition"
     >
       {/* Image */}
       <div className="relative">
@@ -337,19 +337,19 @@ const RecipeCard = ({
       </div>
 
       <div className="p-4 sm:p-5">
-        <h2 className="text-base sm:text-lg font-semibold text-platerly-text tracking-wide mb-1 line-clamp-2">{title}</h2>
+        <h2 className="text-base sm:text-lg font-semibold text-recipzee-text tracking-wide mb-1 line-clamp-2">{title}</h2>
 
         {author && (
           <p
             onClick={handleProfileClick}
-            className="text-[13px] sm:text-sm text-platerly-green hover:text-platerly-green/80 cursor-pointer mb-2 transition-colors"
+            className="text-[13px] sm:text-sm text-recipzee-green hover:text-recipzee-green/80 cursor-pointer mb-2 transition-colors"
           >
             by {author}
           </p>
         )}
 
         {description && (
-          <p className="text-sm text-platerly-subtle mb-2 line-clamp-2 md:line-clamp-3">{description}</p>
+          <p className="text-sm text-recipzee-subtle mb-2 line-clamp-2 md:line-clamp-3">{description}</p>
         )}
 
         {/* Compact meta row */}
@@ -383,10 +383,10 @@ const RecipeCard = ({
         )}
 
         <div className="flex items-center justify-between">
-          <div className="flex gap-4 sm:gap-6 items-center text-sm text-platerly-subtle">
+          <div className="flex gap-4 sm:gap-6 items-center text-sm text-recipzee-subtle">
             <button
               onClick={(e) => { e.stopPropagation(); handleLikeToggle() }}
-              className={`flex items-center gap-1 min-h-[44px] ${isLikedState ? 'text-red-500' : 'text-platerly-subtle hover:text-red-500'}`}
+              className={`flex items-center gap-1 min-h-[44px] ${isLikedState ? 'text-red-500' : 'text-recipzee-subtle hover:text-red-500'}`}
             >
               <Heart className={`w-5 h-5 sm:w-4 sm:h-4 ${isLikedState ? 'fill-red-500 text-red-500' : ''}`} />
               {formatCount(likeCount)}
@@ -394,7 +394,7 @@ const RecipeCard = ({
 
             <button
               onClick={(e) => { e.stopPropagation(); handleRepostToggle() }}
-              className={`flex items-center gap-1 hover:text-platerly-green ${isReposted ? 'text-platerly-green' : ''} min-h-[44px]`}
+              className={`flex items-center gap-1 hover:text-recipzee-green ${isReposted ? 'text-recipzee-green' : ''} min-h-[44px]`}
             >
               <Repeat2 className="w-5 h-5 sm:w-4 sm:h-4" />
               {formatCount(repostCount)}
@@ -413,7 +413,7 @@ const RecipeCard = ({
             <button
               onClick={toggleShareMenu}
               onMouseDown={(e) => e.stopPropagation()}
-              className="flex items-center gap-2 text-sm text-platerly-subtle hover:text-platerly-green min-h-[44px]"
+              className="flex items-center gap-2 text-sm text-recipzee-subtle hover:text-recipzee-green min-h-[44px]"
               aria-haspopup="menu"
               aria-expanded={shareOpen}
             >
@@ -424,15 +424,15 @@ const RecipeCard = ({
             {shareOpen && (
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="fixed inset-x-0 bottom-0 sm:absolute sm:inset-auto sm:right-0 sm:mt-2 sm:bottom-auto w-full sm:w-64 rounded-t-2xl sm:rounded-xl border border-platerly-border bg-platerly-card shadow-2xl z-40 overflow-hidden"
+                className="fixed inset-x-0 bottom-0 sm:absolute sm:inset-auto sm:right-0 sm:mt-2 sm:bottom-auto w-full sm:w-64 rounded-t-2xl sm:rounded-xl border border-recipzee-border bg-recipzee-card shadow-2xl z-40 overflow-hidden"
                 role="menu"
               >
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-platerly-border bg-platerly-light/30">
-                  <span className="text-sm font-semibold text-platerly-text">Share Recipe</span>
+                <div className="flex items-center justify-between px-4 py-3 border-b border-recipzee-border bg-recipzee-light/30">
+                  <span className="text-sm font-semibold text-recipzee-text">Share Recipe</span>
                   <button
                     onClick={(e) => { e.stopPropagation(); setShareOpen(false) }}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light transition-colors"
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-recipzee-subtle hover:text-recipzee-text hover:bg-recipzee-light transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -443,98 +443,98 @@ const RecipeCard = ({
                   <div className="grid grid-cols-4 gap-2 mb-2">
                     <button
                       onClick={(e) => shareTo(e, 'twitter')}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                       role="menuitem"
                       title="Share on X"
                     >
                       <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center group-hover:scale-110 transition-transform">
                         <XIcon className="w-5 h-5 text-white" />
                       </div>
-                      <span className="text-[11px] text-platerly-subtle">X</span>
+                      <span className="text-[11px] text-recipzee-subtle">X</span>
                     </button>
 
                     <button
                       onClick={(e) => shareTo(e, 'facebook')}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                       role="menuitem"
                       title="Share on Facebook"
                     >
                       <div className="w-10 h-10 rounded-full bg-[#1877F2] flex items-center justify-center group-hover:scale-110 transition-transform">
                         <FacebookIcon className="w-5 h-5 text-white" />
                       </div>
-                      <span className="text-[11px] text-platerly-subtle">Facebook</span>
+                      <span className="text-[11px] text-recipzee-subtle">Facebook</span>
                     </button>
 
                     <button
                       onClick={(e) => shareTo(e, 'whatsapp')}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                       role="menuitem"
                       title="Share on WhatsApp"
                     >
                       <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center group-hover:scale-110 transition-transform">
                         <WhatsAppIcon className="w-5 h-5 text-white" />
                       </div>
-                      <span className="text-[11px] text-platerly-subtle">WhatsApp</span>
+                      <span className="text-[11px] text-recipzee-subtle">WhatsApp</span>
                     </button>
 
                     <button
                       onClick={(e) => shareTo(e, 'pinterest')}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                       role="menuitem"
                       title="Share on Pinterest"
                     >
                       <div className="w-10 h-10 rounded-full bg-[#E60023] flex items-center justify-center group-hover:scale-110 transition-transform">
                         <PinterestIcon className="w-5 h-5 text-white" />
                       </div>
-                      <span className="text-[11px] text-platerly-subtle">Pinterest</span>
+                      <span className="text-[11px] text-recipzee-subtle">Pinterest</span>
                     </button>
 
                     <button
                       onClick={(e) => shareTo(e, 'linkedin')}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                       role="menuitem"
                       title="Share on LinkedIn"
                     >
                       <div className="w-10 h-10 rounded-full bg-[#0A66C2] flex items-center justify-center group-hover:scale-110 transition-transform">
                         <LinkedInIcon className="w-5 h-5 text-white" />
                       </div>
-                      <span className="text-[11px] text-platerly-subtle">LinkedIn</span>
+                      <span className="text-[11px] text-recipzee-subtle">LinkedIn</span>
                     </button>
 
                     <button
                       onClick={(e) => shareTo(e, 'reddit')}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                       role="menuitem"
                       title="Share on Reddit"
                     >
                       <div className="w-10 h-10 rounded-full bg-[#FF4500] flex items-center justify-center group-hover:scale-110 transition-transform">
                         <RedditIcon className="w-5 h-5 text-white" />
                       </div>
-                      <span className="text-[11px] text-platerly-subtle">Reddit</span>
+                      <span className="text-[11px] text-recipzee-subtle">Reddit</span>
                     </button>
 
                     <button
                       onClick={(e) => shareTo(e, 'email')}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                       role="menuitem"
                       title="Share via Email"
                     >
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <Mail className="w-5 h-5 text-white" />
                       </div>
-                      <span className="text-[11px] text-platerly-subtle">Email</span>
+                      <span className="text-[11px] text-recipzee-subtle">Email</span>
                     </button>
 
                     <button
                       onClick={copyLink}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                       role="menuitem"
                       title="Copy Link"
                     >
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform ${copied ? 'bg-platerly-green' : 'bg-platerly-light border border-platerly-border'}`}>
-                        {copied ? <Check className="w-5 h-5 text-white" /> : <LinkIcon className="w-5 h-5 text-platerly-text" />}
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform ${copied ? 'bg-recipzee-green' : 'bg-recipzee-light border border-recipzee-border'}`}>
+                        {copied ? <Check className="w-5 h-5 text-white" /> : <LinkIcon className="w-5 h-5 text-recipzee-text" />}
                       </div>
-                      <span className="text-[11px] text-platerly-subtle">{copied ? 'Copied!' : 'Copy'}</span>
+                      <span className="text-[11px] text-recipzee-subtle">{copied ? 'Copied!' : 'Copy'}</span>
                     </button>
                   </div>
                 </div>

@@ -132,35 +132,35 @@ const SoftWallRoot = ({ children }) => {
           role="region"
           aria-label="Free views limit reached"
         >
-          <div className="mx-auto max-w-2xl rounded-t-2xl border border-platerly-border bg-platerly-card/95 backdrop-blur-xl shadow-[0_-8px_30px_rgba(0,0,0,0.45)] px-5 py-4">
-            <div className="flex flex-col gap-3 text-platerly-text">
+          <div className="mx-auto max-w-2xl rounded-t-2xl border border-recipzee-border bg-recipzee-card/95 backdrop-blur-xl shadow-[0_-8px_30px_rgba(0,0,0,0.45)] px-5 py-4">
+            <div className="flex flex-col gap-3 text-recipzee-text">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <strong className="text-base font-semibold">
                   You're running low on free views
                 </strong>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-platerly-light/10 text-[11px] font-medium ring-1 ring-platerly-border text-platerly-subtle">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-recipzee-light/10 text-[11px] font-medium ring-1 ring-recipzee-border text-recipzee-subtle">
                   {rollingViews}/{HARD_WALL_THRESHOLD}
                 </span>
               </div>
-              <p className="text-sm text-platerly-subtle">
-                Create a free Platerly account to unlock unlimited access.
+              <p className="text-sm text-recipzee-subtle">
+                Create a free Recipzee account to unlock unlimited access.
               </p>
               <div className="flex flex-wrap gap-2 mt-2">
                 <Link
                   to="/register"
-                  className="px-4 py-1.5 rounded-full bg-platerly-green text-white text-sm font-medium shadow hover:bg-platerly-green/90 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-platerly-green/60"
+                  className="px-4 py-1.5 rounded-full bg-recipzee-green text-white text-sm font-medium shadow hover:bg-recipzee-green/90 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-recipzee-green/60"
                 >
                   Sign up free
                 </Link>
                 <Link
                   to="/login"
-                  className="px-4 py-1.5 rounded-full border border-platerly-border bg-platerly-light/5 text-sm text-platerly-text hover:bg-platerly-green/20 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-platerly-green/60"
+                  className="px-4 py-1.5 rounded-full border border-recipzee-border bg-recipzee-light/5 text-sm text-recipzee-text hover:bg-recipzee-green/20 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-recipzee-green/60"
                 >
                   Log in
                 </Link>
                 <button
                   onClick={dismissBanner}
-                  className="ml-auto px-3 py-1 text-xs text-platerly-subtle hover:text-platerly-text transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-platerly-green/60"
+                  className="ml-auto px-3 py-1 text-xs text-recipzee-subtle hover:text-recipzee-text transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-recipzee-green/60"
                 >
                   Not now
                 </button>
@@ -173,17 +173,17 @@ const SoftWallRoot = ({ children }) => {
       {/* Hard wall - blocking modal */}
       {showHardWall && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4">
-          <div className="w-full max-w-md rounded-2xl border border-platerly-light bg-platerly-card p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-2xl border border-recipzee-light bg-recipzee-card p-6 shadow-xl">
             <h3 className="text-xl font-semibold mb-2">Create a free account to continue</h3>
-            <p className="text-sm text-platerly-subtle mb-4">
+            <p className="text-sm text-recipzee-subtle mb-4">
               You've reached the guest limit. Log in or create an account to keep exploring recipes and track your allergies.
             </p>
             <div className="flex items-center gap-2">
               <Link
                 to="/register"
-                className="flex-1 text-center rounded-lg bg-platerly-green text-platerly-dark px-3 py-2 font-medium hover:opacity-90"
+                className="flex-1 text-center rounded-lg bg-recipzee-green text-recipzee-dark px-3 py-2 font-medium hover:opacity-90"
               >
-                Join Platerly
+                Join Recipzee
               </Link>
               <Link
                 to="/login"

@@ -52,32 +52,32 @@ const ResendVerification = () => {
   }
 
   return (
-    <div className="min-h-screen bg-platerly-dark flex items-center justify-center px-4">
+    <div className="min-h-screen bg-recipzee-dark flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         {/* Back link */}
         <Link
           to="/login"
-          className="inline-flex items-center gap-2 text-platerly-subtle hover:text-platerly-text mb-6 transition-colors"
+          className="inline-flex items-center gap-2 text-recipzee-subtle hover:text-recipzee-text mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to login
         </Link>
 
-        <div className="bg-platerly-card border border-platerly-border rounded-2xl p-8">
-          <div className="w-14 h-14 mx-auto mb-6 rounded-full bg-platerly-green/10 flex items-center justify-center">
-            <Mail className="w-7 h-7 text-platerly-green" />
+        <div className="bg-recipzee-card border border-recipzee-border rounded-2xl p-8">
+          <div className="w-14 h-14 mx-auto mb-6 rounded-full bg-recipzee-green/10 flex items-center justify-center">
+            <Mail className="w-7 h-7 text-recipzee-green" />
           </div>
 
-          <h1 className="text-2xl font-bold text-center text-platerly-text mb-2">
+          <h1 className="text-2xl font-bold text-center text-recipzee-text mb-2">
             Resend Verification Email
           </h1>
-          <p className="text-platerly-muted text-center text-sm mb-6">
+          <p className="text-recipzee-muted text-center text-sm mb-6">
             Enter your email address and we'll send you a new verification link.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm mb-2 text-platerly-text/80">
+              <label htmlFor="email" className="block text-sm mb-2 text-recipzee-text/80">
                 Email Address
               </label>
               <input
@@ -87,7 +87,7 @@ const ResendVerification = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="w-full bg-platerly-dark border border-platerly-border rounded-xl px-4 py-3 text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
+                className="w-full bg-recipzee-dark border border-recipzee-border rounded-xl px-4 py-3 text-recipzee-text placeholder:text-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/40"
               />
             </div>
 
@@ -99,7 +99,7 @@ const ResendVerification = () => {
             )}
 
             {status === 'success' && (
-              <div className="flex items-center gap-2 text-sm text-platerly-green bg-platerly-green/10 border border-platerly-green/20 rounded-xl px-4 py-3">
+              <div className="flex items-center gap-2 text-sm text-recipzee-green bg-recipzee-green/10 border border-recipzee-green/20 rounded-xl px-4 py-3">
                 <Check className="w-4 h-4 shrink-0" />
                 {message}
               </div>
@@ -108,15 +108,15 @@ const ResendVerification = () => {
             <button
               type="submit"
               disabled={loading || !email}
-              className="w-full bg-platerly-green text-platerly-dark font-medium py-3 rounded-xl hover:bg-platerly-green/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-recipzee-green text-recipzee-dark font-medium py-3 rounded-xl hover:bg-recipzee-green/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Sending...' : 'Send Verification Email'}
             </button>
           </form>
 
-          <p className="text-center text-sm text-platerly-subtle mt-6">
+          <p className="text-center text-sm text-recipzee-subtle mt-6">
             Already verified?{' '}
-            <Link to="/login" className="text-platerly-green hover:underline">
+            <Link to="/login" className="text-recipzee-green hover:underline">
               Log in
             </Link>
           </p>

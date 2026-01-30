@@ -1,7 +1,7 @@
 {
-  "name": "Platerly - Halal Recipe Community",
-  "short_name": "Platerly",
-  "description": "Discover and share halal recipes with the Platerly community",
+  "name": "Recipzee - Halal Recipe Community",
+  "short_name": "Recipzee",
+  "description": "Discover and share halal recipes with the Recipzee community",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",

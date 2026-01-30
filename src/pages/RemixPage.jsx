@@ -335,46 +335,46 @@ const RemixPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-platerly-dark flex items-center justify-center">
+      <div className="min-h-screen bg-recipzee-dark flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-8 h-8 text-platerly-green animate-spin mx-auto mb-4" />
-          <p className="text-platerly-subtle">Loading original recipe…</p>
+          <RefreshCw className="w-8 h-8 text-recipzee-green animate-spin mx-auto mb-4" />
+          <p className="text-recipzee-subtle">Loading original recipe…</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-platerly-dark text-platerly-text relative overflow-hidden">
+    <div className="min-h-screen bg-recipzee-dark text-recipzee-text relative overflow-hidden">
       {/* Background gradient orbs */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-platerly-green/5 rounded-full blur-[128px]" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-recipzee-green/5 rounded-full blur-[128px]" />
       <div className="absolute bottom-1/3 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
 
       <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <div className="bg-platerly-card/80 backdrop-blur-sm border border-platerly-border rounded-2xl shadow-2xl p-5 sm:p-8">
+        <div className="bg-recipzee-card/80 backdrop-blur-sm border border-recipzee-border rounded-2xl shadow-2xl p-5 sm:p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-platerly-green/20 flex items-center justify-center mx-auto mb-4">
-              <RefreshCw className="w-7 h-7 text-platerly-green" />
+            <div className="w-14 h-14 rounded-2xl bg-recipzee-green/20 flex items-center justify-center mx-auto mb-4">
+              <RefreshCw className="w-7 h-7 text-recipzee-green" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold">Remix Recipe</h1>
-            <p className="text-platerly-subtle mt-2">Put your own spin on this recipe</p>
+            <p className="text-recipzee-subtle mt-2">Put your own spin on this recipe</p>
           </div>
 
           {/* Required tags progress */}
           <div className="mb-6 flex flex-wrap items-center gap-2 text-xs">
             <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 ring-1 ${
               singlesComplete
-                ? 'bg-platerly-green/10 text-platerly-green ring-platerly-green/30'
-                : 'bg-platerly-light text-platerly-subtle ring-platerly-border'
+                ? 'bg-recipzee-green/10 text-recipzee-green ring-recipzee-green/30'
+                : 'bg-recipzee-light text-recipzee-subtle ring-recipzee-border'
             }`}>
               {singlesComplete && <Check className="w-3.5 h-3.5" />}
               Required tags: <strong className="ml-1">{singlesChosen}/{singlesNeeded}</strong>
             </span>
             <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 ring-1 ${
               hasSensitivity
-                ? 'bg-platerly-green/10 text-platerly-green ring-platerly-green/30'
-                : 'bg-platerly-light text-platerly-subtle ring-platerly-border'
+                ? 'bg-recipzee-green/10 text-recipzee-green ring-recipzee-green/30'
+                : 'bg-recipzee-light text-recipzee-subtle ring-recipzee-border'
             }`}>
               {hasSensitivity && <Check className="w-3.5 h-3.5" />}
               {hasSensitivity ? 'Sensitivity' : 'Sensitivity required'}
@@ -384,7 +384,7 @@ const RemixPage = () => {
           <div className="space-y-6">
             {/* Title / Region / Description / Instructions */}
             <div>
-              <label className="block text-sm font-medium text-platerly-muted mb-2">
+              <label className="block text-sm font-medium text-recipzee-muted mb-2">
                 Recipe Title <span className="text-red-400">*</span>
               </label>
               <input
@@ -392,24 +392,24 @@ const RemixPage = () => {
                 name="title"
                 value={form.title}
                 onChange={handleFormChange}
-                className="w-full px-4 py-3 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
+                className="w-full px-4 py-3 bg-recipzee-light border border-recipzee-border rounded-xl text-recipzee-text placeholder:text-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 focus:border-recipzee-green transition"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-platerly-muted mb-2">Region or Cuisine</label>
+              <label className="block text-sm font-medium text-recipzee-muted mb-2">Region or Cuisine</label>
               <input
                 type="text"
                 name="region"
                 value={form.region}
                 onChange={handleFormChange}
-                className="w-full px-4 py-3 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
+                className="w-full px-4 py-3 bg-recipzee-light border border-recipzee-border rounded-xl text-recipzee-text placeholder:text-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 focus:border-recipzee-green transition"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-platerly-muted mb-2">
+              <label className="block text-sm font-medium text-recipzee-muted mb-2">
                 Description <span className="text-red-400">*</span>
               </label>
               <textarea
@@ -417,13 +417,13 @@ const RemixPage = () => {
                 value={form.description}
                 onChange={handleFormChange}
                 rows={3}
-                className="w-full px-4 py-3 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text placeholder:text-platerly-subtle resize-y focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
+                className="w-full px-4 py-3 bg-recipzee-light border border-recipzee-border rounded-xl text-recipzee-text placeholder:text-recipzee-subtle resize-y focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 focus:border-recipzee-green transition"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-platerly-muted mb-2">
+              <label className="block text-sm font-medium text-recipzee-muted mb-2">
                 Instructions <span className="text-red-400">*</span>
               </label>
               <textarea
@@ -431,14 +431,14 @@ const RemixPage = () => {
                 value={form.instructions}
                 onChange={handleFormChange}
                 rows={4}
-                className="w-full px-4 py-3 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text placeholder:text-platerly-subtle resize-y focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
+                className="w-full px-4 py-3 bg-recipzee-light border border-recipzee-border rounded-xl text-recipzee-text placeholder:text-recipzee-subtle resize-y focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 focus:border-recipzee-green transition"
                 required
               />
             </div>
 
             {/* Ingredients */}
             <div>
-              <label className="block text-sm font-medium text-platerly-muted mb-2">Ingredients</label>
+              <label className="block text-sm font-medium text-recipzee-muted mb-2">Ingredients</label>
               {ingredients.map((ingredient, index) => (
                 <div key={index} className="flex flex-col sm:flex-row gap-2 mb-2">
                   <input
@@ -450,7 +450,7 @@ const RemixPage = () => {
                       updated[index].name = e.target.value
                       setIngredients(updated)
                     }}
-                    className="flex-1 px-4 py-2.5 bg-platerly-light border border-platerly-border text-platerly-text placeholder:text-platerly-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
+                    className="flex-1 px-4 py-2.5 bg-recipzee-light border border-recipzee-border text-recipzee-text placeholder:text-recipzee-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 focus:border-recipzee-green transition"
                   />
                   <input
                     type="text"
@@ -461,7 +461,7 @@ const RemixPage = () => {
                       updated[index].quantity = e.target.value
                       setIngredients(updated)
                     }}
-                    className="sm:w-1/3 px-4 py-2.5 bg-platerly-light border border-platerly-border text-platerly-text placeholder:text-platerly-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
+                    className="sm:w-1/3 px-4 py-2.5 bg-recipzee-light border border-recipzee-border text-recipzee-text placeholder:text-recipzee-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 focus:border-recipzee-green transition"
                   />
                   <button
                     type="button"
@@ -472,7 +472,7 @@ const RemixPage = () => {
                       setIngredients(updated)
                     }}
                     disabled={ingredients.length === 1}
-                    className={`w-10 h-10 rounded-xl border border-platerly-border text-red-400 hover:text-red-300 hover:bg-red-500/10 hover:border-red-500/30 transition flex items-center justify-center sm:self-center ${ingredients.length === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`w-10 h-10 rounded-xl border border-recipzee-border text-red-400 hover:text-red-300 hover:bg-red-500/10 hover:border-red-500/30 transition flex items-center justify-center sm:self-center ${ingredients.length === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -481,7 +481,7 @@ const RemixPage = () => {
               <button
                 type="button"
                 onClick={() => setIngredients(prev => [...prev, { name: '', quantity: '' }])}
-                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-platerly-green/10 text-platerly-green border border-platerly-green/30 hover:bg-platerly-green/20 transition"
+                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-recipzee-green/10 text-recipzee-green border border-recipzee-green/30 hover:bg-recipzee-green/20 transition"
               >
                 <Plus className="w-4 h-4" />
                 Add Ingredient
@@ -492,13 +492,13 @@ const RemixPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {TAG_GROUPS.map(group => (
                 <div key={group.key}>
-                  <label className="block text-sm font-medium text-platerly-muted mb-2">
+                  <label className="block text-sm font-medium text-recipzee-muted mb-2">
                     {group.label} <span className="text-red-400">*</span>
                   </label>
                   <select
                     value={selectedGroups[group.key]}
                     onChange={(e) => handleGroupChange(group.key, e.target.value)}
-                    className={`w-full bg-platerly-light border rounded-xl px-4 py-2.5 text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition ${selectedGroups[group.key] ? 'border-platerly-border' : 'border-red-500/40'}`}
+                    className={`w-full bg-recipzee-light border rounded-xl px-4 py-2.5 text-recipzee-text focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 focus:border-recipzee-green transition ${selectedGroups[group.key] ? 'border-recipzee-border' : 'border-red-500/40'}`}
                   >
                     <option value="">{group.placeholder}</option>
                     {group.options.map(opt => (
@@ -511,7 +511,7 @@ const RemixPage = () => {
 
             {/* Sensitivity (multi, required) */}
             <div>
-              <label className="block text-sm font-medium text-platerly-muted mb-2">
+              <label className="block text-sm font-medium text-recipzee-muted mb-2">
                 Sensitivity <span className="text-red-400">*</span>
               </label>
               <div className="flex flex-wrap gap-2">
@@ -520,26 +520,26 @@ const RemixPage = () => {
                     key={opt}
                     className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl cursor-pointer select-none transition ${
                       selectedSensitivities.includes(opt)
-                        ? 'bg-platerly-green/15 text-platerly-text ring-1 ring-platerly-green/40'
-                        : 'bg-platerly-light text-platerly-subtle ring-1 ring-platerly-border hover:ring-platerly-green/30'
+                        ? 'bg-recipzee-green/15 text-recipzee-text ring-1 ring-recipzee-green/40'
+                        : 'bg-recipzee-light text-recipzee-subtle ring-1 ring-recipzee-border hover:ring-recipzee-green/30'
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={selectedSensitivities.includes(opt)}
                       onChange={() => toggleSensitivity(opt)}
-                      className="accent-platerly-green"
+                      className="accent-recipzee-green"
                     />
                     <span className="text-sm">{opt}</span>
                   </label>
                 ))}
               </div>
-              <p className="mt-2 text-xs text-platerly-subtle">Pick one or more.</p>
+              <p className="mt-2 text-xs text-recipzee-subtle">Pick one or more.</p>
             </div>
 
             {/* Extra tags with autocomplete + chips */}
             <div>
-              <label className="block text-sm font-medium text-platerly-muted mb-2">Extra Tags (optional)</label>
+              <label className="block text-sm font-medium text-recipzee-muted mb-2">Extra Tags (optional)</label>
 
               {/* chips */}
               {extraTags.length > 0 && (
@@ -547,13 +547,13 @@ const RemixPage = () => {
                   {extraTags.map(tag => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-platerly-green/10 text-platerly-green ring-1 ring-platerly-green/30 text-sm font-medium"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-recipzee-green/10 text-recipzee-green ring-1 ring-recipzee-green/30 text-sm font-medium"
                     >
                       {tag}
                       <button
                         type="button"
                         onClick={() => removeExtraTag(tag)}
-                        className="text-platerly-green/60 hover:text-platerly-green transition"
+                        className="text-recipzee-green/60 hover:text-recipzee-green transition"
                         aria-label={`Remove ${tag}`}
                       >
                         <X className="w-3.5 h-3.5" />
@@ -570,25 +570,25 @@ const RemixPage = () => {
                 onChange={(e) => setTagQuery(e.target.value)}
                 onKeyDown={handleExtraTagKeyDown}
                 placeholder="Type to search tags… press Enter to add"
-                className="w-full rounded-xl bg-platerly-light border border-platerly-border px-4 py-2.5 text-sm text-platerly-text placeholder:text-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
+                className="w-full rounded-xl bg-recipzee-light border border-recipzee-border px-4 py-2.5 text-sm text-recipzee-text placeholder:text-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 focus:border-recipzee-green transition"
               />
 
               {/* suggestions */}
-              {tagLoading && <div className="text-xs text-platerly-subtle mt-2">Searching…</div>}
+              {tagLoading && <div className="text-xs text-recipzee-subtle mt-2">Searching…</div>}
               {!tagLoading && !!tagSuggestions.length && (
-                <ul className="mt-2 max-h-56 overflow-auto rounded-xl border border-platerly-border bg-platerly-card/95 backdrop-blur shadow-lg">
+                <ul className="mt-2 max-h-56 overflow-auto rounded-xl border border-recipzee-border bg-recipzee-card/95 backdrop-blur shadow-lg">
                   {tagSuggestions.map(s => {
                     const disabled = extraTags.some(t => t.toLowerCase() === s.name.toLowerCase())
                     return (
-                      <li key={s.id} className="border-b border-platerly-border last:border-none">
+                      <li key={s.id} className="border-b border-recipzee-border last:border-none">
                         <button
                           type="button"
                           disabled={disabled}
                           onClick={() => addExtraTag(s.name)}
                           title={`${s.usageCount ?? 0} uses`}
-                          className={`w-full text-left px-4 py-2.5 text-sm hover:bg-platerly-light transition ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          className={`w-full text-left px-4 py-2.5 text-sm hover:bg-recipzee-light transition ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                         >
-                          {s.name} <span className="text-platerly-subtle">({s.usageCount ?? 0})</span>
+                          {s.name} <span className="text-recipzee-subtle">({s.usageCount ?? 0})</span>
                         </button>
                       </li>
                     )
@@ -600,7 +600,7 @@ const RemixPage = () => {
             {/* Times + Difficulty */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-platerly-muted mb-2">
+                <label className="block text-sm font-medium text-recipzee-muted mb-2">
                   <Clock className="w-4 h-4 inline mr-1" />
                   Prep Time (mins)
                 </label>
@@ -609,12 +609,12 @@ const RemixPage = () => {
                   name="prepTime"
                   value={form.prepTime}
                   onChange={handleFormChange}
-                  className="w-full px-4 py-2.5 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
+                  className="w-full px-4 py-2.5 bg-recipzee-light border border-recipzee-border rounded-xl text-recipzee-text focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 focus:border-recipzee-green transition"
                   min="0"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-platerly-muted mb-2">
+                <label className="block text-sm font-medium text-recipzee-muted mb-2">
                   <Flame className="w-4 h-4 inline mr-1" />
                   Cook Time (mins)
                 </label>
@@ -623,17 +623,17 @@ const RemixPage = () => {
                   name="cookTime"
                   value={form.cookTime}
                   onChange={handleFormChange}
-                  className="w-full px-4 py-2.5 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
+                  className="w-full px-4 py-2.5 bg-recipzee-light border border-recipzee-border rounded-xl text-recipzee-text focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 focus:border-recipzee-green transition"
                   min="0"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-platerly-muted mb-2">Difficulty</label>
+                <label className="block text-sm font-medium text-recipzee-muted mb-2">Difficulty</label>
                 <select
                   name="difficulty"
                   value={form.difficulty}
                   onChange={handleFormChange}
-                  className="w-full px-4 py-2.5 bg-platerly-light border border-platerly-border rounded-xl text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 focus:border-platerly-green transition"
+                  className="w-full px-4 py-2.5 bg-recipzee-light border border-recipzee-border rounded-xl text-recipzee-text focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 focus:border-recipzee-green transition"
                 >
                   <option value="Easy">Easy</option>
                   <option value="Medium">Medium</option>
@@ -644,15 +644,15 @@ const RemixPage = () => {
 
             {/* Image */}
             <div>
-              <label className="block text-sm font-medium text-platerly-muted mb-2">Recipe Image</label>
+              <label className="block text-sm font-medium text-recipzee-muted mb-2">Recipe Image</label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
                 disabled={uploading}
-                className="block w-full text-sm text-platerly-text file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-platerly-green file:text-platerly-dark hover:file:bg-platerly-green/90 disabled:file:opacity-60 transition"
+                className="block w-full text-sm text-recipzee-text file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-recipzee-green file:text-recipzee-dark hover:file:bg-recipzee-green/90 disabled:file:opacity-60 transition"
               />
-              <p className="mt-1 text-xs text-platerly-subtle">Max size: {MAX_IMAGE_SIZE_MB}MB. Formats: JPEG, PNG, WebP, GIF</p>
+              <p className="mt-1 text-xs text-recipzee-subtle">Max size: {MAX_IMAGE_SIZE_MB}MB. Formats: JPEG, PNG, WebP, GIF</p>
               {imageError && (
                 <p className="mt-2 text-sm text-red-400">{imageError}</p>
               )}
@@ -660,7 +660,7 @@ const RemixPage = () => {
                 <img
                   src={form.imageUrl}
                   alt="Preview"
-                  className="mt-4 w-full h-56 object-cover rounded-xl border border-platerly-border shadow-lg"
+                  className="mt-4 w-full h-56 object-cover rounded-xl border border-recipzee-border shadow-lg"
                 />
               )}
             </div>
@@ -687,7 +687,7 @@ const RemixPage = () => {
                 Post Remix
               </Button>
               {!canSubmit && (
-                <p className="mt-3 text-xs text-platerly-subtle text-center">
+                <p className="mt-3 text-xs text-recipzee-subtle text-center">
                   Select one option for <strong>Course</strong>, <strong>Diet</strong>, <strong>Style</strong>, <strong>Healthiness</strong>, and at least one <strong>Sensitivity</strong>.
                 </p>
               )}

@@ -52,15 +52,15 @@ const Navbar = () => {
     classNames(
       'px-3 py-1.5 rounded-lg transition-all duration-200',
       isActive
-        ? 'text-platerly-green bg-platerly-green/10 font-medium'
-        : 'text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light/50'
+        ? 'text-recipzee-green bg-recipzee-green/10 font-medium'
+        : 'text-recipzee-subtle hover:text-recipzee-text hover:bg-recipzee-light/50'
     )
 
   return (
     <header
       className={classNames(
-        'sticky top-0 z-50 border-b border-platerly-border',
-        'bg-platerly-dark/80 backdrop-blur-md supports-[backdrop-filter]:bg-platerly-dark/70',
+        'sticky top-0 z-50 border-b border-recipzee-border',
+        'bg-recipzee-dark/80 backdrop-blur-md supports-[backdrop-filter]:bg-recipzee-dark/70',
         'text-sm',
         'pt-[env(safe-area-inset-top)]'
       )}
@@ -71,11 +71,11 @@ const Navbar = () => {
           {/* Left: Logo */}
           <Link
             to={logoTarget}
-            className="text-xl font-semibold tracking-tight text-platerly-text hover:text-platerly-green focus:outline-none focus:ring-2 focus:ring-platerly-green/40 rounded-md transition-colors"
-            aria-label="Platerly Home"
+            className="text-xl font-semibold tracking-tight text-recipzee-text hover:text-recipzee-green focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 rounded-md transition-colors"
+            aria-label="Recipzee Home"
             title={`Go to ${authed ? '/feed' : '/login'}`}
           >
-            <span className="text-platerly-green">Platerly</span>
+            <span className="text-recipzee-green">Recipzee</span>
           </Link>
 
           {/* Right: Desktop nav */}
@@ -97,7 +97,7 @@ const Navbar = () => {
                 <div className="flex items-center gap-2 ml-2">
                   <Link
                     to="/create"
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-platerly-green px-4 py-2 font-medium text-platerly-dark hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-platerly-green/40 shadow-lg shadow-platerly-green/20 transition-all"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-recipzee-green px-4 py-2 font-medium text-recipzee-dark hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 shadow-lg shadow-recipzee-green/20 transition-all"
                   >
                     <Plus className="w-4 h-4" />
                     Create
@@ -119,7 +119,7 @@ const Navbar = () => {
           {!isLandingPage && (
             <button
               onClick={() => setOpen(v => !v)}
-              className="sm:hidden inline-flex items-center justify-center rounded-xl p-2 text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light/50 focus:outline-none focus:ring-2 focus:ring-platerly-green/40 transition-colors"
+              className="sm:hidden inline-flex items-center justify-center rounded-xl p-2 text-recipzee-subtle hover:text-recipzee-text hover:bg-recipzee-light/50 focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 transition-colors"
               aria-label="Toggle navigation menu"
               aria-expanded={open}
             >
@@ -131,7 +131,7 @@ const Navbar = () => {
 
       {/* Mobile drawer */}
       {!isLandingPage && open && (
-        <div className="sm:hidden border-t border-platerly-border bg-platerly-dark">
+        <div className="sm:hidden border-t border-recipzee-border bg-recipzee-dark">
           <div className="mx-auto max-w-6xl px-4 py-3">
             <nav aria-label="Mobile navigation">
               <ul className="flex flex-col gap-1">
@@ -143,8 +143,8 @@ const Navbar = () => {
                         classNames(
                           'block w-full rounded-xl px-3 py-2.5 transition-colors',
                           isActive
-                            ? 'text-platerly-green bg-platerly-green/10 font-medium'
-                            : 'text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light/50'
+                            ? 'text-recipzee-green bg-recipzee-green/10 font-medium'
+                            : 'text-recipzee-subtle hover:text-recipzee-text hover:bg-recipzee-light/50'
                         )
                       }
                     >
@@ -159,7 +159,7 @@ const Navbar = () => {
               <div className="mt-3 flex items-center gap-2">
                 <Link
                   to="/create"
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-platerly-green px-3 py-2.5 text-center font-medium text-platerly-dark hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-platerly-green/40 shadow-lg shadow-platerly-green/20 transition-all"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-recipzee-green px-3 py-2.5 text-center font-medium text-recipzee-dark hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 shadow-lg shadow-recipzee-green/20 transition-all"
                 >
                   <Plus className="w-4 h-4" />
                   Create

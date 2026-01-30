@@ -57,7 +57,7 @@ const DIFFICULTY_MAP = { 0: 'Easy', 1: 'Medium', 2: 'Hard' }
 
 /* ---------- Pills ---------- */
 const PILL_BASE = 'inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm border shadow-sm'
-const PILL_NEUTRAL = `${PILL_BASE} bg-white/5 border-platerly-border text-platerly-text`
+const PILL_NEUTRAL = `${PILL_BASE} bg-white/5 border-recipzee-border text-recipzee-text`
 const PILL_SUCCESS = `${PILL_BASE} bg-emerald-900/30 border-emerald-400/30 text-emerald-200`
 
 /* ---------- Severity classes ---------- */
@@ -137,15 +137,15 @@ const toMinutes = (v) => {
 
 /* ---------- Premium shells ---------- */
 const Card = ({ className = '', children }) => (
-  <div className={`rounded-2xl border border-platerly-border bg-platerly-card/70 backdrop-blur-sm shadow-[0_6px_24px_rgba(0,0,0,0.25)] ${className}`}>
+  <div className={`rounded-2xl border border-recipzee-border bg-recipzee-card/70 backdrop-blur-sm shadow-[0_6px_24px_rgba(0,0,0,0.25)] ${className}`}>
     {children}
   </div>
 )
 
 const Section = ({ icon: Icon, title, children }) => (
   <Card>
-    <div className="px-4 sm:px-5 py-3 sm:py-4 flex items-center gap-2 bg-white/5 border-b border-platerly-border/70">
-      {Icon && <Icon className="w-4 h-4 text-platerly-muted" aria-hidden />}
+    <div className="px-4 sm:px-5 py-3 sm:py-4 flex items-center gap-2 bg-white/5 border-b border-recipzee-border/70">
+      {Icon && <Icon className="w-4 h-4 text-recipzee-muted" aria-hidden />}
       <h2 className="text-base sm:text-lg font-semibold">{title}</h2>
     </div>
     <div className="px-4 sm:px-5 py-4">{children}</div>
@@ -391,7 +391,7 @@ const RecipeDetailsPage = () => {
       whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + shareUrl)}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
       reddit: `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(recipe?.title || 'Recipe')}`,
-      email: `mailto:?subject=${encodeURIComponent('Check this recipe on Platerly')}&body=${encodeURIComponent(text + '\n\n' + shareUrl)}`
+      email: `mailto:?subject=${encodeURIComponent('Check this recipe on Recipzee')}&body=${encodeURIComponent(text + '\n\n' + shareUrl)}`
     }
     const u = links[platform]
     if (u) window.open(u, '_blank', 'noopener,noreferrer')
@@ -433,12 +433,12 @@ const RecipeDetailsPage = () => {
   /* ---------- Render ---------- */
   if (loading) {
     return (
-      <div className="px-4 sm:px-6 py-10 text-platerly-muted">
+      <div className="px-4 sm:px-6 py-10 text-recipzee-muted">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 w-2/3 max-w-md bg-platerly-card rounded" />
-          <div className="h-[40svh] w-full bg-platerly-card rounded" />
-          <div className="h-4 w-3/4 bg-platerly-card rounded" />
-          <div className="h-4 w-2/3 bg-platerly-card rounded" />
+          <div className="h-8 w-2/3 max-w-md bg-recipzee-card rounded" />
+          <div className="h-[40svh] w-full bg-recipzee-card rounded" />
+          <div className="h-4 w-3/4 bg-recipzee-card rounded" />
+          <div className="h-4 w-2/3 bg-recipzee-card rounded" />
         </div>
       </div>
     )
@@ -447,13 +447,13 @@ const RecipeDetailsPage = () => {
   if (error) return <div className="px-4 sm:px-6 py-12"><p className="text-red-400">{error}</p></div>
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 text-platerly-text">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 text-recipzee-text">
 
       {/* HERO */}
       <div className="relative w-full aspect-[5/4] sm:aspect-[16/9] lg:aspect-[21/9]
                       min-h-[220px] rounded-[22px] overflow-hidden
                       shadow-[0_25px_80px_rgba(0,0,0,0.45)]
-                      ring-1 ring-platerly-border bg-platerly-light">
+                      ring-1 ring-recipzee-border bg-recipzee-light">
         {recipe?.imageUrl ? (
           <img
             src={recipe.imageUrl}
@@ -463,7 +463,7 @@ const RecipeDetailsPage = () => {
             decoding="async"
             loading="eager"
           />
-        ) : <div className="w-full h-full bg-platerly-card" />}
+        ) : <div className="w-full h-full bg-recipzee-card" />}
 
         {/* gradient overlays */}
         <div className="absolute inset-0 pointer-events-none">
@@ -500,7 +500,7 @@ const RecipeDetailsPage = () => {
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 mt-2 w-44 rounded-xl bg-platerly-card border border-platerly-border shadow-xl overflow-hidden">
+            <div className="absolute right-0 mt-2 w-44 rounded-xl bg-recipzee-card border border-recipzee-border shadow-xl overflow-hidden">
               {isOwner && (
                 <>
                   <button onClick={goEdit} className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/5">
@@ -511,7 +511,7 @@ const RecipeDetailsPage = () => {
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-300 hover:bg-white/5">
                     <Trash2 className="w-4 h-4" /> Delete
                   </button>
-                  <div className="h-px bg-platerly-border" />
+                  <div className="h-px bg-recipzee-border" />
                 </>
               )}
               <button onClick={goRemix} className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/5">
@@ -529,9 +529,9 @@ const RecipeDetailsPage = () => {
           <h1 className="text-3xl lg:text-4xl font-extrabold text-white drop-shadow-sm">
             {recipe?.title || 'Untitled recipe'}
           </h1>
-          <div className="mt-1 text-sm text-platerly-muted">
+          <div className="mt-1 text-sm text-recipzee-muted">
             {recipe?.authorUsername ? (
-              <Link to={`/profile/${recipe.authorUsername}`} className="hover:text-platerly-accent hover:underline">
+              <Link to={`/profile/${recipe.authorUsername}`} className="hover:text-recipzee-accent hover:underline">
                 @{recipe.authorUsername}
               </Link>
             ) : '—'}
@@ -554,7 +554,7 @@ const RecipeDetailsPage = () => {
             {token && (
               <button
                 onClick={() => setSaveOpen(v => !v)}
-                className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-platerly-accent text-black px-3 py-1.5 text-sm hover:brightness-110 shadow">
+                className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-recipzee-accent text-black px-3 py-1.5 text-sm hover:brightness-110 shadow">
                 <BookmarkPlus className="w-4 h-4" /> Save
               </button>
             )}
@@ -566,9 +566,9 @@ const RecipeDetailsPage = () => {
       <Card className="mt-3 px-4 py-3 md:hidden">
         <h1 className="text-xl font-extrabold">{recipe?.title || 'Untitled recipe'}</h1>
 
-        <div className="mt-1 text-xs text-platerly-muted">
+        <div className="mt-1 text-xs text-recipzee-muted">
           {recipe?.authorUsername ? (
-            <Link to={`/profile/${recipe.authorUsername}`} className="hover:text-platerly-accent hover:underline">
+            <Link to={`/profile/${recipe.authorUsername}`} className="hover:text-recipzee-accent hover:underline">
               @{recipe.authorUsername}
             </Link>
           ) : '—'}
@@ -589,7 +589,7 @@ const RecipeDetailsPage = () => {
           {token && (
             <button
               onClick={() => setSaveOpen(v => !v)}
-              className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-platerly-accent text-black px-3 py-1.5 text-sm hover:brightness-110 shadow">
+              className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-recipzee-accent text-black px-3 py-1.5 text-sm hover:brightness-110 shadow">
               <BookmarkPlus className="w-4 h-4" /> Save
             </button>
           )}
@@ -643,41 +643,41 @@ const RecipeDetailsPage = () => {
       {/* Sections */}
       <div className="space-y-5 mt-8">
         <Section icon={Globe} title="Region">
-          <div className="text-platerly-muted">{recipe?.region || '—'}</div>
+          <div className="text-recipzee-muted">{recipe?.region || '—'}</div>
         </Section>
 
         <Section icon={BookOpenText} title="Description">
-          <div className="text-platerly-text/95 whitespace-pre-line">{recipe?.description || 'No description provided.'}</div>
+          <div className="text-recipzee-text/95 whitespace-pre-line">{recipe?.description || 'No description provided.'}</div>
         </Section>
 
         <Section icon={ListChecks} title="Instructions">
-          <div className="text-platerly-text/95 whitespace-pre-line">{recipe?.instructions || 'No instructions provided.'}</div>
+          <div className="text-recipzee-text/95 whitespace-pre-line">{recipe?.instructions || 'No instructions provided.'}</div>
         </Section>
 
         <Card>
-          <div className="px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between bg-white/5 border-b border-platerly-border/70">
+          <div className="px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between bg-white/5 border-b border-recipzee-border/70">
             <div className="flex items-center gap-2">
-              <TagIcon className="w-4 h-4 text-platerly-muted" aria-hidden />
+              <TagIcon className="w-4 h-4 text-recipzee-muted" aria-hidden />
               <h2 className="text-base sm:text-lg font-semibold">Ingredients</h2>
             </div>
             {/* Scale Controls */}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-platerly-subtle mr-1">Scale:</span>
+              <span className="text-xs text-recipzee-subtle mr-1">Scale:</span>
               <button
                 onClick={() => setIngredientScale(s => Math.max(0.5, s - 0.5))}
                 disabled={ingredientScale <= 0.5}
-                className="w-7 h-7 rounded-lg bg-platerly-card border border-platerly-border flex items-center justify-center hover:bg-platerly-light disabled:opacity-50 transition-colors"
+                className="w-7 h-7 rounded-lg bg-recipzee-card border border-recipzee-border flex items-center justify-center hover:bg-recipzee-light disabled:opacity-50 transition-colors"
                 aria-label="Decrease scale"
               >
                 <Minus className="w-3.5 h-3.5" />
               </button>
-              <span className="w-10 text-center text-sm font-medium text-platerly-text">
+              <span className="w-10 text-center text-sm font-medium text-recipzee-text">
                 {ingredientScale}x
               </span>
               <button
                 onClick={() => setIngredientScale(s => Math.min(10, s + 0.5))}
                 disabled={ingredientScale >= 10}
-                className="w-7 h-7 rounded-lg bg-platerly-card border border-platerly-border flex items-center justify-center hover:bg-platerly-light disabled:opacity-50 transition-colors"
+                className="w-7 h-7 rounded-lg bg-recipzee-card border border-recipzee-border flex items-center justify-center hover:bg-recipzee-light disabled:opacity-50 transition-colors"
                 aria-label="Increase scale"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -685,7 +685,7 @@ const RecipeDetailsPage = () => {
               {ingredientScale !== 1 && (
                 <button
                   onClick={() => setIngredientScale(1)}
-                  className="ml-1 text-xs text-platerly-subtle hover:text-platerly-green transition-colors"
+                  className="ml-1 text-xs text-recipzee-subtle hover:text-recipzee-green transition-colors"
                 >
                   Reset
                 </button>
@@ -761,13 +761,13 @@ const RecipeDetailsPage = () => {
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
             onClick={() => setShareOpen(false)}
           />
-          <div className="fixed inset-x-4 bottom-4 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 z-50 w-auto sm:w-80 rounded-2xl bg-platerly-card border border-platerly-border shadow-2xl overflow-hidden">
+          <div className="fixed inset-x-4 bottom-4 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 z-50 w-auto sm:w-80 rounded-2xl bg-recipzee-card border border-recipzee-border shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-platerly-border bg-platerly-light/30">
-              <h3 className="font-semibold text-platerly-text">Share Recipe</h3>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-recipzee-border bg-recipzee-light/30">
+              <h3 className="font-semibold text-recipzee-text">Share Recipe</h3>
               <button
                 onClick={() => setShareOpen(false)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light transition-colors"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-recipzee-subtle hover:text-recipzee-text hover:bg-recipzee-light transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -778,90 +778,90 @@ const RecipeDetailsPage = () => {
               <div className="grid grid-cols-4 gap-2">
                 <button
                   onClick={() => shareTo('twitter')}
-                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                   title="Share on X"
                 >
                   <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center group-hover:scale-110 transition-transform">
                     <XIcon className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-[11px] text-platerly-subtle">X</span>
+                  <span className="text-[11px] text-recipzee-subtle">X</span>
                 </button>
 
                 <button
                   onClick={() => shareTo('facebook')}
-                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                   title="Share on Facebook"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#1877F2] flex items-center justify-center group-hover:scale-110 transition-transform">
                     <FacebookIcon className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-[11px] text-platerly-subtle">Facebook</span>
+                  <span className="text-[11px] text-recipzee-subtle">Facebook</span>
                 </button>
 
                 <button
                   onClick={() => shareTo('whatsapp')}
-                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                   title="Share on WhatsApp"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center group-hover:scale-110 transition-transform">
                     <WhatsAppIcon className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-[11px] text-platerly-subtle">WhatsApp</span>
+                  <span className="text-[11px] text-recipzee-subtle">WhatsApp</span>
                 </button>
 
                 <button
                   onClick={() => shareTo('pinterest')}
-                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                   title="Share on Pinterest"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#E60023] flex items-center justify-center group-hover:scale-110 transition-transform">
                     <PinterestIcon className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-[11px] text-platerly-subtle">Pinterest</span>
+                  <span className="text-[11px] text-recipzee-subtle">Pinterest</span>
                 </button>
 
                 <button
                   onClick={() => shareTo('linkedin')}
-                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                   title="Share on LinkedIn"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#0A66C2] flex items-center justify-center group-hover:scale-110 transition-transform">
                     <LinkedInIcon className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-[11px] text-platerly-subtle">LinkedIn</span>
+                  <span className="text-[11px] text-recipzee-subtle">LinkedIn</span>
                 </button>
 
                 <button
                   onClick={() => shareTo('reddit')}
-                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                   title="Share on Reddit"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#FF4500] flex items-center justify-center group-hover:scale-110 transition-transform">
                     <RedditIcon className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-[11px] text-platerly-subtle">Reddit</span>
+                  <span className="text-[11px] text-recipzee-subtle">Reddit</span>
                 </button>
 
                 <button
                   onClick={() => shareTo('email')}
-                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                   title="Share via Email"
                 >
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Mail className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-[11px] text-platerly-subtle">Email</span>
+                  <span className="text-[11px] text-recipzee-subtle">Email</span>
                 </button>
 
                 <button
                   onClick={copyShareLink}
-                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-platerly-light/50 transition-colors group"
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-recipzee-light/50 transition-colors group"
                   title="Copy Link"
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform ${copied ? 'bg-platerly-green' : 'bg-platerly-light border border-platerly-border'}`}>
-                    {copied ? <Check className="w-5 h-5 text-white" /> : <LinkIcon className="w-5 h-5 text-platerly-text" />}
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform ${copied ? 'bg-recipzee-green' : 'bg-recipzee-light border border-recipzee-border'}`}>
+                    {copied ? <Check className="w-5 h-5 text-white" /> : <LinkIcon className="w-5 h-5 text-recipzee-text" />}
                   </div>
-                  <span className="text-[11px] text-platerly-subtle">{copied ? 'Copied!' : 'Copy'}</span>
+                  <span className="text-[11px] text-recipzee-subtle">{copied ? 'Copied!' : 'Copy'}</span>
                 </button>
               </div>
             </div>

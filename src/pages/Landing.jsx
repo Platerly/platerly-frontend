@@ -7,12 +7,12 @@ import { Shield, Sparkles, Users, ChefHat, ArrowRight } from 'lucide-react'
 // eslint-disable-next-line no-unused-vars
 const FeatureCard = ({ icon: Icon, title, description }) => (
   <div className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-    <div className="shrink-0 w-10 h-10 rounded-lg bg-platerly-green/20 flex items-center justify-center">
-      <Icon className="w-5 h-5 text-platerly-green" />
+    <div className="shrink-0 w-10 h-10 rounded-lg bg-recipzee-green/20 flex items-center justify-center">
+      <Icon className="w-5 h-5 text-recipzee-green" />
     </div>
     <div>
-      <h3 className="font-semibold text-platerly-text">{title}</h3>
-      <p className="text-sm text-platerly-subtle mt-0.5">{description}</p>
+      <h3 className="font-semibold text-recipzee-text">{title}</h3>
+      <p className="text-sm text-recipzee-subtle mt-0.5">{description}</p>
     </div>
   </div>
 )
@@ -28,13 +28,13 @@ const Landing = () => {
   }, [authed, navigate])
 
   useEffect(() => {
-    document.title = 'Platerly — Allergy-aware recipes'
+    document.title = 'Recipzee — Allergy-aware recipes'
   }, [])
 
   return (
-    <div className="min-h-screen bg-platerly-dark text-platerly-text relative overflow-hidden">
+    <div className="min-h-screen bg-recipzee-dark text-recipzee-text relative overflow-hidden">
       {/* Background gradient orbs */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-platerly-green/10 rounded-full blur-[128px]" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-recipzee-green/10 rounded-full blur-[128px]" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[128px]" />
       <div className="absolute top-1/2 left-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-[100px]" />
 
@@ -44,7 +44,7 @@ const Landing = () => {
           {/* Hero */}
           <div className="text-center mb-12">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-platerly-green/10 border border-platerly-green/20 text-platerly-green text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-recipzee-green/10 border border-recipzee-green/20 text-recipzee-green text-sm font-medium mb-6">
               <Sparkles className="w-4 h-4" />
               The future of recipe sharing
             </div>
@@ -52,39 +52,39 @@ const Landing = () => {
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight mb-6">
               Recipes designed for
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-platerly-green to-emerald-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-recipzee-green to-emerald-400">
                 every dietary need
               </span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-platerly-subtle max-w-2xl mx-auto mb-8 leading-relaxed">
-              Platerly is the intelligent recipe network that understands your allergies,
+            <p className="text-lg sm:text-xl text-recipzee-subtle max-w-2xl mx-auto mb-8 leading-relaxed">
+              Recipzee is the intelligent recipe network that understands your allergies,
               dietary restrictions, and health goals. Share, discover, and cook with confidence.
             </p>
 
             {/* Single Primary CTA */}
             <div className="flex flex-col items-center justify-center gap-4">
               <Link to="/register">
-                <Button size="lg" className="min-w-[240px] shadow-lg shadow-platerly-green/20 text-lg py-4">
+                <Button size="lg" className="min-w-[240px] shadow-lg shadow-recipzee-green/20 text-lg py-4">
                   Get Started Free
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-              <p className="text-sm text-platerly-subtle">No credit card required</p>
+              <p className="text-sm text-recipzee-subtle">No credit card required</p>
             </div>
 
             {/* Secondary links */}
             <div className="mt-6 flex items-center justify-center gap-4 text-sm">
               <Link
                 to="/login"
-                className="text-platerly-subtle hover:text-platerly-text transition-colors"
+                className="text-recipzee-subtle hover:text-recipzee-text transition-colors"
               >
                 Already have an account? Sign in
               </Link>
-              <span className="text-platerly-border">•</span>
+              <span className="text-recipzee-border">•</span>
               <Link
                 to="/feed?tab=explore"
-                className="text-platerly-subtle hover:text-platerly-text transition-colors"
+                className="text-recipzee-subtle hover:text-recipzee-text transition-colors"
               >
                 Browse first
               </Link>
@@ -118,28 +118,28 @@ const Landing = () => {
           {/* Platform stats */}
           <div className="flex flex-wrap items-center justify-center gap-8 text-center mb-12">
             <div>
-              <div className="text-2xl sm:text-3xl font-bold text-platerly-text">14</div>
-              <div className="text-sm text-platerly-subtle">Allergens Tracked</div>
+              <div className="text-2xl sm:text-3xl font-bold text-recipzee-text">14</div>
+              <div className="text-sm text-recipzee-subtle">Allergens Tracked</div>
             </div>
-            <div className="w-px h-10 bg-platerly-border hidden sm:block" />
+            <div className="w-px h-10 bg-recipzee-border hidden sm:block" />
             <div>
-              <div className="text-2xl sm:text-3xl font-bold text-platerly-text">1,400+</div>
-              <div className="text-sm text-platerly-subtle">Ingredient Mappings</div>
+              <div className="text-2xl sm:text-3xl font-bold text-recipzee-text">1,400+</div>
+              <div className="text-sm text-recipzee-subtle">Ingredient Mappings</div>
             </div>
-            <div className="w-px h-10 bg-platerly-border hidden sm:block" />
+            <div className="w-px h-10 bg-recipzee-border hidden sm:block" />
             <div>
-              <div className="text-2xl sm:text-3xl font-bold text-platerly-text">100%</div>
-              <div className="text-sm text-platerly-subtle">Free to Join</div>
+              <div className="text-2xl sm:text-3xl font-bold text-recipzee-text">100%</div>
+              <div className="text-sm text-recipzee-subtle">Free to Join</div>
             </div>
           </div>
 
           {/* Footer links */}
-          <div className="text-center text-sm text-platerly-subtle">
-            <Link to="/privacy" className="hover:text-platerly-text transition-colors px-2">
+          <div className="text-center text-sm text-recipzee-subtle">
+            <Link to="/privacy" className="hover:text-recipzee-text transition-colors px-2">
               Privacy
             </Link>
-            <span className="text-platerly-border">•</span>
-            <Link to="/terms" className="hover:text-platerly-text transition-colors px-2">
+            <span className="text-recipzee-border">•</span>
+            <Link to="/terms" className="hover:text-recipzee-text transition-colors px-2">
               Terms
             </Link>
           </div>

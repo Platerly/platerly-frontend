@@ -340,7 +340,7 @@ export default function ShoppingListPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 text-platerly-green animate-spin" />
+        <Loader2 className="w-8 h-8 text-recipzee-green animate-spin" />
       </div>
     )
   }
@@ -350,12 +350,12 @@ export default function ShoppingListPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-platerly-green/20 flex items-center justify-center">
-            <ShoppingCart className="w-6 h-6 text-platerly-green" />
+          <div className="w-12 h-12 rounded-xl bg-recipzee-green/20 flex items-center justify-center">
+            <ShoppingCart className="w-6 h-6 text-recipzee-green" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-platerly-text">Shopping Lists</h1>
-            <p className="text-sm text-platerly-subtle">
+            <h1 className="text-2xl font-bold text-recipzee-text">Shopping Lists</h1>
+            <p className="text-sm text-recipzee-subtle">
               Manage your grocery lists
             </p>
           </div>
@@ -364,7 +364,7 @@ export default function ShoppingListPage() {
         {canCreateMoreLists ? (
           <button
             onClick={() => setShowNewListForm(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-platerly-green text-platerly-dark font-medium hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-recipzee-green text-recipzee-dark font-medium hover:opacity-90 transition-opacity"
           >
             <Plus className="w-4 h-4" />
             New List
@@ -372,7 +372,7 @@ export default function ShoppingListPage() {
         ) : (
           <Link
             to="/settings?tab=subscription"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-platerly-card border border-platerly-border text-platerly-subtle hover:text-platerly-text transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-recipzee-card border border-recipzee-border text-recipzee-subtle hover:text-recipzee-text transition-colors"
           >
             <Lock className="w-4 h-4" />
             Upgrade for more lists
@@ -382,27 +382,27 @@ export default function ShoppingListPage() {
 
       {/* New List Form */}
       {showNewListForm && (
-        <div className="mb-6 p-4 rounded-xl bg-platerly-card border border-platerly-border">
+        <div className="mb-6 p-4 rounded-xl bg-recipzee-card border border-recipzee-border">
           <form onSubmit={handleCreateList} className="flex gap-3">
             <input
               type="text"
               value={newListName}
               onChange={(e) => setNewListName(e.target.value)}
               placeholder="List name (e.g., Weekly groceries)"
-              className="flex-1 px-4 py-2 rounded-lg bg-platerly-light border border-platerly-border text-platerly-text placeholder-platerly-muted focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
+              className="flex-1 px-4 py-2 rounded-lg bg-recipzee-light border border-recipzee-border text-recipzee-text placeholder-recipzee-muted focus:outline-none focus:ring-2 focus:ring-recipzee-green/40"
               autoFocus
             />
             <button
               type="submit"
               disabled={creatingList || !newListName.trim()}
-              className="px-4 py-2 rounded-lg bg-platerly-green text-platerly-dark font-medium disabled:opacity-50"
+              className="px-4 py-2 rounded-lg bg-recipzee-green text-recipzee-dark font-medium disabled:opacity-50"
             >
               {creatingList ? 'Creating...' : 'Create'}
             </button>
             <button
               type="button"
               onClick={() => setShowNewListForm(false)}
-              className="px-3 py-2 rounded-lg bg-platerly-light text-platerly-subtle hover:text-platerly-text"
+              className="px-3 py-2 rounded-lg bg-recipzee-light text-recipzee-subtle hover:text-recipzee-text"
             >
               <X className="w-4 h-4" />
             </button>
@@ -413,16 +413,16 @@ export default function ShoppingListPage() {
       {lists.length === 0 ? (
         /* Empty State */
         <div className="text-center py-16">
-          <ShoppingCart className="w-16 h-16 mx-auto text-platerly-muted mb-4" />
-          <h2 className="text-xl font-semibold text-platerly-text mb-2">
+          <ShoppingCart className="w-16 h-16 mx-auto text-recipzee-muted mb-4" />
+          <h2 className="text-xl font-semibold text-recipzee-text mb-2">
             No shopping lists yet
           </h2>
-          <p className="text-platerly-subtle mb-6">
+          <p className="text-recipzee-subtle mb-6">
             Create your first shopping list or add ingredients from a recipe
           </p>
           <button
             onClick={() => setShowNewListForm(true)}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-platerly-green text-platerly-dark font-medium"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-recipzee-green text-recipzee-dark font-medium"
           >
             <Plus className="w-5 h-5" />
             Create Shopping List
@@ -439,8 +439,8 @@ export default function ShoppingListPage() {
                 className={cx(
                   'w-full flex items-center justify-between px-4 py-3 rounded-xl text-left transition-all',
                   selectedListId === list.id
-                    ? 'bg-platerly-green text-platerly-dark'
-                    : 'bg-platerly-card border border-platerly-border hover:border-platerly-green/30'
+                    ? 'bg-recipzee-green text-recipzee-dark'
+                    : 'bg-recipzee-card border border-recipzee-border hover:border-recipzee-green/30'
                 )}
               >
                 <div className="flex items-center gap-3 min-w-0">
@@ -451,8 +451,8 @@ export default function ShoppingListPage() {
                   <span className={cx(
                     'text-xs px-2 py-0.5 rounded-full',
                     selectedListId === list.id
-                      ? 'bg-platerly-dark/20'
-                      : 'bg-platerly-light'
+                      ? 'bg-recipzee-dark/20'
+                      : 'bg-recipzee-light'
                   )}>
                     {list.itemCount}
                   </span>
@@ -462,35 +462,35 @@ export default function ShoppingListPage() {
           </div>
 
           {/* Selected List Details */}
-          <div className="rounded-2xl border border-platerly-border bg-platerly-card overflow-hidden">
+          <div className="rounded-2xl border border-recipzee-border bg-recipzee-card overflow-hidden">
             {loadingList ? (
               <div className="flex items-center justify-center py-16">
-                <Loader2 className="w-6 h-6 text-platerly-green animate-spin" />
+                <Loader2 className="w-6 h-6 text-recipzee-green animate-spin" />
               </div>
             ) : selectedList ? (
               <>
                 {/* List Header */}
-                <div className="px-4 py-3 bg-platerly-light/30 border-b border-platerly-border">
+                <div className="px-4 py-3 bg-recipzee-light/30 border-b border-recipzee-border">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="font-semibold text-platerly-text">
+                      <h2 className="font-semibold text-recipzee-text">
                         {selectedList.name}
                       </h2>
-                      <p className="text-sm text-platerly-subtle">
+                      <p className="text-sm text-recipzee-subtle">
                         {checkedCount}/{totalCount} items checked
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={handleCopyList}
-                        className="p-2 rounded-lg hover:bg-platerly-light text-platerly-subtle hover:text-platerly-text transition-colors"
+                        className="p-2 rounded-lg hover:bg-recipzee-light text-recipzee-subtle hover:text-recipzee-text transition-colors"
                         title="Copy list"
                       >
                         <Copy className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => setDeleteListId(selectedListId)}
-                        className="p-2 rounded-lg hover:bg-red-500/10 text-platerly-subtle hover:text-red-400 transition-colors"
+                        className="p-2 rounded-lg hover:bg-red-500/10 text-recipzee-subtle hover:text-red-400 transition-colors"
                         title="Delete list"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -500,17 +500,17 @@ export default function ShoppingListPage() {
 
                   {/* Source Recipes */}
                   {selectedList.sourceRecipes?.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-platerly-border/50">
+                    <div className="mt-3 pt-3 border-t border-recipzee-border/50">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <BookOpen className="w-4 h-4 text-platerly-subtle" />
-                          <span className="text-xs font-medium text-platerly-subtle uppercase tracking-wide">
+                          <BookOpen className="w-4 h-4 text-recipzee-subtle" />
+                          <span className="text-xs font-medium text-recipzee-subtle uppercase tracking-wide">
                             Recipes in this list
                           </span>
                         </div>
                         <button
                           onClick={() => setShowClearRecipesConfirm(true)}
-                          className="text-xs text-platerly-subtle hover:text-red-400 transition-colors"
+                          className="text-xs text-recipzee-subtle hover:text-red-400 transition-colors"
                         >
                           Clear all recipes
                         </button>
@@ -520,7 +520,7 @@ export default function ShoppingListPage() {
                           <Link
                             key={recipe.recipeId}
                             to={`/recipe/${recipe.recipeId}`}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-platerly-light hover:bg-platerly-green/10 text-sm text-platerly-text hover:text-platerly-green transition-colors"
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-recipzee-light hover:bg-recipzee-green/10 text-sm text-recipzee-text hover:text-recipzee-green transition-colors"
                           >
                             {recipe.thumbnailUrl && (
                               <img
@@ -531,7 +531,7 @@ export default function ShoppingListPage() {
                             )}
                             <span className="max-w-[150px] truncate">{recipe.title}</span>
                             {recipe.scaleFactor !== 1 && (
-                              <span className="text-xs text-platerly-muted">
+                              <span className="text-xs text-recipzee-muted">
                                 ({recipe.scaleFactor}x)
                               </span>
                             )}
@@ -543,19 +543,19 @@ export default function ShoppingListPage() {
                 </div>
 
                 {/* Add Item Form */}
-                <form onSubmit={handleAddItem} className="px-4 py-3 border-b border-platerly-border">
+                <form onSubmit={handleAddItem} className="px-4 py-3 border-b border-recipzee-border">
                   <div className="flex gap-2">
                     <input
                       type="text"
                       value={newItemName}
                       onChange={(e) => setNewItemName(e.target.value)}
                       placeholder="Add an item..."
-                      className="flex-1 px-3 py-2 rounded-lg bg-platerly-light border border-platerly-border text-platerly-text placeholder-platerly-muted text-sm focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
+                      className="flex-1 px-3 py-2 rounded-lg bg-recipzee-light border border-recipzee-border text-recipzee-text placeholder-recipzee-muted text-sm focus:outline-none focus:ring-2 focus:ring-recipzee-green/40"
                     />
                     <button
                       type="submit"
                       disabled={addingItem || !newItemName.trim()}
-                      className="px-3 py-2 rounded-lg bg-platerly-green text-platerly-dark font-medium text-sm disabled:opacity-50"
+                      className="px-3 py-2 rounded-lg bg-recipzee-green text-recipzee-dark font-medium text-sm disabled:opacity-50"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -565,13 +565,13 @@ export default function ShoppingListPage() {
                 {/* Items List */}
                 <div className="max-h-[50vh] overflow-y-auto">
                   {selectedList.items?.length > 0 ? (
-                    <ul className="divide-y divide-platerly-border/50">
+                    <ul className="divide-y divide-recipzee-border/50">
                       {selectedList.items.map(item => (
                         <li
                           key={item.id}
                           className={cx(
                             'flex items-center gap-3 px-4 py-3 group',
-                            item.isChecked && 'bg-platerly-green/5'
+                            item.isChecked && 'bg-recipzee-green/5'
                           )}
                         >
                           <button
@@ -579,35 +579,35 @@ export default function ShoppingListPage() {
                             className={cx(
                               'w-5 h-5 rounded flex items-center justify-center border-2 transition-all shrink-0',
                               item.isChecked
-                                ? 'bg-platerly-green border-platerly-green'
-                                : 'border-platerly-border hover:border-platerly-green/50'
+                                ? 'bg-recipzee-green border-recipzee-green'
+                                : 'border-recipzee-border hover:border-recipzee-green/50'
                             )}
                           >
                             {item.isChecked && (
-                              <Check className="w-3 h-3 text-platerly-dark" />
+                              <Check className="w-3 h-3 text-recipzee-dark" />
                             )}
                           </button>
                           <div className={cx(
                             'flex-1 min-w-0',
-                            item.isChecked && 'line-through text-platerly-muted'
+                            item.isChecked && 'line-through text-recipzee-muted'
                           )}>
                             <div className="flex items-baseline gap-2">
                               {item.quantity && (
-                                <span className="text-platerly-green font-medium">
+                                <span className="text-recipzee-green font-medium">
                                   {item.quantity}
                                 </span>
                               )}
-                              <span className="text-platerly-text">{item.name}</span>
+                              <span className="text-recipzee-text">{item.name}</span>
                             </div>
                             {item.sources?.length > 0 && (
-                              <div className="text-xs text-platerly-subtle mt-0.5">
+                              <div className="text-xs text-recipzee-subtle mt-0.5">
                                 from {item.sources.map(s => s.recipeTitle).filter(Boolean).join(', ')}
                               </div>
                             )}
                           </div>
                           <button
                             onClick={() => handleDeleteItem(item.id)}
-                            className="p-1.5 rounded opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-platerly-subtle hover:text-red-400 transition-all"
+                            className="p-1.5 rounded opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-recipzee-subtle hover:text-red-400 transition-all"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -615,7 +615,7 @@ export default function ShoppingListPage() {
                       ))}
                     </ul>
                   ) : (
-                    <div className="py-12 text-center text-platerly-subtle">
+                    <div className="py-12 text-center text-recipzee-subtle">
                       <p>No items yet. Add items above or from a recipe.</p>
                     </div>
                   )}
@@ -623,12 +623,12 @@ export default function ShoppingListPage() {
 
                 {/* Footer Actions */}
                 {totalCount > 0 && (
-                  <div className="px-4 py-3 border-t border-platerly-border bg-platerly-light/10 flex items-center justify-between">
+                  <div className="px-4 py-3 border-t border-recipzee-border bg-recipzee-light/10 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       {checkedCount > 0 && (
                         <button
                           onClick={handleClearChecked}
-                          className="text-sm text-platerly-subtle hover:text-red-400 transition-colors"
+                          className="text-sm text-recipzee-subtle hover:text-red-400 transition-colors"
                         >
                           Clear {checkedCount} checked item{checkedCount !== 1 ? 's' : ''}
                         </button>
@@ -636,7 +636,7 @@ export default function ShoppingListPage() {
                     </div>
                     <button
                       onClick={() => setShowClearAllConfirm(true)}
-                      className="text-sm text-platerly-subtle hover:text-red-400 transition-colors"
+                      className="text-sm text-recipzee-subtle hover:text-red-400 transition-colors"
                     >
                       Clear all items
                     </button>
@@ -644,7 +644,7 @@ export default function ShoppingListPage() {
                 )}
               </>
             ) : (
-              <div className="py-16 text-center text-platerly-subtle">
+              <div className="py-16 text-center text-recipzee-subtle">
                 Select a list to view items
               </div>
             )}

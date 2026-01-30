@@ -147,20 +147,20 @@ const ShoppingListSection = ({ ingredients = [], recipeId }) => {
   const canCreateNew = isPremium || userLists.length === 0
 
   return (
-    <div className="rounded-2xl border border-platerly-border bg-platerly-card/70 backdrop-blur-sm overflow-hidden">
+    <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/70 backdrop-blur-sm overflow-hidden">
       {/* Header - always visible */}
       <button
         onClick={() => setIsOpen(v => !v)}
         className="w-full px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <ShoppingCart className="w-5 h-5 text-platerly-green" />
-          <h2 className="text-base sm:text-lg font-semibold text-platerly-text">
+          <ShoppingCart className="w-5 h-5 text-recipzee-green" />
+          <h2 className="text-base sm:text-lg font-semibold text-recipzee-text">
             Add to Shopping List
           </h2>
         </div>
         <div className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`}>
-          <svg className="w-5 h-5 text-platerly-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-recipzee-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </div>
@@ -168,40 +168,40 @@ const ShoppingListSection = ({ ingredients = [], recipeId }) => {
 
       {/* Expandable content */}
       {isOpen && (
-        <div className="border-t border-platerly-border">
+        <div className="border-t border-recipzee-border">
           {!token ? (
             <div className="px-4 py-6 text-center">
-              <p className="text-platerly-subtle mb-3">Log in to save shopping lists</p>
+              <p className="text-recipzee-subtle mb-3">Log in to save shopping lists</p>
               <Link
                 to="/login"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-platerly-green text-platerly-dark font-medium"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-recipzee-green text-recipzee-dark font-medium"
               >
                 Log in
               </Link>
             </div>
           ) : !recipeId ? (
-            <div className="px-4 py-6 text-center text-platerly-subtle">
+            <div className="px-4 py-6 text-center text-recipzee-subtle">
               Recipe not available for shopping list
             </div>
           ) : (
             <>
               {/* Scale selector */}
-              <div className="px-4 py-3 border-b border-platerly-border bg-platerly-light/10">
+              <div className="px-4 py-3 border-b border-recipzee-border bg-recipzee-light/10">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-platerly-subtle">Scale ingredients:</span>
+                  <span className="text-sm text-recipzee-subtle">Scale ingredients:</span>
                   <div className="inline-flex items-center gap-2">
                     <button
                       onClick={() => setScale(s => Math.max(0.5, s - 0.5))}
                       disabled={scale <= 0.5}
-                      className="w-8 h-8 rounded-lg bg-platerly-card border border-platerly-border flex items-center justify-center hover:bg-platerly-light disabled:opacity-50 transition-colors"
+                      className="w-8 h-8 rounded-lg bg-recipzee-card border border-recipzee-border flex items-center justify-center hover:bg-recipzee-light disabled:opacity-50 transition-colors"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
-                    <span className="w-12 text-center font-medium text-platerly-text">{scale}x</span>
+                    <span className="w-12 text-center font-medium text-recipzee-text">{scale}x</span>
                     <button
                       onClick={() => setScale(s => Math.min(10, s + 0.5))}
                       disabled={scale >= 10}
-                      className="w-8 h-8 rounded-lg bg-platerly-card border border-platerly-border flex items-center justify-center hover:bg-platerly-light disabled:opacity-50 transition-colors"
+                      className="w-8 h-8 rounded-lg bg-recipzee-card border border-recipzee-border flex items-center justify-center hover:bg-recipzee-light disabled:opacity-50 transition-colors"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -214,8 +214,8 @@ const ShoppingListSection = ({ ingredients = [], recipeId }) => {
                 {loading ? (
                   <div className="space-y-2">
                     {[...Array(3)].map((_, i) => (
-                      <div key={i} className="px-3 py-3 rounded-lg border border-platerly-border bg-platerly-light/30 animate-pulse">
-                        <div className="h-4 w-48 bg-platerly-border rounded" />
+                      <div key={i} className="px-3 py-3 rounded-lg border border-recipzee-border bg-recipzee-light/30 animate-pulse">
+                        <div className="h-4 w-48 bg-recipzee-border rounded" />
                       </div>
                     ))}
                   </div>
@@ -224,7 +224,7 @@ const ShoppingListSection = ({ ingredients = [], recipeId }) => {
                     {/* Existing lists */}
                     {userLists.length > 0 && (
                       <div>
-                        <h4 className="text-sm font-medium text-platerly-subtle mb-2">
+                        <h4 className="text-sm font-medium text-recipzee-subtle mb-2">
                           Add to existing list
                         </h4>
                         <ul className="space-y-2">
@@ -236,13 +236,13 @@ const ShoppingListSection = ({ ingredients = [], recipeId }) => {
                             return (
                               <li
                                 key={list.id}
-                                className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-platerly-border bg-platerly-light/20"
+                                className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-recipzee-border bg-recipzee-light/20"
                               >
                                 <div className="flex-1 min-w-0 mr-3">
-                                  <span className="text-platerly-text text-sm truncate block">
+                                  <span className="text-recipzee-text text-sm truncate block">
                                     {list.name}
                                   </span>
-                                  <span className="text-xs text-platerly-subtle">
+                                  <span className="text-xs text-recipzee-subtle">
                                     {list.totalItems || 0} items • {list.recipeCount || 0} recipe{list.recipeCount !== 1 ? 's' : ''}
                                   </span>
                                 </div>
@@ -251,8 +251,8 @@ const ShoppingListSection = ({ ingredients = [], recipeId }) => {
                                   disabled={isAdded || isBusy || alreadyHasThisRecipe}
                                   className={`text-sm px-3 py-1.5 rounded-lg transition shadow disabled:opacity-60 disabled:cursor-not-allowed ${
                                     isAdded || alreadyHasThisRecipe
-                                      ? 'bg-platerly-light text-platerly-subtle'
-                                      : 'bg-platerly-green text-platerly-dark hover:opacity-90'
+                                      ? 'bg-recipzee-light text-recipzee-subtle'
+                                      : 'bg-recipzee-green text-recipzee-dark hover:opacity-90'
                                   }`}
                                 >
                                   {alreadyHasThisRecipe ? 'Already added' : isAdded ? 'Added' : isBusy ? 'Adding...' : 'Add'}
@@ -266,26 +266,26 @@ const ShoppingListSection = ({ ingredients = [], recipeId }) => {
 
                     {/* Create new list */}
                     <div>
-                      <h4 className="text-sm font-medium text-platerly-subtle mb-2">
+                      <h4 className="text-sm font-medium text-recipzee-subtle mb-2">
                         Create new list
                       </h4>
                       {canCreateNew ? (
                         <button
                           onClick={handleCreateNewList}
                           disabled={addingToListId === 'new'}
-                          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed border-platerly-border hover:border-platerly-green/50 hover:bg-platerly-green/5 text-platerly-text transition-colors disabled:opacity-50"
+                          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed border-recipzee-border hover:border-recipzee-green/50 hover:bg-recipzee-green/5 text-recipzee-text transition-colors disabled:opacity-50"
                         >
                           {addingToListId === 'new' ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
-                            <Plus className="w-4 h-4 text-platerly-green" />
+                            <Plus className="w-4 h-4 text-recipzee-green" />
                           )}
                           <span>Create new list from this recipe</span>
                         </button>
                       ) : (
                         <Link
                           to="/settings?tab=subscription"
-                          className="flex items-center gap-2 px-4 py-3 rounded-lg bg-platerly-light/20 text-platerly-subtle hover:text-platerly-text hover:bg-platerly-light/30 transition-colors"
+                          className="flex items-center gap-2 px-4 py-3 rounded-lg bg-recipzee-light/20 text-recipzee-subtle hover:text-recipzee-text hover:bg-recipzee-light/30 transition-colors"
                         >
                           <Crown className="w-4 h-4 text-amber-400" />
                           <span className="text-sm">Upgrade to Premium for multiple lists</span>
@@ -294,10 +294,10 @@ const ShoppingListSection = ({ ingredients = [], recipeId }) => {
                     </div>
 
                     {/* View shopping lists link */}
-                    <div className="pt-2 border-t border-platerly-border">
+                    <div className="pt-2 border-t border-recipzee-border">
                       <Link
                         to="/shopping-list"
-                        className="text-sm text-platerly-green hover:underline"
+                        className="text-sm text-recipzee-green hover:underline"
                       >
                         View all shopping lists →
                       </Link>

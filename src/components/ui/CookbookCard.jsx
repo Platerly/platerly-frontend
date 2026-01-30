@@ -37,15 +37,15 @@ const CookbookCard = ({
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate(`/cookbook/${id}`)}
       className={[
         "group cursor-pointer rounded-2xl overflow-hidden",
-        "bg-platerly-card border border-platerly-border",
-        "hover:border-platerly-green/30 hover:shadow-xl hover:shadow-platerly-green/5",
+        "bg-recipzee-card border border-recipzee-border",
+        "hover:border-recipzee-green/30 hover:shadow-xl hover:shadow-recipzee-green/5",
         "hover:scale-[1.02] active:scale-[0.99]",
         "transition-all duration-200 motion-reduce:transition-none",
         "min-h-[44px]"
       ].join(" ")}
     >
       {/* Media */}
-      <div className="relative w-full aspect-[4/3] bg-platerly-light">
+      <div className="relative w-full aspect-[4/3] bg-recipzee-light">
         <img
           src={coverImageUrl || placeholder}
           alt={`${title} cover`}
@@ -66,7 +66,7 @@ const CookbookCard = ({
 
         {/* recipe count badge */}
         <div className="absolute left-2 top-2">
-          <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold bg-platerly-dark/80 text-platerly-text backdrop-blur border border-white/10 shadow">
+          <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold bg-recipzee-dark/80 text-recipzee-text backdrop-blur border border-white/10 shadow">
             <BookOpen className="w-3 h-3" />
             {recipeCount}
           </span>
@@ -78,8 +78,8 @@ const CookbookCard = ({
             className={[
               "inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium backdrop-blur shadow",
               isPublic
-                ? "bg-platerly-green/20 text-platerly-green border border-platerly-green/30"
-                : "bg-platerly-dark/80 text-platerly-subtle border border-white/10",
+                ? "bg-recipzee-green/20 text-recipzee-green border border-recipzee-green/30"
+                : "bg-recipzee-dark/80 text-recipzee-subtle border border-white/10",
             ].join(" ")}
           >
             {isPublic ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
@@ -90,15 +90,15 @@ const CookbookCard = ({
 
       {/* Meta */}
       <div className="p-4">
-        <h3 className="text-base sm:text-lg font-semibold text-platerly-text mb-1 line-clamp-2 group-hover:text-platerly-green transition-colors">
+        <h3 className="text-base sm:text-lg font-semibold text-recipzee-text mb-1 line-clamp-2 group-hover:text-recipzee-green transition-colors">
           {title}
         </h3>
         {description && (
-          <p className="text-sm text-platerly-subtle line-clamp-1 mb-2">{description}</p>
+          <p className="text-sm text-recipzee-subtle line-clamp-1 mb-2">{description}</p>
         )}
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-platerly-subtle">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-recipzee-subtle">
           <span className="truncate">{dateLabel}</span>
-          <span className="opacity-60 group-hover:opacity-100 group-hover:text-platerly-green transition-all">
+          <span className="opacity-60 group-hover:opacity-100 group-hover:text-recipzee-green transition-all">
             View →
           </span>
         </div>

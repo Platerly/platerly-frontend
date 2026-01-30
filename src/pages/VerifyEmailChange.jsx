@@ -47,17 +47,17 @@ const VerifyEmailChange = () => {
   }, [token, logout, navigate])
 
   return (
-    <div className="min-h-screen bg-platerly-dark flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-platerly-card border border-platerly-border rounded-2xl p-8 text-center">
+    <div className="min-h-screen bg-recipzee-dark flex items-center justify-center px-4">
+      <div className="max-w-md w-full bg-recipzee-card border border-recipzee-border rounded-2xl p-8 text-center">
         {status === 'verifying' && (
           <>
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-platerly-green/10 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 text-platerly-green animate-spin" />
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-recipzee-green/10 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 text-recipzee-green animate-spin" />
             </div>
-            <h2 className="text-xl font-semibold text-platerly-text mb-2">
+            <h2 className="text-xl font-semibold text-recipzee-text mb-2">
               Verifying your new email...
             </h2>
-            <p className="text-platerly-muted text-sm">
+            <p className="text-recipzee-muted text-sm">
               Please wait while we confirm your email change.
             </p>
           </>
@@ -65,16 +65,16 @@ const VerifyEmailChange = () => {
 
         {status === 'success' && (
           <>
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-platerly-green/10 flex items-center justify-center">
-              <Check className="w-8 h-8 text-platerly-green" />
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-recipzee-green/10 flex items-center justify-center">
+              <Check className="w-8 h-8 text-recipzee-green" />
             </div>
-            <h2 className="text-xl font-semibold text-platerly-text mb-2">
+            <h2 className="text-xl font-semibold text-recipzee-text mb-2">
               Email Changed Successfully!
             </h2>
-            <p className="text-platerly-muted text-sm mb-4">
+            <p className="text-recipzee-muted text-sm mb-4">
               {message}
             </p>
-            <p className="text-platerly-subtle text-xs">
+            <p className="text-recipzee-subtle text-xs">
               Redirecting to login page...
             </p>
           </>
@@ -85,22 +85,22 @@ const VerifyEmailChange = () => {
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/10 flex items-center justify-center">
               <X className="w-8 h-8 text-red-400" />
             </div>
-            <h2 className="text-xl font-semibold text-platerly-text mb-2">
+            <h2 className="text-xl font-semibold text-recipzee-text mb-2">
               Verification Failed
             </h2>
-            <p className="text-platerly-muted text-sm mb-6">
+            <p className="text-recipzee-muted text-sm mb-6">
               {message}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={() => navigate('/settings?tab=account')}
-                className="px-4 py-2 bg-platerly-accent text-white rounded-lg hover:bg-platerly-accent/90 transition-colors"
+                className="px-4 py-2 bg-recipzee-accent text-white rounded-lg hover:bg-recipzee-accent/90 transition-colors"
               >
                 Go to Settings
               </button>
               <button
                 onClick={() => navigate('/')}
-                className="px-4 py-2 bg-platerly-border text-platerly-text rounded-lg hover:bg-platerly-border/70 transition-colors"
+                className="px-4 py-2 bg-recipzee-border text-recipzee-text rounded-lg hover:bg-recipzee-border/70 transition-colors"
               >
                 Go Home
               </button>

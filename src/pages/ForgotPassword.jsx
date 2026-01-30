@@ -30,20 +30,20 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-platerly-dark text-platerly-text px-4">
+    <div className="flex items-center justify-center min-h-screen bg-recipzee-dark text-recipzee-text px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md space-y-5 bg-platerly-card border border-platerly-light rounded-2xl p-6 shadow"
+        className="w-full max-w-md space-y-5 bg-recipzee-card border border-recipzee-light rounded-2xl p-6 shadow"
       >
         <div className="text-center">
           <h2 className="text-2xl font-bold">Forgot Password</h2>
-          <p className="mt-1 text-sm text-platerly-subtle">
+          <p className="mt-1 text-sm text-recipzee-subtle">
             Enter your email to receive a reset link.
           </p>
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm mb-1 text-platerly-subtle">
+          <label htmlFor="email" className="block text-sm mb-1 text-recipzee-subtle">
             Email
           </label>
           <input
@@ -51,7 +51,7 @@ export default function ForgotPassword() {
             type="email"
             autoComplete="email"
             inputMode="email"
-            className="w-full p-2.5 rounded-lg bg-platerly-card border border-platerly-light text-platerly-text placeholder-platerly-subtle focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
+            className="w-full p-2.5 rounded-lg bg-recipzee-card border border-recipzee-light text-recipzee-text placeholder-recipzee-subtle focus:outline-none focus:ring-2 focus:ring-recipzee-green/40"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -62,7 +62,7 @@ export default function ForgotPassword() {
 
         <button
           type="submit"
-          className="w-full rounded-lg p-2.5 font-semibold bg-platerly-green text-platerly-dark hover:opacity-90 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-platerly-green/40"
+          className="w-full rounded-lg p-2.5 font-semibold bg-recipzee-green text-recipzee-dark hover:opacity-90 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-recipzee-green/40"
           disabled={loading}
         >
           {loading ? "Sending..." : "Send Reset Link"}
@@ -71,7 +71,7 @@ export default function ForgotPassword() {
         <div className="text-center text-sm">
           <Link
             to="/login"
-            className="text-platerly-yellow hover:underline focus:outline-none focus:ring-2 focus:ring-platerly-green/40 rounded"
+            className="text-recipzee-yellow hover:underline focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 rounded"
           >
             Back to Login
           </Link>

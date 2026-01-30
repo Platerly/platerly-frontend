@@ -6,7 +6,7 @@ const RefundsPage = () => (
     title="Refund & Subscription Policy"
     subtitle="How billing, cancellations, and refunds work."
   >
-    <section className="space-y-10 leading-relaxed text-platerly-text">
+    <section className="space-y-10 leading-relaxed text-recipzee-text">
       {/* Billing */}
       <div>
         <h2 className="text-xl font-semibold mb-3">Billing</h2>
@@ -80,7 +80,7 @@ const RefundsPage = () => (
         <h2 className="text-xl font-semibold mb-3">Chargebacks</h2>
         <p>
           If a chargeback is filed, access may be paused while we review. Please
-          <a href="/contact" className="text-platerly-green hover:underline underline-offset-2"> contact us</a> first so we can help.
+          <a href="/contact" className="text-recipzee-green hover:underline underline-offset-2"> contact us</a> first so we can help.
         </p>
       </div>
 
@@ -89,14 +89,14 @@ const RefundsPage = () => (
         <h2 className="text-xl font-semibold mb-3">Questions</h2>
         <p>
           We’re here to help. Reach us at{" "}
-          <a href="mailto:support@platerly.com" className="text-platerly-green hover:underline underline-offset-2">
-            support@platerly.com
+          <a href="mailto:support@recipzee.com" className="text-recipzee-green hover:underline underline-offset-2">
+            support@recipzee.com
           </a>{" "}
-          or via our <a href="/contact" className="text-platerly-green hover:underline underline-offset-2">Contact</a> page.
+          or via our <a href="/contact" className="text-recipzee-green hover:underline underline-offset-2">Contact</a> page.
         </p>
       </div>
 
-      <p className="pt-4 text-sm text-platerly-subtle">Last updated: Aug 26, 2025</p>
+      <p className="pt-4 text-sm text-recipzee-subtle">Last updated: Aug 26, 2025</p>
     </section>
   </PublicPage>
 );

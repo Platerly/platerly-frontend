@@ -90,40 +90,40 @@ export default function ResetPassword() {
   const barLabels = ["Very weak", "Weak", "Fair", "Strong", "Very strong"];
 
   return (
-    <div className="min-h-svh bg-platerly-dark text-platerly-text flex items-center justify-center px-4 py-10 relative overflow-hidden">
+    <div className="min-h-svh bg-recipzee-dark text-recipzee-text flex items-center justify-center px-4 py-10 relative overflow-hidden">
       {/* Background gradient orbs - hidden on mobile for performance */}
-      <div className="hidden sm:block absolute top-0 left-1/4 w-80 h-80 bg-platerly-green/5 rounded-full blur-[120px]" />
+      <div className="hidden sm:block absolute top-0 left-1/4 w-80 h-80 bg-recipzee-green/5 rounded-full blur-[120px]" />
       <div className="hidden sm:block absolute bottom-1/3 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
 
       <div className="w-full max-w-md relative z-10">
         {/* Card - no backdrop-blur on mobile for performance */}
-        <div className="bg-platerly-card sm:bg-platerly-card/80 sm:backdrop-blur-sm border border-platerly-border rounded-2xl shadow-xl p-6 sm:p-8">
+        <div className="bg-recipzee-card sm:bg-recipzee-card/80 sm:backdrop-blur-sm border border-recipzee-border rounded-2xl shadow-xl p-6 sm:p-8">
           {/* Logo / Brand */}
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-platerly-green/20 flex items-center justify-center">
-              <KeyRound className="w-5 h-5 text-platerly-green" />
+            <div className="w-10 h-10 rounded-xl bg-recipzee-green/20 flex items-center justify-center">
+              <KeyRound className="w-5 h-5 text-recipzee-green" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold leading-tight text-platerly-text">Platerly</h1>
-              <p className="text-xs text-platerly-subtle">Reset your password</p>
+              <h1 className="text-lg font-semibold leading-tight text-recipzee-text">Recipzee</h1>
+              <p className="text-xs text-recipzee-subtle">Reset your password</p>
             </div>
           </div>
 
           <form onSubmit={handleReset} className="space-y-5" noValidate>
             {/* New Password */}
             <label className="block">
-              <span className="block text-sm mb-1 text-platerly-text">New password</span>
-              <div className={`flex items-center gap-2 rounded-xl border bg-platerly-light/50 focus-within:ring-2 focus-within:ring-platerly-green/40 transition ${
+              <span className="block text-sm mb-1 text-recipzee-text">New password</span>
+              <div className={`flex items-center gap-2 rounded-xl border bg-recipzee-light/50 focus-within:ring-2 focus-within:ring-recipzee-green/40 transition ${
                 password
-                  ? "border-platerly-border"
-                  : "border-platerly-border hover:border-platerly-green/30"
+                  ? "border-recipzee-border"
+                  : "border-recipzee-border hover:border-recipzee-green/30"
               }`}>
-                <span className="pl-3 text-platerly-subtle"><Lock size={18} /></span>
+                <span className="pl-3 text-recipzee-subtle"><Lock size={18} /></span>
                 <input
                   type={showPw ? "text" : "password"}
                   inputMode="text"
                   autoComplete="new-password"
-                  className="w-full bg-transparent px-1 py-3 text-sm outline-none placeholder:text-platerly-muted text-platerly-text"
+                  className="w-full bg-transparent px-1 py-3 text-sm outline-none placeholder:text-recipzee-muted text-recipzee-text"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -134,7 +134,7 @@ export default function ResetPassword() {
                 <button
                   type="button"
                   onClick={() => setShowPw((s) => !s)}
-                  className="pr-3 text-platerly-subtle hover:text-platerly-text transition-colors"
+                  className="pr-3 text-recipzee-subtle hover:text-recipzee-text transition-colors"
                   aria-label={showPw ? "Hide password" : "Show password"}
                 >
                   {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -144,7 +144,7 @@ export default function ResetPassword() {
 
             {/* Strength Bar */}
             <div aria-live="polite" className="-mt-1">
-              <div className="h-2 w-full rounded-full bg-platerly-light overflow-hidden">
+              <div className="h-2 w-full rounded-full bg-recipzee-light overflow-hidden">
                 <div
                   className={`h-full transition-all ${
                     barIdx <= 1
@@ -153,30 +153,30 @@ export default function ResetPassword() {
                       ? "bg-amber-500"
                       : barIdx === 3
                       ? "bg-lime-500"
-                      : "bg-platerly-green"
+                      : "bg-recipzee-green"
                   }`}
                   style={{ width: `${(barIdx / 5) * 100}%` }}
                 />
               </div>
-              <p id="password-help" className="mt-2 text-xs text-platerly-subtle">
+              <p id="password-help" className="mt-2 text-xs text-recipzee-subtle">
                 {barLabels[Math.max(0, barIdx - 1)] || "Very weak"}
               </p>
             </div>
 
             {/* Confirm */}
             <label className="block">
-              <span className="block text-sm mb-1 text-platerly-text">Confirm new password</span>
-              <div className={`flex items-center gap-2 rounded-xl border bg-platerly-light/50 focus-within:ring-2 focus-within:ring-platerly-green/40 transition ${
+              <span className="block text-sm mb-1 text-recipzee-text">Confirm new password</span>
+              <div className={`flex items-center gap-2 rounded-xl border bg-recipzee-light/50 focus-within:ring-2 focus-within:ring-recipzee-green/40 transition ${
                 confirm
-                  ? "border-platerly-border"
-                  : "border-platerly-border hover:border-platerly-green/30"
+                  ? "border-recipzee-border"
+                  : "border-recipzee-border hover:border-recipzee-green/30"
               }`}>
-                <span className="pl-3 text-platerly-subtle"><Lock size={18} /></span>
+                <span className="pl-3 text-recipzee-subtle"><Lock size={18} /></span>
                 <input
                   type={showConfirm ? "text" : "password"}
                   inputMode="text"
                   autoComplete="new-password"
-                  className="w-full bg-transparent px-1 py-3 text-sm outline-none placeholder:text-platerly-muted text-platerly-text"
+                  className="w-full bg-transparent px-1 py-3 text-sm outline-none placeholder:text-recipzee-muted text-recipzee-text"
                   placeholder="Repeat password"
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
@@ -186,7 +186,7 @@ export default function ResetPassword() {
                 <button
                   type="button"
                   onClick={() => setShowConfirm((s) => !s)}
-                  className="pr-3 text-platerly-subtle hover:text-platerly-text transition-colors"
+                  className="pr-3 text-recipzee-subtle hover:text-recipzee-text transition-colors"
                   aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
                 >
                   {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -198,15 +198,15 @@ export default function ResetPassword() {
             </label>
 
             {/* Requirements checklist */}
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-platerly-subtle">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-recipzee-subtle">
               {rules.map((r, i) => (
                 <li key={r.key} className="flex items-center gap-2">
                   <span
                     className={`inline-block size-2 rounded-full transition-colors ${
-                      matches[i] ? "bg-platerly-green" : "bg-platerly-light"
+                      matches[i] ? "bg-recipzee-green" : "bg-recipzee-light"
                     }`}
                   />
-                  <span className={matches[i] ? "text-platerly-text" : ""}>{r.label}</span>
+                  <span className={matches[i] ? "text-recipzee-text" : ""}>{r.label}</span>
                 </li>
               ))}
             </ul>
@@ -215,17 +215,17 @@ export default function ResetPassword() {
             <button
               type="submit"
               disabled={loading || !token}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold bg-platerly-green text-platerly-dark shadow-lg shadow-platerly-green/20 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-platerly-green/40 transition-all"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold bg-recipzee-green text-recipzee-dark shadow-lg shadow-recipzee-green/20 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 transition-all"
             >
               {loading ? "Resetting…" : "Reset Password"}
             </button>
 
             {/* Footer actions */}
-            <div className="text-center text-xs text-platerly-subtle space-x-4">
-              <Link to="/login" className="hover:text-platerly-text underline underline-offset-4 transition-colors">
+            <div className="text-center text-xs text-recipzee-subtle space-x-4">
+              <Link to="/login" className="hover:text-recipzee-text underline underline-offset-4 transition-colors">
                 Back to login
               </Link>
-              <Link to="/forgot-password" className="hover:text-platerly-text underline underline-offset-4 transition-colors">
+              <Link to="/forgot-password" className="hover:text-recipzee-text underline underline-offset-4 transition-colors">
                 Forgot your link?
               </Link>
             </div>

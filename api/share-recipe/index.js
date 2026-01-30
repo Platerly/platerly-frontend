@@ -18,9 +18,9 @@ module.exports = async function (context, req) {
       return;
     }
 
-    const PUBLIC_BASE = (process.env.PublicBaseUrl || "https://www.platerly.com").replace(/\/+$/, "");
+    const PUBLIC_BASE = (process.env.PublicBaseUrl || "https://www.recipzee.com").replace(/\/+$/, "");
     const BACKEND_BASE = (process.env.BackendBaseUrl || "").replace(/\/+$/, "");
-    const site = "Platerly";
+    const site = "Recipzee";
 
     context.log("PUBLIC_BASE:", PUBLIC_BASE);
     context.log("BACKEND_BASE:", BACKEND_BASE);
@@ -43,7 +43,7 @@ module.exports = async function (context, req) {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'User-Agent': 'Platerly-ShareBot/1.0'
+        'User-Agent': 'Recipzee-ShareBot/1.0'
       }
     });
     context.log("API response status:", r.status);
@@ -113,7 +113,7 @@ module.exports = async function (context, req) {
       "url": canonicalUrl,
       "author": {
         "@type": "Person",
-        "name": recipe?.authorDisplayName || recipe?.authorUsername || "Platerly Chef"
+        "name": recipe?.authorDisplayName || recipe?.authorUsername || "Recipzee Chef"
       },
       "datePublished": recipe?.createdAt ? new Date(recipe.createdAt).toISOString().split('T')[0] : undefined,
       "prepTime": recipe?.prepTimeMinutes > 0 ? `PT${recipe.prepTimeMinutes}M` : undefined,
@@ -166,8 +166,8 @@ module.exports = async function (context, req) {
 <meta name="twitter:description" content="${E(desc)}">
 <meta name="twitter:image" content="${E(shareImage)}">
 <meta name="twitter:url" content="${canonicalUrl}">
-<meta name="twitter:domain" content="platerly.com">
-<meta name="twitter:site" content="@platerlyinc">
+<meta name="twitter:domain" content="recipzee.com">
+<meta name="twitter:site" content="@recipzee">
 
 <script type="application/ld+json">${JSON.stringify(recipeSchema)}</script>
 

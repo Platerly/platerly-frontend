@@ -93,30 +93,30 @@ export default function VerifyEmail() {
   }, [token, navigate, authToken, setUser]);
 
   return (
-    <div className="min-h-screen bg-platerly-dark text-platerly-text flex items-center justify-center px-4 py-10 sm:px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-recipzee-dark text-recipzee-text flex items-center justify-center px-4 py-10 sm:px-6 relative overflow-hidden">
       {/* Background gradient orbs */}
-      <div className="absolute top-0 left-1/4 w-80 h-80 bg-platerly-green/5 rounded-full blur-[120px]" />
+      <div className="absolute top-0 left-1/4 w-80 h-80 bg-recipzee-green/5 rounded-full blur-[120px]" />
       <div className="absolute bottom-1/3 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
 
       <div className="w-full max-w-md relative z-10">
-        <div className="rounded-2xl border border-platerly-border bg-platerly-card/80 backdrop-blur-sm p-6 sm:p-8 shadow-xl">
+        <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/80 backdrop-blur-sm p-6 sm:p-8 shadow-xl">
           <header className="mb-6 sm:mb-8 text-center">
             <div className={`mx-auto mb-4 h-12 w-12 rounded-xl flex items-center justify-center ${
               status === "success"
-                ? "bg-platerly-green/20"
+                ? "bg-recipzee-green/20"
                 : status === "error"
                 ? "bg-red-500/20"
-                : "bg-platerly-green/20"
+                : "bg-recipzee-green/20"
             }`}>
               {status === "success" ? (
-                <CheckCircle className="h-6 w-6 text-platerly-green" />
+                <CheckCircle className="h-6 w-6 text-recipzee-green" />
               ) : status === "error" ? (
                 <AlertCircle className="h-6 w-6 text-red-400" />
               ) : (
-                <Loader2 className="h-6 w-6 text-platerly-green animate-spin" />
+                <Loader2 className="h-6 w-6 text-recipzee-green animate-spin" />
               )}
             </div>
-            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-platerly-text">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-recipzee-text">
               Verify your email
             </h1>
           </header>
@@ -124,15 +124,15 @@ export default function VerifyEmail() {
           {/* Message area */}
           <div className="space-y-3 text-center" aria-live="polite" role="status">
             {status === "verifying" && (
-              <p className="text-sm text-platerly-subtle">Verifying your email… one sec.</p>
+              <p className="text-sm text-recipzee-subtle">Verifying your email… one sec.</p>
             )}
             {status === "success" && (
-              <p className="text-sm text-platerly-green">{message}</p>
+              <p className="text-sm text-recipzee-green">{message}</p>
             )}
             {status === "error" && (
               <>
                 <p className="text-sm text-red-400">{message || "Invalid or expired token."}</p>
-                <p className="text-xs text-platerly-subtle">You can request a new verification email and try again.</p>
+                <p className="text-xs text-recipzee-subtle">You can request a new verification email and try again.</p>
               </>
             )}
           </div>
@@ -142,20 +142,20 @@ export default function VerifyEmail() {
             <div className="mt-6 sm:mt-8 grid grid-cols-1 gap-3">
               <Link
                 to="/verify/resend"
-                className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium bg-platerly-green text-platerly-dark hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-platerly-green/40 transition-all shadow-lg shadow-platerly-green/20"
+                className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium bg-recipzee-green text-recipzee-dark hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 transition-all shadow-lg shadow-recipzee-green/20"
               >
                 <Mail className="w-4 h-4" />
                 Resend verification email
               </Link>
               <Link
                 to="/login"
-                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium bg-platerly-light text-platerly-text hover:bg-platerly-light/80 focus:outline-none focus:ring-2 focus:ring-platerly-green/40 transition-all"
+                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium bg-recipzee-light text-recipzee-text hover:bg-recipzee-light/80 focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 transition-all"
               >
                 Back to login
               </Link>
               <Link
                 to="/"
-                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium border border-platerly-border text-platerly-subtle hover:bg-platerly-light/50 hover:text-platerly-text focus:outline-none focus:ring-2 focus:ring-platerly-green/40 transition-all"
+                className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium border border-recipzee-border text-recipzee-subtle hover:bg-recipzee-light/50 hover:text-recipzee-text focus:outline-none focus:ring-2 focus:ring-recipzee-green/40 transition-all"
               >
                 Go to Home
               </Link>
@@ -164,11 +164,11 @@ export default function VerifyEmail() {
 
           {/* Subtle footer helper */}
           <footer className="mt-6 sm:mt-8 text-center">
-            <p className="text-[11px] text-platerly-muted">
+            <p className="text-[11px] text-recipzee-muted">
               Having trouble? Contact support at
               {" "}
-              <a href="mailto:support@platerly.com" className="underline hover:text-platerly-subtle transition-colors">
-                support@platerly.com
+              <a href="mailto:support@recipzee.com" className="underline hover:text-recipzee-subtle transition-colors">
+                support@recipzee.com
               </a>
               .
             </p>
