@@ -10,7 +10,7 @@
   "routes": [
     {
       "route": "/sitemap.xml",
-      "redirect": "https://recipzee-api-g9htcadmbda6h8ej.canadacentral-01.azurewebsites.net/sitemap.xml",
+      "redirect": "https://platerly-api-g9htcadmbda6h8ej.canadacentral-01.azurewebsites.net/sitemap.xml",
       "statusCode": 301
     }
   ],
