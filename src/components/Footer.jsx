@@ -42,6 +42,9 @@ const Footer = ({ variant = 'full', className = '' }) => {
             <Link to="/contact" className="hover:text-white transition-colors">
               Contact
             </Link>
+            <Link to="/api" className="hover:text-white transition-colors">
+              API
+            </Link>
           </nav>
         </div>
       </div>

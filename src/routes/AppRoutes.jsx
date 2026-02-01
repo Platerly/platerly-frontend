@@ -68,6 +68,7 @@ const GuidelinesPage = lazy(() => import('../pages/public/GuidelinesPage'))
 const AllergyDisclaimerPage = lazy(() => import('../pages/public/AllergyDisclaimerPage'))
 const RefundsPage = lazy(() => import('../pages/public/RefundsPage'))
 const ContactPage = lazy(() => import('../pages/public/ContactPage'))
+const ApiPage = lazy(() => import('../pages/public/ApiPage'))
 const NotFoundPage = lazy(() => import('../pages/public/NotFoundPage'))
 
 // Admin pages (only loaded when accessed)
@@ -132,6 +133,7 @@ const AppRoutes = () =>
     { path: '/disclaimer', element: withSuspense(AllergyDisclaimerPage) },
     { path: '/refunds', element: withSuspense(RefundsPage) },
     { path: '/contact', element: withSuspense(ContactPage) },
+    { path: '/api', element: withSuspense(ApiPage) },
 
     // Onboarding (protected but without layout)
     { path: '/onboarding', element: (
