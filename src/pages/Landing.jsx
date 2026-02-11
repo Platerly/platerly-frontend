@@ -58,8 +58,9 @@ const Landing = () => {
             </h1>
 
             <p className="text-lg sm:text-xl text-recipzee-subtle max-w-2xl mx-auto mb-8 leading-relaxed">
-              Recipzee is the intelligent recipe network that understands your allergies,
-              dietary restrictions, and health goals. Share, discover, and cook with confidence.
+              Recipzee is the intelligent recipe network that understands your allergies
+              — from nickel and gluten to dairy and shellfish.
+              Share, discover, and cook with confidence.
             </p>
 
             {/* Single Primary CTA */}
@@ -96,7 +97,7 @@ const Landing = () => {
             <FeatureCard
               icon={Shield}
               title="Allergy Protection"
-              description="Ingredient analysis flags potential allergens in every recipe."
+              description="Flags allergens in every recipe — including nickel, gluten, dairy, and 11 more."
             />
             <FeatureCard
               icon={ChefHat}
