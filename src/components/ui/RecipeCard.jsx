@@ -4,6 +4,7 @@ import { Heart, Repeat2, Wand2, Share2, LinkIcon, Mail, Flame, X, Check } from '
 import { API_BASE_URL } from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
 import { usePremium } from '../../hooks/usePremium'
+import { useScanStatus } from '../../hooks/useScanStatus'
 import { norm, variants, isSevere, sevRank } from '../../utils/allergenHelpers'
 import { logger } from '../../utils/logger'
 import { TAGS_INLINE_MAX } from '../../constants/limits'
@@ -89,6 +90,7 @@ const RecipeCard = ({
   const navigate = useNavigate()
   const { token } = useAuth()
   const { isPremium, isOnTrial } = usePremium()
+  const { atLimit } = useScanStatus()
   const [remixUpgradeOpen, setRemixUpgradeOpen] = useState(false)
 
   const safeImg = imageUrl || '/placeholder.png'
@@ -380,14 +382,31 @@ const RecipeCard = ({
         </div>
 
         {hasAllergyMatch && (
-          <div className="text-sm font-medium mb-2">
-            ⚠️ Potential allergens{' '}
-            {severeIngredients.map((name) => {
-              const sev = severityForIngredient(name)
-              return (
-                <span key={name} className={`mr-2 ${severityTextClass(sev)}`}>{name}</span>
-              )
-            })}
+          <div className="text-sm font-medium mb-2 flex flex-wrap items-center gap-x-1 gap-y-0.5">
+            <span>⚠️ Potential allergens</span>
+            {atLimit ? (
+              <>
+                <span className="blur-sm select-none">
+                  {severeIngredients.map((name) => (
+                    <span key={name} className="mr-2">{name}</span>
+                  ))}
+                </span>
+                <Link
+                  to="/settings?tab=subscription"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-yellow-400 text-xs font-semibold hover:text-yellow-300 underline underline-offset-2 whitespace-nowrap"
+                >
+                  Unlock
+                </Link>
+              </>
+            ) : (
+              severeIngredients.map((name) => {
+                const sev = severityForIngredient(name)
+                return (
+                  <span key={name} className={`mr-2 ${severityTextClass(sev)}`}>{name}</span>
+                )
+              })
+            )}
           </div>
         )}
 
