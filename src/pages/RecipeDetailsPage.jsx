@@ -248,7 +248,7 @@ const RecipeDetailsPage = () => {
 
     try {
       setHitsLoading(true)
-      const res = await fetch(`${API_BASE_URL}/api/Allergy/hits?recipeId=${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/Allergy/hits?recipeId=${recipeId}`, {
         headers: { Authorization: `Bearer ${token}` },
         signal,
       })
@@ -285,7 +285,6 @@ const RecipeDetailsPage = () => {
   useEffect(() => {
     const ctl = new AbortController()
     loadRecipe(ctl.signal)
-    loadAllergenHits(ctl.signal)
 
     ; (async () => {
       try {
@@ -299,6 +298,15 @@ const RecipeDetailsPage = () => {
     return () => ctl.abort()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, username, slug, token])
+
+  /* ---------- Load allergen hits once recipeId (GUID) is known ---------- */
+  useEffect(() => {
+    if (!recipeId) return
+    const ctl = new AbortController()
+    loadAllergenHits(ctl.signal)
+    return () => ctl.abort()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recipeId, token])
 
   /* ---------- Track view for trending ---------- */
   useEffect(() => {
