@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Heart, Repeat2, Wand2, Share2, LinkIcon, Mail, Flame, X, Check } from 'lucide-react'
 import { API_BASE_URL } from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
+import { usePremium } from '../../hooks/usePremium'
 import { norm, variants, isSevere, sevRank } from '../../utils/allergenHelpers'
 import { logger } from '../../utils/logger'
 import { TAGS_INLINE_MAX } from '../../constants/limits'
@@ -87,6 +88,8 @@ const RecipeCard = ({
 
   const navigate = useNavigate()
   const { token } = useAuth()
+  const { isPremium, isOnTrial } = usePremium()
+  const [remixUpgradeOpen, setRemixUpgradeOpen] = useState(false)
 
   const safeImg = imageUrl || '/placeholder.png'
   // Use /api/share/ so social media crawlers get OG meta tags
@@ -233,7 +236,13 @@ const RecipeCard = ({
     }
   }
 
-  const handleRemixClick = () => navigate(`/remix/${id}`)
+  const handleRemixClick = () => {
+    if (isPremium || isOnTrial) {
+      navigate(`/remix/${id}`)
+    } else {
+      setRemixUpgradeOpen(true)
+    }
+  }
 
   const formatCount = (count) => {
     if (typeof count !== 'number' || isNaN(count)) return '0'
@@ -408,6 +417,30 @@ const RecipeCard = ({
               Remix
             </button>
           </div>
+
+          {remixUpgradeOpen && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="mt-2 flex items-center justify-between gap-2 rounded-xl border border-yellow-500/40 bg-yellow-500/10 px-3 py-2 text-sm"
+            >
+              <span className="text-yellow-200">Remixing requires Premium</span>
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/settings?tab=subscription"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-yellow-400 font-medium hover:text-yellow-300 underline-offset-2 underline whitespace-nowrap"
+                >
+                  Upgrade
+                </Link>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setRemixUpgradeOpen(false) }}
+                  className="text-recipzee-subtle hover:text-recipzee-text"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="relative">
             <button

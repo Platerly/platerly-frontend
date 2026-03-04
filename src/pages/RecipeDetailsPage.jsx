@@ -52,6 +52,7 @@ const RedditIcon = ({ className }) => (
 )
 import ShoppingListSection from '../components/recipe/ShoppingListSection'
 import RecipeLineage from '../components/recipe/RecipeLineage'
+import { clearScanStatusCache } from '../hooks/useScanStatus'
 
 const DIFFICULTY_MAP = { 0: 'Easy', 1: 'Medium', 2: 'Hard' }
 
@@ -183,6 +184,8 @@ const RecipeDetailsPage = () => {
   const [severityMap, setSeverityMap] = useState({})
   const [allergenHits, setAllergenHits] = useState([])
   const [hitsLoading, setHitsLoading] = useState(false)
+  const [scanLimitReached, setScanLimitReached] = useState(false)
+  const [scanLimitData, setScanLimitData] = useState(null)
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [saveOpen, setSaveOpen] = useState(false)
@@ -249,12 +252,25 @@ const RecipeDetailsPage = () => {
         headers: { Authorization: `Bearer ${token}` },
         signal,
       })
+
+      if (res.status === 402) {
+        // Scan limit reached — show blur overlay
+        const limitData = await res.json().catch(() => ({}))
+        setScanLimitReached(true)
+        setScanLimitData(limitData)
+        clearScanStatusCache()
+        setAllergenHits([])
+        return
+      }
+
       if (!res.ok) {
         setAllergenHits([])
         return
       }
+
       const data = await res.json()
       setAllergenHits(Array.isArray(data) ? data : [])
+      clearScanStatusCache() // refresh counter after successful scan
     } catch (e) {
       if (!signal || !signal.aborted) {
         logger.error('Recipe operation failed', e)
@@ -692,9 +708,17 @@ const RecipeDetailsPage = () => {
               )}
             </div>
           </div>
-          <div className="px-4 sm:px-5 py-4">
-            <div className="flex flex-wrap gap-2.5">
+          <div className="px-4 sm:px-5 py-4 relative">
+            <div className={`flex flex-wrap gap-2.5 ${scanLimitReached ? 'blur-sm select-none pointer-events-none' : ''}`} aria-hidden={scanLimitReached || undefined}>
               {(recipe?.ingredients || []).map((ing, i) => {
+                if (scanLimitReached) {
+                  return (
+                    <span key={i} className={`px-3 py-1.5 rounded-full text-sm border ${SEVERITY_CLASS.safe}`}>
+                      {ing.name}
+                    </span>
+                  )
+                }
+
                 // ✅ Primary: by IngredientId from /api/Allergy/hits
                 const idKey = String(ing?.id || ing?.ingredientId || '')
                 const sevFromHits = idKey ? (hitSeverityByIngredientId[idKey] || null) : null
@@ -725,6 +749,27 @@ const RecipeDetailsPage = () => {
                 )
               })}
             </div>
+
+            {/* Scan limit blur overlay */}
+            {scanLimitReached && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-recipzee-card/80 backdrop-blur-[2px] rounded-b-xl px-4 text-center">
+                <AlertTriangle className="w-5 h-5 text-yellow-400" />
+                <p className="text-sm font-medium text-recipzee-text">
+                  You&apos;ve used your {scanLimitData?.scansLimit ?? 3} free allergen scans this week
+                </p>
+                {scanLimitData?.weekResetsAt && (
+                  <p className="text-xs text-recipzee-muted">
+                    Resets {new Date(scanLimitData.weekResetsAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                  </p>
+                )}
+                <a
+                  href="/settings?tab=subscription"
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-yellow-500/20 border border-yellow-500/50 text-yellow-300 text-sm font-medium hover:bg-yellow-500/30 transition-colors"
+                >
+                  Upgrade to Premium
+                </a>
+              </div>
+            )}
           </div>
         </Card>
 

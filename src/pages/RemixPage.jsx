@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { RefreshCw, Plus, X, Check, Clock, Flame } from 'lucide-react'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { RefreshCw, Plus, X, Check, Clock, Flame, Lock } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { API_BASE_URL } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
+import { usePremium } from '../hooks/usePremium'
 import Button from '../components/ui/Button'
 import { logger } from '../utils/logger'
 import { parseApiError } from '../utils/parseApiError'
@@ -26,6 +27,7 @@ const RemixPage = () => {
   const { originalId } = useParams()
   const navigate = useNavigate()
   const { token } = useAuth()
+  const { isPremium, isOnTrial, loading: premiumLoading } = usePremium()
 
   // Form state (consolidated to prevent re-render issues)
   const [form, setForm] = useState({
@@ -331,6 +333,37 @@ const RemixPage = () => {
       setError({ message: e?.message || 'Failed to post remix.', violations: null })
       toast.error(e?.message || 'Failed to post remix.')
     }
+  }
+
+  // Premium gate — show upgrade prompt for free users (wait for premium status to load)
+  if (!premiumLoading && !isPremium && !isOnTrial) {
+    return (
+      <div className="min-h-screen bg-recipzee-dark flex items-center justify-center px-4">
+        <div className="text-center max-w-sm flex flex-col items-center gap-4">
+          <div className="w-14 h-14 rounded-full bg-yellow-500/15 border border-yellow-500/30 flex items-center justify-center">
+            <Lock className="w-6 h-6 text-yellow-400" />
+          </div>
+          <div>
+            <p className="text-lg font-semibold text-recipzee-text mb-1">Premium feature</p>
+            <p className="text-sm text-recipzee-muted">
+              Recipe remixing is available on the Premium plan.
+            </p>
+          </div>
+          <Link
+            to="/settings?tab=subscription"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-yellow-500/20 border border-yellow-500/50 text-yellow-300 font-semibold hover:bg-yellow-500/30 transition-colors"
+          >
+            Upgrade to Premium
+          </Link>
+          <button
+            onClick={() => navigate(-1)}
+            className="text-sm text-recipzee-subtle hover:text-recipzee-text transition-colors"
+          >
+            Go back
+          </button>
+        </div>
+      </div>
+    )
   }
 
   if (loading) {

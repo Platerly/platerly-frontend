@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { usePremium } from "../../hooks/usePremium";
 
 const DIFFICULTY = ["", "Easy", "Medium", "Hard"]; // "" => Any
 
@@ -28,6 +30,10 @@ export default function ExploreFilters({ value, onChange, loading }) {
   const [requireAllTags, setRequireAllTags] = useState(value?.requireAllTags ?? false);
   const [hideMyAllergens, setHideMyAllergens] = useState(value?.hideMyAllergens ?? false);
   const [hideRemixes, setHideRemixes] = useState(value?.hideRemixes ?? false);
+  const [allergenUpgradeOpen, setAllergenUpgradeOpen] = useState(false);
+
+  const { isPremium, isOnTrial } = usePremium();
+  const hasAllergenFilter = isPremium || isOnTrial;
 
   const disabled = !!loading;
   const inputRef = useRef(null);
@@ -194,16 +200,46 @@ export default function ExploreFilters({ value, onChange, loading }) {
             Hide remixes
           </label>
 
-          <label className="inline-flex items-center gap-2 text-sm text-recipzee-text">
-            <input
-              type="checkbox"
-              className="h-4 w-4 rounded border-recipzee-border bg-recipzee-card text-recipzee-green focus:ring-recipzee-green/60"
-              checked={hideMyAllergens}
-              disabled={disabled}
-              onChange={(e) => setHideMyAllergens(e.target.checked)}
-            />
-            Hide my allergens
-          </label>
+          <div className="flex flex-col gap-1">
+            <label className="inline-flex items-center gap-2 text-sm text-recipzee-text">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-recipzee-border bg-recipzee-card text-recipzee-green focus:ring-recipzee-green/60"
+                checked={hideMyAllergens}
+                disabled={disabled || !hasAllergenFilter}
+                onChange={(e) => {
+                  if (!hasAllergenFilter) {
+                    setAllergenUpgradeOpen(true);
+                    return;
+                  }
+                  setHideMyAllergens(e.target.checked);
+                }}
+              />
+              Hide my allergens
+              {!hasAllergenFilter && (
+                <span className="text-[10px] font-semibold text-yellow-400 border border-yellow-500/50 rounded-full px-1.5 py-0.5">
+                  Premium
+                </span>
+              )}
+            </label>
+            {allergenUpgradeOpen && !hasAllergenFilter && (
+              <div className="flex items-center gap-2 text-xs text-yellow-200">
+                <Link
+                  to="/settings?tab=subscription"
+                  className="text-yellow-400 font-medium underline underline-offset-2 hover:text-yellow-300"
+                >
+                  Upgrade to Premium
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setAllergenUpgradeOpen(false)}
+                  className="text-recipzee-subtle hover:text-recipzee-text text-lg leading-none"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Reset */}

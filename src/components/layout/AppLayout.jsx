@@ -4,6 +4,7 @@ import { Menu, X } from 'lucide-react'
 import Sidebar, { SidebarPanel } from './Sidebar'
 import RightColumn from './RightColumn'
 import EmailVerificationBanner from '../layout/EmailVerificationBanner'
+import TrialExpiryBanner from '../ui/TrialExpiryBanner'
 import Footer from '../Footer'
 import { useAuth } from '../../context/AuthContext'
 import { bumpGuestSeenCount } from '../../utils/softwall'
@@ -108,6 +109,7 @@ const AppLayout = ({ children }) => {
       >
         <div className="w-full max-w-3xl mx-auto">
           <EmailVerificationBanner />
+          <TrialExpiryBanner />
           {children}
           <div className="h-8" />
           <Footer variant="contained" />

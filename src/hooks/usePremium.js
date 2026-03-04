@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { API_BASE_URL } from '../utils/api'
 import { logger } from '../utils/logger'
 
-const CACHE_KEY = 'pl_premium_status_v1'
+const CACHE_KEY = 'pl_premium_status_v2'
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
 
 /**
@@ -80,6 +80,9 @@ export function usePremium() {
         premiumStatus: data.premiumStatus ?? data.PremiumStatus ?? null,
         cancelAtPeriodEnd: data.cancelAtPeriodEnd ?? data.premiumCancelAtPeriodEnd ?? false,
         currentPeriodEnd: data.currentPeriodEnd ?? data.premiumCurrentPeriodEnd ?? null,
+        isOnTrial: data.isOnTrial ?? false,
+        trialEndsAt: data.trialEndsAt ?? null,
+        trialDaysRemaining: data.trialDaysRemaining ?? null,
       }
 
       setStatus(normalized)
@@ -116,6 +119,11 @@ export function usePremium() {
     premiumStatus: status?.premiumStatus,
     cancelAtPeriodEnd: status?.cancelAtPeriodEnd ?? false,
     currentPeriodEnd: status?.currentPeriodEnd,
+
+    // Trial
+    isOnTrial: status?.isOnTrial ?? false,
+    trialEndsAt: status?.trialEndsAt ?? null,
+    trialDaysRemaining: status?.trialDaysRemaining ?? null,
 
     // Loading state
     loading,
