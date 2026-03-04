@@ -52,7 +52,7 @@ const RedditIcon = ({ className }) => (
 )
 import ShoppingListSection from '../components/recipe/ShoppingListSection'
 import RecipeLineage from '../components/recipe/RecipeLineage'
-import { clearScanStatusCache } from '../hooks/useScanStatus'
+import { clearScanStatusCache, useScanStatus } from '../hooks/useScanStatus'
 
 const DIFFICULTY_MAP = { 0: 'Easy', 1: 'Medium', 2: 'Hard' }
 
@@ -186,6 +186,7 @@ const RecipeDetailsPage = () => {
   const [hitsLoading, setHitsLoading] = useState(false)
   const [scanLimitReached, setScanLimitReached] = useState(false)
   const [scanLimitData, setScanLimitData] = useState(null)
+  const { isPremium: scanStatusPremium, scansRemaining } = useScanStatus()
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [saveOpen, setSaveOpen] = useState(false)
@@ -301,13 +302,20 @@ const RecipeDetailsPage = () => {
 
   /* ---------- Load allergen hits once recipeId (GUID) is known ---------- */
   useEffect(() => {
-    console.log('[AllergenHits] effect fired — recipeId:', recipeId, 'token:', !!token)
     if (!recipeId) return
     const ctl = new AbortController()
     loadAllergenHits(ctl.signal)
     return () => ctl.abort()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recipeId, token])
+
+  /* ---------- Reset overlay if user upgrades or week resets ---------- */
+  // Only clear when we have a definitive "not at limit" signal — not when status is null/loading
+  useEffect(() => {
+    if (scanStatusPremium || (scansRemaining !== null && scansRemaining > 0)) {
+      setScanLimitReached(false)
+    }
+  }, [scanStatusPremium, scansRemaining])
 
   /* ---------- Track view for trending ---------- */
   useEffect(() => {
@@ -718,7 +726,7 @@ const RecipeDetailsPage = () => {
             </div>
           </div>
           <div className="px-4 sm:px-5 py-4 relative">
-            <div className={`flex flex-wrap gap-2.5 ${scanLimitReached ? 'blur-sm select-none pointer-events-none' : ''}`} aria-hidden={scanLimitReached || undefined}>
+            <div className={`flex flex-wrap gap-2.5 ${scanLimitReached ? 'blur-sm select-none pointer-events-none' : ''}`} aria-hidden={scanLimitReached ? 'true' : undefined}>
               {(recipe?.ingredients || []).map((ing, i) => {
                 if (scanLimitReached) {
                   return (
