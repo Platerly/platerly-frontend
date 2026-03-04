@@ -301,6 +301,7 @@ const RecipeDetailsPage = () => {
 
   /* ---------- Load allergen hits once recipeId (GUID) is known ---------- */
   useEffect(() => {
+    console.log('[AllergenHits] effect fired — recipeId:', recipeId, 'token:', !!token)
     if (!recipeId) return
     const ctl = new AbortController()
     loadAllergenHits(ctl.signal)
