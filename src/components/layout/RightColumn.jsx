@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
 import { usePremium } from '../../hooks/usePremium'
 import classNames from 'classnames'
-import { Filter, Search, TrendingUp, TrendingDown, X, ChevronRight, SlidersHorizontal, Flame, Heart, Wand2, Carrot, Lock, Sparkles } from 'lucide-react'
+import { Filter, Search, TrendingUp, X, ChevronRight, SlidersHorizontal, Flame, Heart, Wand2, Carrot, Lock, Sparkles } from 'lucide-react'
 
 /* ---------- small utils ---------- */
 const useAuthed = (user, token) =>
@@ -119,10 +119,6 @@ const RightColumn = () => {
   const [gemsLoading, setGemsLoading] = useState(true)
   const [gemsError, setGemsError] = useState(null)
 
-  // dietary trends
-  const [dietaryTrends, setDietaryTrends] = useState([])
-  const [trendsLoading, setTrendsLoading] = useState(true)
-  const [trendsError, setTrendsError] = useState(null)
 
   // trending ingredients (premium)
   const [trendingIngredients, setTrendingIngredients] = useState([])
@@ -239,27 +235,6 @@ const RightColumn = () => {
         if (mounted) setGemsError('Failed to load')
       } finally {
         if (mounted) setGemsLoading(false)
-      }
-    })()
-    return () => { mounted = false }
-  }, [])
-
-  /* ---------- dietary trends ---------- */
-  useEffect(() => {
-    let mounted = true
-    ;(async () => {
-      try {
-        setTrendsLoading(true)
-        setTrendsError(null)
-        const res = await fetch(`${API_BASE_URL}/api/feed/trending-tags?limit=10`)
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const data = await res.json()
-        if (mounted) setDietaryTrends(Array.isArray(data) ? data : [])
-      } catch (err) {
-        console.error(err)
-        if (mounted) setTrendsError('Failed to load')
-      } finally {
-        if (mounted) setTrendsLoading(false)
       }
     })()
     return () => { mounted = false }
@@ -548,63 +523,6 @@ const RightColumn = () => {
     </div>
   )
 
-  const DietaryTrends = (
-    <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/60 backdrop-blur-sm p-5">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 rounded-xl bg-sky-500/15 flex items-center justify-center">
-          <TrendingUp className="w-4 h-4 text-sky-400" />
-        </div>
-        <h3 className="text-sm font-semibold text-recipzee-text">Dietary Trends</h3>
-      </div>
-
-      {trendsLoading && (
-        <div className="flex flex-wrap gap-2">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="animate-pulse h-7 w-16 rounded-full bg-recipzee-light" />
-          ))}
-        </div>
-      )}
-
-      {!trendsLoading && trendsError && (
-        <div className="text-sm text-red-400 bg-red-500/10 rounded-xl px-4 py-3 border border-red-500/20">
-          {trendsError}
-        </div>
-      )}
-
-      {!trendsLoading && !trendsError && (
-        <div className="flex flex-wrap gap-2">
-          {dietaryTrends.slice(0, 8).map(tag => (
-            <button
-              key={tag.name}
-              onClick={() => navigate(`/feed?tags=${encodeURIComponent(tag.name)}`)}
-              className={classNames(
-                'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors',
-                tag.trend === 'rising'
-                  ? 'bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20'
-                  : tag.trend === 'falling'
-                    ? 'bg-red-500/10 text-red-400/70 border-red-500/15 hover:bg-red-500/15'
-                    : 'bg-recipzee-light text-recipzee-subtle border-recipzee-border hover:text-recipzee-text'
-              )}
-            >
-              #{tag.name}
-              {tag.trend === 'rising' && (
-                <>
-                  <TrendingUp className="w-3 h-3" />
-                  <span>+{tag.growthRate}%</span>
-                </>
-              )}
-              {tag.trend === 'falling' && (
-                <>
-                  <TrendingDown className="w-3 h-3" />
-                  <span>{tag.growthRate}%</span>
-                </>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
 
   const HiddenGems = (
     <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/60 backdrop-blur-sm p-5">

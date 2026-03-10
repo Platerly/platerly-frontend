@@ -5,7 +5,7 @@ import { API_BASE_URL } from '../utils/api'
 import { logger } from '../utils/logger'
 
 const CACHE_KEY = 'pl_premium_status_v2'
-const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+const CACHE_TTL_MS = 1 * 60 * 1000 // 1 minute
 
 /**
  * Hook to check premium subscription status.

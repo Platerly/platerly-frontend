@@ -253,6 +253,19 @@ const RemixPage = () => {
     }
   }, [tagQuery])
 
+  // Warn user if they try to leave with unsaved form data
+  useEffect(() => {
+    const isDirty = form.title || form.description || form.instructions ||
+      ingredients.some(i => i.name || i.quantity)
+    if (!isDirty) return
+    const handler = (e) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [form, ingredients])
+
   const addExtraTag = (name) => {
     const trimmed = (name || '').trim()
     if (!trimmed) return

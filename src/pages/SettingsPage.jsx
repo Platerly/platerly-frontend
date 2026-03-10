@@ -594,13 +594,14 @@ const SettingsPage = () => {
     setError("");
     setOk("");
 
+    const nullIfEmpty = (v) => v.trim() || null
     const payload = {
       displayName: profileForm.displayName.trim(),
       bio: profileForm.bio.trim().slice(0, BIO_MAX_LENGTH),
-      websiteUrl: profileForm.websiteUrl.trim(),
-      youTubeUrl: profileForm.youTubeUrl.trim(),
-      xUrl: profileForm.xUrl.trim(),
-      instagramUrl: profileForm.instagramUrl.trim(),
+      websiteUrl: nullIfEmpty(profileForm.websiteUrl),
+      youTubeUrl: nullIfEmpty(profileForm.youTubeUrl),
+      xUrl: nullIfEmpty(profileForm.xUrl),
+      instagramUrl: nullIfEmpty(profileForm.instagramUrl),
       region: profileForm.region.trim(),
     };
 
