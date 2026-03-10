@@ -114,6 +114,16 @@ const RightColumn = () => {
   const [tError, setTError] = useState(null)
   const [trendingPeriod, setTrendingPeriod] = useState('week')
 
+  // hidden gems
+  const [hiddenGems, setHiddenGems] = useState([])
+  const [gemsLoading, setGemsLoading] = useState(true)
+  const [gemsError, setGemsError] = useState(null)
+
+  // dietary trends
+  const [dietaryTrends, setDietaryTrends] = useState([])
+  const [trendsLoading, setTrendsLoading] = useState(true)
+  const [trendsError, setTrendsError] = useState(null)
+
   // trending ingredients (premium)
   const [trendingIngredients, setTrendingIngredients] = useState([])
   const [tiLoading, setTiLoading] = useState(false)
@@ -212,6 +222,48 @@ const RightColumn = () => {
     })()
     return () => { mounted = false }
   }, [trendingPeriod])
+
+  /* ---------- hidden gems ---------- */
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        setGemsLoading(true)
+        setGemsError(null)
+        const res = await fetch(`${API_BASE_URL}/api/feed/hidden-gems?limit=5`)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        if (mounted) setHiddenGems(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.error(err)
+        if (mounted) setGemsError('Failed to load')
+      } finally {
+        if (mounted) setGemsLoading(false)
+      }
+    })()
+    return () => { mounted = false }
+  }, [])
+
+  /* ---------- dietary trends ---------- */
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        setTrendsLoading(true)
+        setTrendsError(null)
+        const res = await fetch(`${API_BASE_URL}/api/feed/trending-tags?limit=10`)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        if (mounted) setDietaryTrends(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.error(err)
+        if (mounted) setTrendsError('Failed to load')
+      } finally {
+        if (mounted) setTrendsLoading(false)
+      }
+    })()
+    return () => { mounted = false }
+  }, [])
 
   /* ---------- trending ingredients (premium) ---------- */
   useEffect(() => {
@@ -496,6 +548,142 @@ const RightColumn = () => {
     </div>
   )
 
+  const DietaryTrends = (
+    <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/60 backdrop-blur-sm p-5">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-9 h-9 rounded-xl bg-sky-500/15 flex items-center justify-center">
+          <TrendingUp className="w-4 h-4 text-sky-400" />
+        </div>
+        <h3 className="text-sm font-semibold text-recipzee-text">Dietary Trends</h3>
+      </div>
+
+      {trendsLoading && (
+        <div className="flex flex-wrap gap-2">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="animate-pulse h-7 w-16 rounded-full bg-recipzee-light" />
+          ))}
+        </div>
+      )}
+
+      {!trendsLoading && trendsError && (
+        <div className="text-sm text-red-400 bg-red-500/10 rounded-xl px-4 py-3 border border-red-500/20">
+          {trendsError}
+        </div>
+      )}
+
+      {!trendsLoading && !trendsError && (
+        <div className="flex flex-wrap gap-2">
+          {dietaryTrends.slice(0, 8).map(tag => (
+            <button
+              key={tag.name}
+              onClick={() => navigate(`/feed?tags=${encodeURIComponent(tag.name)}`)}
+              className={classNames(
+                'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors',
+                tag.trend === 'rising'
+                  ? 'bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20'
+                  : tag.trend === 'falling'
+                    ? 'bg-red-500/10 text-red-400/70 border-red-500/15 hover:bg-red-500/15'
+                    : 'bg-recipzee-light text-recipzee-subtle border-recipzee-border hover:text-recipzee-text'
+              )}
+            >
+              #{tag.name}
+              {tag.trend === 'rising' && (
+                <>
+                  <TrendingUp className="w-3 h-3" />
+                  <span>+{tag.growthRate}%</span>
+                </>
+              )}
+              {tag.trend === 'falling' && (
+                <>
+                  <TrendingDown className="w-3 h-3" />
+                  <span>{tag.growthRate}%</span>
+                </>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
+  const HiddenGems = (
+    <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/60 backdrop-blur-sm p-5">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-9 h-9 rounded-xl bg-violet-500/15 flex items-center justify-center">
+          <Sparkles className="w-4 h-4 text-violet-400" />
+        </div>
+        <h3 className="text-sm font-semibold text-recipzee-text">Hidden Gems</h3>
+      </div>
+
+      {gemsLoading && (
+        <ul className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <li key={i} className="animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="h-14 w-14 rounded-xl bg-recipzee-light shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-3/4 rounded-lg bg-recipzee-light" />
+                  <div className="h-3 w-1/2 rounded-lg bg-recipzee-light/70" />
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {!gemsLoading && gemsError && (
+        <div className="text-sm text-red-400 bg-red-500/10 rounded-xl px-4 py-3 border border-red-500/20">
+          {gemsError}
+        </div>
+      )}
+
+      {!gemsLoading && !gemsError && hiddenGems.length === 0 && (
+        <p className="text-sm text-recipzee-subtle text-center py-4">No hidden gems found yet.</p>
+      )}
+
+      {!gemsLoading && !gemsError && hiddenGems.length > 0 && (
+        <ul className="space-y-2">
+          {hiddenGems.map(gem => (
+            <li key={gem.id}>
+              <button
+                onClick={() => navigate(`/recipe/${gem.id}`)}
+                className="group w-full text-left p-2 -mx-2 rounded-xl hover:bg-recipzee-light/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="relative h-14 w-14 overflow-hidden rounded-xl border border-recipzee-border shrink-0 group-hover:border-violet-500/30 transition-colors">
+                    {gem.imageUrl ? (
+                      <img
+                        src={gem.imageUrl}
+                        alt={gem.title}
+                        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-recipzee-light flex items-center justify-center">
+                        <Sparkles className="w-5 h-5 text-violet-400" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-semibold text-recipzee-text group-hover:text-violet-400 transition-colors">
+                      {gem.title}
+                    </div>
+                    <div className="mt-0.5 text-xs text-recipzee-subtle">
+                      by <span className="font-medium text-recipzee-text/80">{gem.authorUsername}</span>
+                    </div>
+                    <span className="mt-1 inline-block px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-medium border border-emerald-500/20">
+                      {gem.engagementRate}% engaged
+                    </span>
+                  </div>
+                </div>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+
   // Trending Ingredients (Premium Feature)
   const TrendingIngredients = authed && (
     <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/60 backdrop-blur-sm p-5 relative overflow-hidden">
@@ -611,6 +799,7 @@ const RightColumn = () => {
           {Filters}
           {Trending}
           {TrendingIngredients}
+          {HiddenGems}
         </div>
       </aside>
 
@@ -632,6 +821,7 @@ const RightColumn = () => {
             {Filters}
             {Trending}
             {TrendingIngredients}
+            {HiddenGems}
           </div>
         </BottomSheet>
       </div>

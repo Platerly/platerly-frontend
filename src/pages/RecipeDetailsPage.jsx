@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import SaveToCookbookSection from '../pages/SaveToCookbookSection'
 import ConfirmDialog from '../components/common/ConfirmDialog'
 import CommentsSection from '../components/comments/CommentsSection'
+import SubstitutionPanel from '../components/recipe/SubstitutionPanel'
 import { API_BASE_URL } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
 import { norm, variants, isSevere } from '../utils/allergenHelpers'
@@ -11,7 +12,7 @@ import { toast } from 'react-hot-toast'
 import {
   MoreVertical, Pencil, Trash2, RefreshCw, BookmarkPlus,
   AlertTriangle, Clock, Tag as TagIcon, Globe, BookOpenText, ListChecks,
-  Plus, Minus, Share2, Mail, LinkIcon, X, Check
+  Plus, Minus, Share2, Mail, LinkIcon, X, Check, ArrowLeftRight
 } from 'lucide-react'
 
 // Social media brand icons
@@ -185,6 +186,7 @@ const RecipeDetailsPage = () => {
   const [allergenHits, setAllergenHits] = useState([])
   const [hitsLoading, setHitsLoading] = useState(false)
   const [scanLimitReached, setScanLimitReached] = useState(false)
+  const [selectedIngredient, setSelectedIngredient] = useState(null)
   const [scanLimitData, setScanLimitData] = useState(null)
   const { isPremium: scanStatusPremium, scansRemaining } = useScanStatus()
 
@@ -754,15 +756,18 @@ const RecipeDetailsPage = () => {
                 const scaledQty = scaleQuantity(ing.quantity, ingredientScale)
 
                 return (
-                  <span
+                  <button
                     key={i}
-                    className={`px-3 py-1.5 rounded-full text-sm border ${cls}`}
-                    title={sev ? `Severity: ${sev}` : undefined}
+                    type="button"
+                    onClick={() => setSelectedIngredient({ id: ing.id || ing.ingredientId || null, name: ing.name })}
+                    className={`group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border cursor-pointer hover:brightness-110 transition-all ${cls}`}
+                    title={sev ? `Severity: ${sev} — click for substitutes` : 'Click for substitutes'}
                   >
                     {(visual === 'high' || visual === 'medium') && <span className="mr-1">⚠</span>}
-                    {scaledQty && <span className={`${qtyTint(visual)} font-semibold mr-1`}>{scaledQty}</span>}
+                    {scaledQty && <span className={`${qtyTint(visual)} font-semibold`}>{scaledQty}</span>}
                     <span>{ing.name}</span>
-                  </span>
+                    <ArrowLeftRight className="w-3 h-3 opacity-60 shrink-0" />
+                  </button>
                 )
               })}
             </div>
@@ -803,6 +808,12 @@ const RecipeDetailsPage = () => {
       <div className="mt-10">
         <CommentsSection recipeId={id} initialComments={comments} />
       </div>
+
+      <SubstitutionPanel
+        ingredient={selectedIngredient}
+        onClose={() => setSelectedIngredient(null)}
+        token={token}
+      />
 
       <ConfirmDialog
         open={confirmOpen}
