@@ -119,6 +119,11 @@ const RightColumn = () => {
   const [gemsLoading, setGemsLoading] = useState(true)
   const [gemsError, setGemsError] = useState(null)
 
+  // dietary trends
+  const [dietaryTags, setDietaryTags] = useState([])
+  const [tagsLoading, setTagsLoading] = useState(true)
+  const [tagsError, setTagsError] = useState(null)
+
 
   // trending ingredients (premium)
   const [trendingIngredients, setTrendingIngredients] = useState([])
@@ -235,6 +240,27 @@ const RightColumn = () => {
         if (mounted) setGemsError('Failed to load')
       } finally {
         if (mounted) setGemsLoading(false)
+      }
+    })()
+    return () => { mounted = false }
+  }, [])
+
+  /* ---------- dietary trends ---------- */
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        setTagsLoading(true)
+        setTagsError(null)
+        const res = await fetch(`${API_BASE_URL}/api/feed/trending-tags?limit=10`)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        if (mounted) setDietaryTags(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.error(err)
+        if (mounted) setTagsError('Failed to load')
+      } finally {
+        if (mounted) setTagsLoading(false)
       }
     })()
     return () => { mounted = false }
@@ -602,6 +628,63 @@ const RightColumn = () => {
     </div>
   )
 
+  const DietaryTrends = (
+    <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/60 backdrop-blur-sm p-5">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-9 h-9 rounded-xl bg-sky-500/15 flex items-center justify-center">
+          <TrendingUp className="w-4 h-4 text-sky-400" />
+        </div>
+        <h3 className="text-sm font-semibold text-recipzee-text">Dietary Trends</h3>
+      </div>
+
+      {tagsLoading && (
+        <div className="flex flex-wrap gap-2">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="animate-pulse h-7 w-20 rounded-full bg-recipzee-light" />
+          ))}
+        </div>
+      )}
+
+      {!tagsLoading && tagsError && (
+        <div className="text-sm text-red-400 bg-red-500/10 rounded-xl px-4 py-3 border border-red-500/20">
+          {tagsError}
+        </div>
+      )}
+
+      {!tagsLoading && !tagsError && dietaryTags.length === 0 && (
+        <p className="text-sm text-recipzee-subtle text-center py-4">No tag data yet.</p>
+      )}
+
+      {!tagsLoading && !tagsError && dietaryTags.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {dietaryTags.slice(0, 8).map(tag => (
+            <button
+              key={tag.name}
+              onClick={() => navigate(`/feed?tags=${encodeURIComponent(tag.name)}`)}
+              className={classNames(
+                'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border transition-colors hover:brightness-110',
+                tag.trend === 'rising'
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                  : tag.trend === 'falling'
+                  ? 'bg-recipzee-light text-recipzee-subtle border-recipzee-border'
+                  : 'bg-sky-500/10 text-sky-400 border-sky-500/20'
+              )}
+            >
+              {tag.trend === 'rising' && <TrendingUp className="w-3 h-3" />}
+              {tag.trend === 'falling' && <TrendingDown className="w-3 h-3" />}
+              #{tag.name}
+              {tag.trend !== 'stable' && (
+                <span className={tag.trend === 'rising' ? 'text-emerald-500' : 'text-recipzee-subtle'}>
+                  {tag.growthRate > 0 ? '+' : ''}{tag.growthRate}%
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
   // Trending Ingredients (Premium Feature)
   const TrendingIngredients = authed && (
     <div className="rounded-2xl border border-recipzee-border bg-recipzee-card/60 backdrop-blur-sm p-5 relative overflow-hidden">
@@ -715,9 +798,10 @@ const RightColumn = () => {
         <div className="space-y-5">
           {SearchBox}
           {Filters}
+          {DietaryTrends}
           {Trending}
-          {TrendingIngredients}
           {HiddenGems}
+          {TrendingIngredients}
         </div>
       </aside>
 
@@ -737,9 +821,10 @@ const RightColumn = () => {
           <div className="space-y-5">
             {SearchBox}
             {Filters}
+            {DietaryTrends}
             {Trending}
-            {TrendingIngredients}
             {HiddenGems}
+            {TrendingIngredients}
           </div>
         </BottomSheet>
       </div>
