@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
 import { usePremium } from '../../hooks/usePremium'
 import classNames from 'classnames'
-import { Filter, Search, TrendingUp, X, ChevronRight, SlidersHorizontal, Flame, Heart, Wand2, Carrot, Lock, Sparkles } from 'lucide-react'
+import { Filter, Search, TrendingUp, TrendingDown, X, ChevronRight, SlidersHorizontal, Flame, Heart, Wand2, Carrot, Lock, Sparkles } from 'lucide-react'
 
 /* ---------- small utils ---------- */
 const useAuthed = (user, token) =>
