@@ -135,6 +135,9 @@ const Register = () => {
       <div className="w-full max-w-md relative z-10">
         <div className="bg-recipzee-card sm:bg-recipzee-card/80 sm:backdrop-blur-md border border-recipzee-border rounded-2xl shadow-2xl shadow-black/20 p-6 sm:p-8">
           <div className="text-center mb-6">
+            <div className="inline-flex items-center gap-1.5 bg-recipzee-green/10 border border-recipzee-green/20 text-recipzee-green text-xs font-semibold px-3 py-1 rounded-full mb-3">
+              <span>✦</span> 7-day Premium trial included — no card required
+            </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Join <span className="text-recipzee-accent">Recipzee</span>
             </h1>

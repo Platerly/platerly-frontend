@@ -73,11 +73,11 @@ const Landing = () => {
             <div className="flex flex-col items-center justify-center gap-4">
               <Link to="/register">
                 <Button size="lg" className="min-w-[240px] shadow-lg shadow-recipzee-green/20 text-lg py-4">
-                  Get Started Free
+                  Start Free — 7 Days Premium
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-              <p className="text-sm text-recipzee-subtle">No credit card required</p>
+              <p className="text-sm text-recipzee-subtle">No credit card required · Cancel anytime</p>
             </div>
 
             {/* Secondary links */}
@@ -182,6 +182,44 @@ const Landing = () => {
             <div>
               <div className="text-2xl sm:text-3xl font-bold text-recipzee-text">100%</div>
               <div className="text-sm text-recipzee-subtle">Free to Join</div>
+            </div>
+          </div>
+
+          {/* Pricing */}
+          <div className="mb-12 grid sm:grid-cols-2 gap-4">
+            {/* Free tier */}
+            <div className="rounded-2xl border border-recipzee-border bg-white/5 p-6">
+              <p className="text-sm font-medium text-recipzee-subtle uppercase tracking-wide mb-2">Free</p>
+              <p className="text-3xl font-bold text-recipzee-text mb-1">$0</p>
+              <p className="text-sm text-recipzee-subtle mb-5">Forever free, no card needed</p>
+              <ul className="space-y-2 text-sm text-recipzee-subtle">
+                <li className="flex items-center gap-2"><span className="text-recipzee-green">✓</span> Browse & save recipes</li>
+                <li className="flex items-center gap-2"><span className="text-recipzee-green">✓</span> Follow chefs & create cookbooks</li>
+                <li className="flex items-center gap-2"><span className="text-recipzee-green">✓</span> 3 allergen scans per week</li>
+                <li className="flex items-center gap-2"><span className="text-zinc-600">✗</span> Unlimited allergen scans</li>
+                <li className="flex items-center gap-2"><span className="text-zinc-600">✗</span> Hide allergens from feed</li>
+                <li className="flex items-center gap-2"><span className="text-zinc-600">✗</span> Recipe remixing</li>
+              </ul>
+            </div>
+
+            {/* Premium tier */}
+            <div className="rounded-2xl border border-recipzee-green/40 bg-recipzee-green/5 p-6 relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="bg-recipzee-green text-recipzee-dark text-xs font-bold px-3 py-1 rounded-full">7 DAYS FREE</span>
+              </div>
+              <p className="text-sm font-medium text-recipzee-green uppercase tracking-wide mb-2">Premium</p>
+              <p className="text-3xl font-bold text-recipzee-text mb-1">$6.99<span className="text-lg font-normal text-recipzee-subtle">/mo</span></p>
+              <p className="text-sm text-recipzee-subtle mb-5">Cancel anytime</p>
+              <ul className="space-y-2 text-sm text-recipzee-subtle">
+                <li className="flex items-center gap-2"><span className="text-recipzee-green">✓</span> Everything in Free</li>
+                <li className="flex items-center gap-2"><span className="text-recipzee-green">✓</span> Unlimited allergen scans</li>
+                <li className="flex items-center gap-2"><span className="text-recipzee-green">✓</span> Hide allergens from feed</li>
+                <li className="flex items-center gap-2"><span className="text-recipzee-green">✓</span> Recipe remixing</li>
+                <li className="flex items-center gap-2"><span className="text-recipzee-green">✓</span> Trending ingredients</li>
+              </ul>
+              <Link to="/register" className="mt-5 block text-center bg-recipzee-green text-recipzee-dark font-semibold py-2.5 rounded-xl hover:opacity-90 transition-opacity text-sm">
+                Start Free Trial
+              </Link>
             </div>
           </div>
 

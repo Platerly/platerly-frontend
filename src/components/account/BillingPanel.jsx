@@ -65,6 +65,9 @@ export default function BillingPanel() {
   const premiumStatus = status?.premiumStatus;
   const cancelAtPeriodEnd = !!status?.premiumCancelAtPeriodEnd;
   const currentPeriodEnd = status?.premiumCurrentPeriodEnd;
+  const isOnTrial = !!status?.isOnTrial;
+  const trialDaysRemaining = status?.trialDaysRemaining ?? null;
+  const trialEndsAt = status?.trialEndsAt ?? null;
 
   const mapStatus = (data) => ({
     isPremium: data.isPremium ?? data.IsPremium,
@@ -80,6 +83,10 @@ export default function BillingPanel() {
       data.currentPeriodEnd ??
       data.premiumCurrentPeriodEnd ??
       data.PremiumCurrentPeriodEnd,
+
+    isOnTrial: data.isOnTrial ?? false,
+    trialDaysRemaining: data.trialDaysRemaining ?? null,
+    trialEndsAt: data.trialEndsAt ?? null,
   });
 
   const fetchStatus = async ({ silent = false } = {}) => {
@@ -231,13 +238,31 @@ export default function BillingPanel() {
                     <span className="opacity-70 mr-2">Plan:</span>
                     <span>Premium</span>
                   </div>
-
                   <div>
                     <span className="opacity-70 mr-2">
                       {cancelAtPeriodEnd ? "Ends on:" : "Renews on:"}
                     </span>
                     <span>{formatDate(currentPeriodEnd)}</span>
                   </div>
+                </>
+              ) : isOnTrial ? (
+                <>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="inline-flex items-center gap-1.5 bg-recipzee-green/10 border border-recipzee-green/20 text-recipzee-green text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                      Free Trial Active
+                    </span>
+                  </div>
+                  <div>
+                    <span className="opacity-70 mr-2">Days remaining:</span>
+                    <span className="font-medium">{trialDaysRemaining ?? '—'}</span>
+                  </div>
+                  {trialEndsAt && (
+                    <div>
+                      <span className="opacity-70 mr-2">Trial ends:</span>
+                      <span>{formatDate(trialEndsAt)}</span>
+                    </div>
+                  )}
+                  <p className="text-xs opacity-60 mt-2">Upgrade to keep unlimited access after your trial.</p>
                 </>
               ) : (
                 <div>You're on the free plan. Upgrade to unlock all features.</div>
