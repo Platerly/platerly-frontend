@@ -21,6 +21,7 @@ import { logger } from "../utils/logger";
 import { toast } from "react-hot-toast";
 import Button from "../components/ui/Button";
 import CookbookCard from "../components/ui/CookbookCard";
+import { Helmet } from "react-helmet-async";
 
 /* ---------- helpers ---------- */
 const escapeHTML = (s = "") =>
@@ -365,8 +366,31 @@ const UserProfilePage = () => {
   }
 
   /* ---------- render ---------- */
+  const profileTitle = profile
+    ? `${profile.displayName || profile.username} (@${profile.username}) — Recipzee`
+    : `${username} — Recipzee`
+  const profileDescription = profile
+    ? [
+        profile.bio?.trim(),
+        `${profile.username} shares allergy-safe recipes on Recipzee.`,
+        recipes.length ? `${recipes.length} recipes shared.` : null,
+      ].filter(Boolean).join(' ').slice(0, 160)
+    : `View ${username}'s allergy-safe recipes on Recipzee.`
+
   return (
     <div className="min-h-screen bg-recipzee-dark text-recipzee-text relative overflow-hidden">
+      <Helmet>
+        <title>{profileTitle}</title>
+        <meta name="description" content={profileDescription} />
+        <meta property="og:title" content={profileTitle} />
+        <meta property="og:description" content={profileDescription} />
+        {profile?.profileImageUrl && <meta property="og:image" content={profile.profileImageUrl} />}
+        <meta property="og:type" content="profile" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={profileTitle} />
+        <meta name="twitter:description" content={profileDescription} />
+        <link rel="canonical" content={`https://www.recipzee.com/profile/${username}`} />
+      </Helmet>
       {/* Background gradient orbs */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-recipzee-green/5 rounded-full blur-[128px]" />
       <div className="absolute bottom-1/3 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />

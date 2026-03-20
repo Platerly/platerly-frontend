@@ -2,7 +2,8 @@ import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Button from '../components/ui/Button'
-import { Shield, Sparkles, Users, ChefHat, ArrowRight } from 'lucide-react'
+import { Helmet } from 'react-helmet-async'
+import { Shield, Sparkles, Users, ChefHat, ArrowRight, AlertCircle } from 'lucide-react'
 
 // eslint-disable-next-line no-unused-vars
 const FeatureCard = ({ icon: Icon, title, description }) => (
@@ -28,11 +29,16 @@ const Landing = () => {
   }, [authed, navigate])
 
   useEffect(() => {
-    document.title = 'Recipzee — Allergy-aware recipes'
+    document.title = 'Recipzee — Nickel Allergy Recipes & Allergy-Safe Cooking Community'
   }, [])
 
   return (
     <div className="min-h-screen bg-recipzee-dark text-recipzee-text relative overflow-hidden">
+      <Helmet>
+        <title>Recipzee — Nickel Allergy Recipes &amp; Allergy-Safe Cooking Community</title>
+        <meta name="description" content="Recipzee is the only recipe community built for nickel allergy sufferers — and every other allergy too. Find low-nickel recipes, flag allergens instantly, and cook with total confidence." />
+        <link rel="canonical" href="https://www.recipzee.com/" />
+      </Helmet>
       {/* Background gradient orbs */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-recipzee-green/10 rounded-full blur-[128px]" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[128px]" />
@@ -114,6 +120,51 @@ const Landing = () => {
               title="Smart Recommendations"
               description="Discover recipes tailored to your taste and dietary needs."
             />
+          </div>
+
+          {/* Nickel Allergy Section */}
+          <div className="mb-12 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-6 sm:p-8">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="shrink-0 w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                <AlertCircle className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-recipzee-text mb-1">
+                  Built for Nickel Allergy Sufferers
+                </h2>
+                <p className="text-sm text-recipzee-subtle leading-relaxed">
+                  Nickel allergy is one of the most common contact allergies — yet almost no recipe apps recognise it.
+                  Recipzee is different. Every recipe can be tagged as <strong className="text-amber-400">Low Nickel</strong>, so you
+                  can browse, filter, and cook without second-guessing every ingredient.
+                </p>
+              </div>
+            </div>
+            <ul className="grid sm:grid-cols-3 gap-3 text-sm text-recipzee-subtle">
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                Filter recipes by Low Nickel sensitivity
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                Instant allergen scan on every recipe
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                Ingredient substitutions for high-nickel foods
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                Set your nickel allergy in your profile once
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                Community of nickel-conscious cooks
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                Share your own low-nickel recipes
+              </li>
+            </ul>
           </div>
 
           {/* Platform stats */}

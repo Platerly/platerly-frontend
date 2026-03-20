@@ -54,6 +54,7 @@ const RedditIcon = ({ className }) => (
 import ShoppingListSection from '../components/recipe/ShoppingListSection'
 import RecipeLineage from '../components/recipe/RecipeLineage'
 import { clearScanStatusCache, useScanStatus } from '../hooks/useScanStatus'
+import { Helmet } from 'react-helmet-async'
 
 const DIFFICULTY_MAP = { 0: 'Easy', 1: 'Medium', 2: 'Hard' }
 
@@ -481,8 +482,69 @@ const RecipeDetailsPage = () => {
   if (notFound) return <div className="px-4 sm:px-6 py-12"><p className="text-red-400 text-lg font-medium">Recipe not found.</p></div>
   if (error) return <div className="px-4 sm:px-6 py-12"><p className="text-red-400">{error}</p></div>
 
+  const pageTitle = recipe
+    ? `${recipe.title} — ${recipe.user?.username ?? 'Recipzee'} | Recipzee`
+    : 'Recipzee'
+
+  const pageDescription = recipe
+    ? [
+        recipe.description?.trim(),
+        recipe.tags?.length ? `Tags: ${recipe.tags.slice(0, 4).join(', ')}.` : null,
+        recipe.sensitivities?.includes('Low Nickel') ? 'Low nickel diet friendly.' : null,
+        allergenHits?.length ? `Contains: ${allergenHits.slice(0, 3).join(', ')}.` : null,
+      ].filter(Boolean).join(' ').slice(0, 160)
+    : ''
+
+  const recipeJsonLd = recipe ? {
+    '@context': 'https://schema.org',
+    '@type': 'Recipe',
+    name: recipe.title,
+    description: recipe.description ?? '',
+    image: recipe.imageUrl ? [recipe.imageUrl] : [],
+    author: {
+      '@type': 'Person',
+      name: recipe.user?.username ?? 'Recipzee Chef',
+      url: recipe.user?.username ? `https://www.recipzee.com/profile/${recipe.user.username}` : 'https://www.recipzee.com',
+    },
+    url: `https://www.recipzee.com/${recipe.user?.username ?? 'recipe'}/${recipe.slug ?? recipe.id}`,
+    cookTime: recipe.cookTime ? `PT${recipe.cookTime}M` : undefined,
+    prepTime: recipe.prepTime ? `PT${recipe.prepTime}M` : undefined,
+    recipeYield: recipe.servings ? `${recipe.servings} servings` : undefined,
+    recipeCategory: recipe.tags?.[0] ?? undefined,
+    keywords: [
+      ...(recipe.tags ?? []),
+      ...(recipe.sensitivities ?? []),
+      recipe.sensitivities?.includes('Low Nickel') ? 'low nickel recipe' : null,
+      recipe.sensitivities?.includes('Low Nickel') ? 'nickel allergy safe' : null,
+      'allergy safe recipe',
+    ].filter(Boolean).join(', '),
+    recipeIngredient: recipe.ingredients?.map(i => `${i.quantity ?? ''} ${i.unit ?? ''} ${i.name}`.trim()) ?? [],
+    suitableForDiet: [
+      recipe.sensitivities?.includes('Low Nickel') ? 'https://schema.org/LowCalorieDiet' : null,
+      recipe.sensitivities?.includes('Gluten Free') ? 'https://schema.org/GlutenFreeDiet' : null,
+      recipe.sensitivities?.includes('Vegan') ? 'https://schema.org/VeganDiet' : null,
+      recipe.sensitivities?.includes('Vegetarian') ? 'https://schema.org/VegetarianDiet' : null,
+    ].filter(Boolean),
+    datePublished: recipe.createdAt ? new Date(recipe.createdAt).toISOString().split('T')[0] : undefined,
+  } : null
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 text-recipzee-text">
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        {recipe?.imageUrl && <meta property="og:image" content={recipe.imageUrl} />}
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        {recipe?.imageUrl && <meta name="twitter:image" content={recipe.imageUrl} />}
+        {recipeJsonLd && (
+          <script type="application/ld+json">{JSON.stringify(recipeJsonLd)}</script>
+        )}
+      </Helmet>
 
       {/* HERO */}
       <div className="relative w-full aspect-[5/4] sm:aspect-[16/9] lg:aspect-[21/9]

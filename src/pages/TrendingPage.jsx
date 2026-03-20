@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { Flame, TrendingUp, TrendingDown, ChefHat, Star, Filter, X, Crown, Award, Medal, Sparkles } from 'lucide-react'
 import { API_BASE_URL } from '../utils/api'
 import TrendingRecipeCard from '../components/ui/TrendingRecipeCard'
@@ -188,6 +189,13 @@ const TrendingPage = () => {
 
   return (
     <div className="min-h-screen bg-recipzee-dark text-recipzee-text">
+      <Helmet>
+        <title>Trending Recipes — Recipzee</title>
+        <meta name="description" content="Discover what's trending on Recipzee — the most liked and saved allergy-safe recipes right now, including low-nickel, gluten-free, dairy-free, and halal meals." />
+        <meta property="og:title" content="Trending Recipes — Recipzee" />
+        <meta property="og:description" content="Discover what's trending on Recipzee — the most liked and saved allergy-safe recipes right now, including low-nickel, gluten-free, dairy-free, and halal meals." />
+        <link rel="canonical" href="https://www.recipzee.com/trending" />
+      </Helmet>
       {/* Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-orange-500/10 to-amber-500/5 rounded-full blur-[150px]" />

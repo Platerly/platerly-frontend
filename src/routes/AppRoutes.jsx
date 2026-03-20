@@ -1,5 +1,6 @@
-import { Suspense, lazy } from 'react'
-import { useRoutes } from 'react-router-dom'
+import { Suspense, lazy, useEffect } from 'react'
+import { useRoutes, useLocation } from 'react-router-dom'
+import ReactGA from 'react-ga4'
 import AppLayout from '../components/layout/AppLayout'
 import RequireAuth from '../components/RequireAuth'
 import RequireAdmin from '../components/RequireAdmin'
@@ -112,8 +113,18 @@ const withAdmin = (Component, superAdminOnly = false) => (
   </RequireAdmin>
 )
 
-const AppRoutes = () =>
-  useRoutes([
+const RouteTracker = () => {
+  const location = useLocation()
+  useEffect(() => {
+    if (import.meta.env.VITE_GA_ID && import.meta.env.VITE_ENV === 'production') {
+      ReactGA.send({ hitType: 'pageview', page: location.pathname + location.search })
+    }
+  }, [location])
+  return null
+}
+
+const AppRoutes = () => {
+  const routes = useRoutes([
     // Marketing landing at root
     { path: '/', element: withSuspense(Landing) },
 
@@ -204,5 +215,12 @@ const AppRoutes = () =>
     // 404 fallback
     { path: '*', element: withSuspense(NotFoundPage) },
   ])
+  return (
+    <>
+      <RouteTracker />
+      {routes}
+    </>
+  )
+}
 
 export default AppRoutes

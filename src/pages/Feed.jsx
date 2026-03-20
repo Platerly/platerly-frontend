@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import RecipeCard from '../components/ui/RecipeCard'
 import { useAuth } from '../context/AuthContext'
 import { useApi } from '../utils/fetchWithAuth'
@@ -261,6 +262,13 @@ const Feed = () => {
 
   return (
     <div className="flex flex-col bg-recipzee-dark text-recipzee-text min-h-screen">
+      <Helmet>
+        <title>Explore Allergy-Safe Recipes — Recipzee</title>
+        <meta name="description" content="Browse thousands of allergy-safe recipes on Recipzee — low-nickel, gluten-free, dairy-free, halal, vegan and more. Filter by your allergies and discover meals you can cook with confidence." />
+        <meta property="og:title" content="Explore Allergy-Safe Recipes — Recipzee" />
+        <meta property="og:description" content="Browse thousands of allergy-safe recipes on Recipzee — low-nickel, gluten-free, dairy-free, halal, vegan and more." />
+        <link rel="canonical" href="https://www.recipzee.com/feed" />
+      </Helmet>
       {/* Sticky tabs */}
       <div className="sticky top-0 z-20 bg-recipzee-dark/95 backdrop-blur py-3 border-b border-recipzee-light">
         <div className="max-w-4xl mx-auto px-4 flex justify-center gap-2 sm:gap-4">

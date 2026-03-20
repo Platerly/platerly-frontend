@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import {
   Search, ChefHat, User, SlidersHorizontal, X,
   Clock, Flame, Tag, Filter, ChevronDown, ChevronUp
@@ -219,8 +220,20 @@ const SearchResultsPage = () => {
   const onUserClick = (username) => navigate(`/profile/${username}`);
   const nothing = !loading && !error && results.length === 0;
 
+  const searchTitle = q
+    ? `"${q}" recipes — Recipzee`
+    : 'Search Recipes — Recipzee'
+  const searchDescription = q
+    ? `Search results for "${q}" on Recipzee — allergy-safe recipes including low-nickel, gluten-free, dairy-free, halal and more.`
+    : 'Search thousands of allergy-safe recipes on Recipzee — including low-nickel, gluten-free, dairy-free, halal and vegan meals.'
+
   return (
     <div className="min-h-screen bg-recipzee-dark text-recipzee-text relative overflow-hidden">
+      <Helmet>
+        <title>{searchTitle}</title>
+        <meta name="description" content={searchDescription} />
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       {/* Background gradient orbs */}
       <div className="absolute top-0 left-1/4 w-80 h-80 bg-recipzee-green/5 rounded-full blur-[120px]" />
       <div className="absolute bottom-1/3 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />

@@ -2,6 +2,7 @@ import "./sentry";
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from './context/AuthContext'
 import { NotificationsProvider } from './context/NotificationsContext'
 import AppRoutes from './routes/AppRoutes'
@@ -24,14 +25,16 @@ if (import.meta.env.VITE_GA_ID && import.meta.env.VITE_ENV === "production") {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <AuthProvider>
-      <NotificationsProvider>
-        <BrowserRouter>
-          <AppRoutes />
-          <SoftWallRoot />
-          <Toaster position="top-right" reverseOrder={false} />
-        </BrowserRouter>
-      </NotificationsProvider>
-    </AuthProvider>
+    <HelmetProvider>
+      <AuthProvider>
+        <NotificationsProvider>
+          <BrowserRouter>
+            <AppRoutes />
+            <SoftWallRoot />
+            <Toaster position="top-right" reverseOrder={false} />
+          </BrowserRouter>
+        </NotificationsProvider>
+      </AuthProvider>
+    </HelmetProvider>
   </React.StrictMode>
 )
