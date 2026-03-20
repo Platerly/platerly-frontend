@@ -3,16 +3,14 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Button from '../components/ui/Button'
 import { Helmet } from 'react-helmet-async'
-import { ArrowRight, AlertCircle } from 'lucide-react'
+import { ArrowRight, AlertCircle, ShieldCheck, Shuffle, Filter } from 'lucide-react'
 
 const Landing = () => {
   const { authed } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (authed) {
-      navigate('/feed', { replace: true })
-    }
+    if (authed) navigate('/feed', { replace: true })
   }, [authed, navigate])
 
   useEffect(() => {
@@ -30,141 +28,183 @@ const Landing = () => {
       {/* Background gradient orbs */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-recipzee-green/10 rounded-full blur-[128px]" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[128px]" />
-      <div className="absolute top-1/2 left-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-[100px]" />
 
-      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 py-12 sm:py-16">
+      <div className="relative z-10 w-full max-w-3xl mx-auto px-4 py-16 sm:py-24">
 
-        {/* ── Above the fold: two columns on desktop ── */}
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center mb-16">
+        {/* ── HERO ── */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-recipzee-green/10 border border-recipzee-green/20 text-recipzee-green text-sm font-medium mb-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-recipzee-green" />
+            7-day Premium trial — no card required
+          </div>
 
-          {/* Left — pitch */}
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-recipzee-green/10 border border-recipzee-green/20 text-recipzee-green text-sm font-medium mb-5">
-              <span className="w-1.5 h-1.5 rounded-full bg-recipzee-green" />
-              7-day Premium trial — no card required
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight mb-6">
+            Know if a recipe is safe
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-recipzee-green to-emerald-400">
+              before you cook it
+            </span>
+          </h1>
+
+          <p className="text-lg sm:text-xl text-recipzee-subtle max-w-xl mx-auto mb-10 leading-relaxed">
+            Recipzee scans every ingredient against your allergies the moment
+            you open a recipe — from nickel and gluten to dairy and shellfish.
+            No guessing. No label-reading. Just confidence.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link to="/register">
+              <Button size="lg" className="min-w-[220px] shadow-lg shadow-recipzee-green/20 text-base">
+                Try it free for 7 days
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+            <Link
+              to="/feed?tab=explore"
+              className="text-sm text-recipzee-subtle hover:text-recipzee-text transition-colors"
+            >
+              Browse recipes first →
+            </Link>
+          </div>
+
+          <p className="mt-4 text-xs text-recipzee-subtle">
+            Already have an account?{' '}
+            <Link to="/login" className="text-recipzee-green hover:underline">Sign in</Link>
+          </p>
+        </div>
+
+        {/* ── WHY IT'S DIFFERENT ── */}
+        <div className="grid sm:grid-cols-3 gap-4 mb-16">
+          <div className="rounded-2xl bg-white/5 border border-white/10 p-5">
+            <div className="w-9 h-9 rounded-lg bg-recipzee-green/20 flex items-center justify-center mb-3">
+              <ShieldCheck className="w-5 h-5 text-recipzee-green" />
             </div>
-
-            <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight tracking-tight mb-5">
-              Recipes built for{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-recipzee-green to-emerald-400">
-                every allergy
-              </span>
-            </h1>
-
-            <p className="text-lg text-recipzee-subtle leading-relaxed mb-8">
-              The intelligent recipe community that understands your allergies —
-              from nickel and gluten to dairy and shellfish. Share, discover,
-              and cook with total confidence.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link to="/register">
-                <Button size="lg" className="w-full sm:w-auto shadow-lg shadow-recipzee-green/20">
-                  Start Free Trial
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-              <Link
-                to="/feed?tab=explore"
-                className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-recipzee-border text-recipzee-subtle hover:text-recipzee-text hover:border-recipzee-green/30 transition-colors text-sm font-medium"
-              >
-                Browse recipes first
-              </Link>
-            </div>
-
-            <p className="mt-4 text-sm text-recipzee-subtle">
-              Already have an account?{' '}
-              <Link to="/login" className="text-recipzee-green hover:underline">Sign in</Link>
+            <h3 className="font-semibold mb-1">Instant allergen scan</h3>
+            <p className="text-sm text-recipzee-subtle">
+              Open any recipe and see exactly which ingredients conflict with your allergies — highlighted instantly.
             </p>
           </div>
 
-          {/* Right — pricing */}
-          <div className="grid grid-cols-2 gap-3 pt-4">
-            {/* Free */}
-            <div className="rounded-2xl border border-recipzee-border bg-white/5 p-5">
-              <p className="text-xs font-semibold text-recipzee-subtle uppercase tracking-wide mb-2">Free</p>
-              <p className="text-2xl font-bold mb-1">$0</p>
-              <p className="text-xs text-recipzee-subtle mb-4">Forever free</p>
-              <ul className="space-y-2 text-xs text-recipzee-subtle">
-                <li className="flex items-start gap-1.5"><span className="text-recipzee-green mt-0.5">✓</span> Browse & save recipes</li>
-                <li className="flex items-start gap-1.5"><span className="text-recipzee-green mt-0.5">✓</span> Follow chefs & cookbooks</li>
-                <li className="flex items-start gap-1.5"><span className="text-recipzee-green mt-0.5">✓</span> 3 allergen scans/week</li>
-                <li className="flex items-start gap-1.5"><span className="text-zinc-600 mt-0.5">✗</span> Unlimited scans</li>
-                <li className="flex items-start gap-1.5"><span className="text-zinc-600 mt-0.5">✗</span> Allergen feed filter</li>
-                <li className="flex items-start gap-1.5"><span className="text-zinc-600 mt-0.5">✗</span> Recipe remixing</li>
-              </ul>
+          <div className="rounded-2xl bg-white/5 border border-white/10 p-5">
+            <div className="w-9 h-9 rounded-lg bg-recipzee-green/20 flex items-center justify-center mb-3">
+              <Shuffle className="w-5 h-5 text-recipzee-green" />
             </div>
+            <h3 className="font-semibold mb-1">Safe substitutions</h3>
+            <p className="text-sm text-recipzee-subtle">
+              Click any ingredient to see community-tested safe alternatives with confidence scores and conversion ratios.
+            </p>
+          </div>
 
-            {/* Premium */}
-            <div className="rounded-2xl border border-recipzee-green/40 bg-recipzee-green/5 p-5 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                <span className="bg-recipzee-green text-recipzee-dark text-[10px] font-bold px-2.5 py-1 rounded-full">7 DAYS FREE</span>
-              </div>
-              <p className="text-xs font-semibold text-recipzee-green uppercase tracking-wide mb-2">Premium</p>
-              <p className="text-2xl font-bold mb-1">$6.99<span className="text-sm font-normal text-recipzee-subtle">/mo</span></p>
-              <p className="text-xs text-recipzee-subtle mb-4">Cancel anytime</p>
-              <ul className="space-y-2 text-xs text-recipzee-subtle">
-                <li className="flex items-start gap-1.5"><span className="text-recipzee-green mt-0.5">✓</span> Everything in Free</li>
-                <li className="flex items-start gap-1.5"><span className="text-recipzee-green mt-0.5">✓</span> Unlimited scans</li>
-                <li className="flex items-start gap-1.5"><span className="text-recipzee-green mt-0.5">✓</span> Allergen feed filter</li>
-                <li className="flex items-start gap-1.5"><span className="text-recipzee-green mt-0.5">✓</span> Recipe remixing</li>
-                <li className="flex items-start gap-1.5"><span className="text-recipzee-green mt-0.5">✓</span> Trending ingredients</li>
-              </ul>
-              <Link to="/register" className="mt-4 block text-center bg-recipzee-green text-recipzee-dark font-semibold py-2 rounded-xl hover:opacity-90 transition-opacity text-xs">
-                Start Free Trial
-              </Link>
+          <div className="rounded-2xl bg-white/5 border border-white/10 p-5">
+            <div className="w-9 h-9 rounded-lg bg-recipzee-green/20 flex items-center justify-center mb-3">
+              <Filter className="w-5 h-5 text-recipzee-green" />
             </div>
+            <h3 className="font-semibold mb-1">Filter your feed</h3>
+            <p className="text-sm text-recipzee-subtle">
+              Hide recipes that contain your allergens from the entire feed — browse thousands of recipes without the anxiety.
+            </p>
           </div>
         </div>
 
-        {/* ── Stats ── */}
-        <div className="flex flex-wrap items-center justify-center gap-8 text-center mb-12 py-8 border-y border-recipzee-border">
-          <div>
-            <div className="text-2xl sm:text-3xl font-bold">14</div>
-            <div className="text-sm text-recipzee-subtle">Allergens Tracked</div>
-          </div>
-          <div className="w-px h-10 bg-recipzee-border hidden sm:block" />
-          <div>
-            <div className="text-2xl sm:text-3xl font-bold">1,400+</div>
-            <div className="text-sm text-recipzee-subtle">Ingredient Mappings</div>
-          </div>
-          <div className="w-px h-10 bg-recipzee-border hidden sm:block" />
-          <div>
-            <div className="text-2xl sm:text-3xl font-bold">387+</div>
-            <div className="text-sm text-recipzee-subtle">Ingredient Substitutions</div>
-          </div>
-        </div>
-
-        {/* ── Nickel Allergy Section ── */}
-        <div className="mb-12 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-6 sm:p-8">
+        {/* ── NICKEL ALLERGY CALLOUT ── */}
+        <div className="mb-16 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-6 sm:p-8">
           <div className="flex items-start gap-4 mb-4">
             <div className="shrink-0 w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
               <AlertCircle className="w-5 h-5 text-amber-400" />
             </div>
             <div>
-              <h2 className="text-lg font-bold mb-1">Built for Nickel Allergy Sufferers</h2>
+              <h2 className="text-lg font-bold mb-1">
+                The only recipe app that takes nickel allergy seriously
+              </h2>
               <p className="text-sm text-recipzee-subtle leading-relaxed">
-                Nickel allergy is one of the most common contact allergies — yet almost no recipe apps recognise it.
-                Recipzee is different. Every recipe can be tagged as <strong className="text-amber-400">Low Nickel</strong>, so you
-                can browse, filter, and cook without second-guessing every ingredient.
+                Nickel allergy affects millions — yet almost no recipe apps recognise it.
+                Recipzee tracks nickel content, lets you filter by <strong className="text-amber-400">Low Nickel</strong>,
+                and flags high-nickel ingredients the moment you open a recipe.
               </p>
             </div>
           </div>
           <ul className="grid sm:grid-cols-3 gap-3 text-sm text-recipzee-subtle">
-            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />Filter recipes by Low Nickel sensitivity</li>
-            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />Instant allergen scan on every recipe</li>
-            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />Ingredient substitutions for high-nickel foods</li>
-            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />Set your nickel allergy in your profile once</li>
+            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />Filter by Low Nickel sensitivity</li>
+            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />Instant scan flags high-nickel ingredients</li>
+            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />Safe substitutions for high-nickel foods</li>
+            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />Set your allergy once, protected everywhere</li>
             <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />Community of nickel-conscious cooks</li>
             <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />Share your own low-nickel recipes</li>
           </ul>
         </div>
 
-        {/* ── Footer links ── */}
+        {/* ── PRICING ── */}
+        <div className="mb-16">
+          <h2 className="text-center text-2xl font-bold mb-2">Simple pricing</h2>
+          <p className="text-center text-recipzee-subtle text-sm mb-8">Start free. Upgrade if you need more.</p>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            {/* Free */}
+            <div className="rounded-2xl border border-recipzee-border bg-white/5 p-6">
+              <p className="text-sm font-semibold text-recipzee-subtle uppercase tracking-wide mb-2">Free</p>
+              <p className="text-3xl font-bold mb-1">$0</p>
+              <p className="text-sm text-recipzee-subtle mb-6">No card needed, forever free</p>
+              <ul className="space-y-3 text-sm text-recipzee-subtle mb-6">
+                <li className="flex items-start gap-2"><span className="text-recipzee-green mt-0.5">✓</span> Browse & save recipes</li>
+                <li className="flex items-start gap-2"><span className="text-recipzee-green mt-0.5">✓</span> Follow chefs & create cookbooks</li>
+                <li className="flex items-start gap-2"><span className="text-recipzee-green mt-0.5">✓</span> 3 allergen scans per week</li>
+                <li className="flex items-start gap-2"><span className="text-recipzee-green mt-0.5">✓</span> Ingredient substitution suggestions</li>
+                <li className="flex items-start gap-2 opacity-40"><span className="mt-0.5">—</span> Unlimited allergen scans</li>
+                <li className="flex items-start gap-2 opacity-40"><span className="mt-0.5">—</span> Hide allergens from feed</li>
+                <li className="flex items-start gap-2 opacity-40"><span className="mt-0.5">—</span> Recipe remixing</li>
+              </ul>
+              <Link
+                to="/register"
+                className="block text-center border border-recipzee-border text-recipzee-subtle py-2.5 rounded-xl hover:border-recipzee-green/30 hover:text-recipzee-text transition-colors text-sm font-medium"
+              >
+                Get started free
+              </Link>
+            </div>
+
+            {/* Premium */}
+            <div className="rounded-2xl border border-recipzee-green/40 bg-recipzee-green/5 p-6 relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="bg-recipzee-green text-recipzee-dark text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">7 DAYS FREE</span>
+              </div>
+              <p className="text-sm font-semibold text-recipzee-green uppercase tracking-wide mb-2">Premium</p>
+              <p className="text-3xl font-bold mb-1">$6.99<span className="text-base font-normal text-recipzee-subtle">/mo</span></p>
+              <p className="text-sm text-recipzee-subtle mb-6">Cancel anytime</p>
+              <ul className="space-y-3 text-sm text-recipzee-subtle mb-6">
+                <li className="flex items-start gap-2"><span className="text-recipzee-green mt-0.5">✓</span> Everything in Free</li>
+                <li className="flex items-start gap-2"><span className="text-recipzee-green mt-0.5">✓</span> Unlimited allergen scans</li>
+                <li className="flex items-start gap-2"><span className="text-recipzee-green mt-0.5">✓</span> Hide allergens from your feed</li>
+                <li className="flex items-start gap-2"><span className="text-recipzee-green mt-0.5">✓</span> Recipe remixing</li>
+                <li className="flex items-start gap-2"><span className="text-recipzee-green mt-0.5">✓</span> Trending ingredients</li>
+              </ul>
+              <Link
+                to="/register"
+                className="block text-center bg-recipzee-green text-recipzee-dark font-semibold py-2.5 rounded-xl hover:opacity-90 transition-opacity text-sm"
+              >
+                Start 7-day free trial
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* ── FINAL CTA ── */}
+        <div className="text-center mb-16">
+          <p className="text-recipzee-subtle mb-4 text-sm">Ready to cook without the anxiety?</p>
+          <Link to="/register">
+            <Button size="lg" className="shadow-lg shadow-recipzee-green/20">
+              Start your free trial
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </Link>
+          <p className="mt-3 text-xs text-recipzee-subtle">No credit card required · Cancel anytime</p>
+        </div>
+
+        {/* ── FOOTER ── */}
         <div className="text-center text-sm text-recipzee-subtle">
           <Link to="/privacy" className="hover:text-recipzee-text transition-colors px-2">Privacy</Link>
           <span className="text-recipzee-border">•</span>
           <Link to="/terms" className="hover:text-recipzee-text transition-colors px-2">Terms</Link>
+          <span className="text-recipzee-border">•</span>
+          <Link to="/api" className="hover:text-recipzee-text transition-colors px-2">API</Link>
         </div>
 
       </div>
