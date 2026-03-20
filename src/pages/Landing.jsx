@@ -47,8 +47,8 @@ const Landing = () => {
           </h1>
 
           <p className="text-lg sm:text-xl text-recipzee-subtle max-w-xl mx-auto mb-10 leading-relaxed">
-            Recipzee scans every ingredient against your allergies the moment
-            you open a recipe — from nickel and gluten to dairy and shellfish.
+            Open any recipe and instantly know if it's safe for your allergies —
+            nickel, gluten, dairy, shellfish, and 10 more.
             No guessing. No label-reading. Just confidence.
           </p>
 
@@ -149,9 +149,6 @@ const Landing = () => {
                 <li className="flex items-start gap-2"><span className="text-recipzee-green mt-0.5">✓</span> Follow chefs & create cookbooks</li>
                 <li className="flex items-start gap-2"><span className="text-recipzee-green mt-0.5">✓</span> 3 allergen scans per week</li>
                 <li className="flex items-start gap-2"><span className="text-recipzee-green mt-0.5">✓</span> Ingredient substitution suggestions</li>
-                <li className="flex items-start gap-2 opacity-40"><span className="mt-0.5">—</span> Unlimited allergen scans</li>
-                <li className="flex items-start gap-2 opacity-40"><span className="mt-0.5">—</span> Hide allergens from feed</li>
-                <li className="flex items-start gap-2 opacity-40"><span className="mt-0.5">—</span> Recipe remixing</li>
               </ul>
               <Link
                 to="/register"
