@@ -16,7 +16,7 @@ export function getRecipeUrl(recipe) {
 
   // Use SEO-friendly URL if both slug and username are available
   if (slug && username) {
-    return `/${username}/${slug}`
+    return `/${username.toLowerCase()}/${slug}`
   }
 
   // Fall back to ID-based URL

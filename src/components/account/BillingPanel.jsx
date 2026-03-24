@@ -10,6 +10,7 @@ import { API_BASE_URL } from "../../utils/api";
 import { useAuth } from "../../context/AuthContext";
 import { formatDate } from "../../utils/formatDate";
 import { logger } from "../../utils/logger";
+import { trackUpgrade } from "../../utils/analytics";
 
 const cx = (...xs) => xs.filter(Boolean).join(" ");
 
@@ -130,7 +131,10 @@ export default function BillingPanel() {
     const sp = new URLSearchParams(location.search);
 
     const sub = sp.get("sub");
-    if (sub === "success") toast.success("Subscription successful. Welcome to Premium!");
+    if (sub === "success") {
+      toast.success("Subscription successful. Welcome to Premium!");
+      trackUpgrade();
+    }
     if (sub === "cancel") toast("Checkout canceled.");
 
     const portal = sp.get("portal");

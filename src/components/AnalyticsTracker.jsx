@@ -10,7 +10,7 @@ export function AnalyticsTracker() {
       return;
     }
     // Also check the global admin mode flag
-    if (window.__PLATERLY_ADMIN_MODE__) {
+    if (window.__RECIPZEE_ADMIN_MODE__) {
       return;
     }
     if (import.meta.env.VITE_ENV === "production") {

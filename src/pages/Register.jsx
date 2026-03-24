@@ -6,6 +6,7 @@ import Button from '../components/ui/Button'
 import SocialLoginButtons from '../components/auth/SocialLoginButtons'
 import { useAuth } from '../context/AuthContext'
 import { API_BASE_URL } from '../utils/api'
+import { trackSignUp, trackStartTrial } from '../utils/analytics'
 
 // Check if user needs onboarding (users with email-based username)
 const needsOnboarding = (user) => {
@@ -97,6 +98,8 @@ const Register = () => {
       // Auto-login and go to onboarding
       if (data?.token && data?.user) {
         login({ token: data.token, user: data.user, remember: true })
+        trackSignUp('email')
+        trackStartTrial()
         navigate('/onboarding', { replace: true })
         return
       }
@@ -149,6 +152,10 @@ const Register = () => {
             onSuccess={(data) => {
               if (data?.token && data?.user) {
                 login({ token: data.token, user: data.user, remember: true })
+                if (data.isNewUser) {
+                  trackSignUp('google')
+                  trackStartTrial()
+                }
                 // All users go through onboarding
                 if (needsOnboarding(data.user)) {
                   navigate('/onboarding', { replace: true })
