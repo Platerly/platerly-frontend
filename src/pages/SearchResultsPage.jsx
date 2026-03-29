@@ -224,8 +224,8 @@ const SearchResultsPage = () => {
     ? `"${q}" recipes — Recipzee`
     : 'Search Recipes — Recipzee'
   const searchDescription = q
-    ? `Search results for "${q}" on Recipzee — allergy-safe recipes including low-nickel, gluten-free, dairy-free, halal and more.`
-    : 'Search thousands of allergy-safe recipes on Recipzee — including low-nickel, gluten-free, dairy-free, halal and vegan meals.'
+    ? `Search results for "${q}" on Recipzee — allergen-aware recipes including low-nickel, gluten-free, dairy-free, halal and more.`
+    : 'Search thousands of allergen-aware recipes on Recipzee — including low-nickel, gluten-free, dairy-free, halal and vegan meals.'
 
   return (
     <div className="min-h-screen bg-recipzee-dark text-recipzee-text relative overflow-hidden">

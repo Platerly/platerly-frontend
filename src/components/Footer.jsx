@@ -13,6 +13,13 @@ const Footer = ({ variant = 'full', className = '' }) => {
       role="contentinfo"
     >
       <div className={`${container} py-8`}>
+        {/* Allergen disclaimer */}
+        <p className="text-xs text-neutral-500 leading-relaxed mb-6 border-t border-white/5 pt-6">
+          Recipzee provides allergen information for reference purposes only. This is not medical advice and does not
+          replace consultation with a qualified healthcare professional or dietitian. Always verify ingredient safety
+          independently, especially if you have a severe allergy.
+        </p>
+
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           {/* copyright */}
           <p className="text-center sm:text-left text-neutral-400">
@@ -41,6 +48,9 @@ const Footer = ({ variant = 'full', className = '' }) => {
             </Link>
             <Link to="/contact" className="hover:text-white transition-colors">
               Contact
+            </Link>
+            <Link to="/roadmap" className="hover:text-white transition-colors">
+              Roadmap
             </Link>
             <Link to="/api" className="hover:text-white transition-colors">
               API

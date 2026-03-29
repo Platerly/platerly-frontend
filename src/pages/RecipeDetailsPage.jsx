@@ -540,8 +540,8 @@ const RecipeDetailsPage = () => {
       ...(recipe.tags ?? []),
       ...(recipe.sensitivities ?? []),
       recipe.sensitivities?.includes('Low Nickel') ? 'low nickel recipe' : null,
-      recipe.sensitivities?.includes('Low Nickel') ? 'nickel allergy safe' : null,
-      'allergy safe recipe',
+      recipe.sensitivities?.includes('Low Nickel') ? 'low nickel diet compatible' : null,
+      'allergen-aware recipe',
     ].filter(Boolean).join(', '),
     recipeIngredient: recipe.ingredients?.map(i => `${i.quantity ?? ''} ${i.unit ?? ''} ${i.name}`.trim()) ?? [],
     suitableForDiet: [

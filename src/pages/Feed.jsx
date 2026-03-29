@@ -263,10 +263,10 @@ const Feed = () => {
   return (
     <div className="flex flex-col bg-recipzee-dark text-recipzee-text min-h-screen">
       <Helmet>
-        <title>Explore Allergy-Safe Recipes — Recipzee</title>
-        <meta name="description" content="Browse thousands of allergy-safe recipes on Recipzee — low-nickel, gluten-free, dairy-free, halal, vegan and more. Filter by your allergies and discover meals you can cook with confidence." />
-        <meta property="og:title" content="Explore Allergy-Safe Recipes — Recipzee" />
-        <meta property="og:description" content="Browse thousands of allergy-safe recipes on Recipzee — low-nickel, gluten-free, dairy-free, halal, vegan and more." />
+        <title>Explore Allergen-Aware Recipes — Recipzee</title>
+        <meta name="description" content="Browse thousands of allergen-aware recipes on Recipzee — low-nickel, gluten-free, dairy-free, halal, vegan and more. Filter by your allergen profile and make informed food choices." />
+        <meta property="og:title" content="Explore Allergen-Aware Recipes — Recipzee" />
+        <meta property="og:description" content="Browse thousands of allergen-aware recipes on Recipzee — low-nickel, gluten-free, dairy-free, halal, vegan and more." />
         <link rel="canonical" href="https://www.recipzee.com/feed" />
       </Helmet>
       {/* Sticky tabs */}

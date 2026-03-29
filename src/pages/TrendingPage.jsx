@@ -191,9 +191,9 @@ const TrendingPage = () => {
     <div className="min-h-screen bg-recipzee-dark text-recipzee-text">
       <Helmet>
         <title>Trending Recipes — Recipzee</title>
-        <meta name="description" content="Discover what's trending on Recipzee — the most liked and saved allergy-safe recipes right now, including low-nickel, gluten-free, dairy-free, and halal meals." />
+        <meta name="description" content="Discover what's trending on Recipzee — the most liked and saved allergen-aware recipes right now, including low-nickel, gluten-free, dairy-free, and halal meals." />
         <meta property="og:title" content="Trending Recipes — Recipzee" />
-        <meta property="og:description" content="Discover what's trending on Recipzee — the most liked and saved allergy-safe recipes right now, including low-nickel, gluten-free, dairy-free, and halal meals." />
+        <meta property="og:description" content="Discover what's trending on Recipzee — the most liked and saved allergen-aware recipes right now, including low-nickel, gluten-free, dairy-free, and halal meals." />
         <link rel="canonical" href="https://www.recipzee.com/trending" />
       </Helmet>
       {/* Background */}

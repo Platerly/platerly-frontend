@@ -372,10 +372,10 @@ const UserProfilePage = () => {
   const profileDescription = profile
     ? [
         profile.bio?.trim(),
-        `${profile.username} shares allergy-safe recipes on Recipzee.`,
+        `${profile.username} shares allergen-aware recipes on Recipzee.`,
         recipes.length ? `${recipes.length} recipes shared.` : null,
       ].filter(Boolean).join(' ').slice(0, 160)
-    : `View ${username}'s allergy-safe recipes on Recipzee.`
+    : `View ${username}'s allergen-aware recipes on Recipzee.`
 
   return (
     <div className="min-h-screen bg-recipzee-dark text-recipzee-text relative overflow-hidden">

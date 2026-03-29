@@ -33,6 +33,7 @@ export default function OnboardingPage() {
   const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [selectedAllergens, setSelectedAllergens] = useState([]) // Array of allergen names
+  const [disclaimerAcknowledged, setDisclaimerAcknowledged] = useState(false)
   const [allAllergies, setAllAllergies] = useState([]) // Array of {id, name} from API
   const [loading, setLoading] = useState(false)
   const [usernameError, setUsernameError] = useState('')
@@ -399,9 +400,33 @@ export default function OnboardingPage() {
               </div>
 
               <div className="space-y-3">
+                {/* Disclaimer acknowledgment */}
+                <label className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 cursor-pointer">
+                  <div className="relative mt-0.5 shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={disclaimerAcknowledged}
+                      onChange={(e) => setDisclaimerAcknowledged(e.target.checked)}
+                      className="sr-only"
+                    />
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                      disclaimerAcknowledged
+                        ? 'bg-recipzee-green border-recipzee-green'
+                        : 'border-amber-500/60 bg-transparent'
+                    }`}>
+                      {disclaimerAcknowledged && <Check className="w-3 h-3 text-recipzee-dark" />}
+                    </div>
+                  </div>
+                  <p className="text-xs text-amber-200/90 leading-relaxed">
+                    I understand that Recipzee's allergen information is for reference purposes only. It does not constitute
+                    medical advice and does not replace consultation with a qualified healthcare professional or dietitian.
+                    I will always verify ingredient safety independently, especially for severe allergies.
+                  </p>
+                </label>
+
                 <button
                   onClick={handleAllergiesStep}
-                  disabled={loading}
+                  disabled={loading || !disclaimerAcknowledged}
                   className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-recipzee-green text-recipzee-dark font-semibold hover:opacity-90 disabled:opacity-50 transition-all"
                 >
                   {loading ? 'Saving...' : selectedAllergens.length > 0 ? 'Save & Continue' : 'Continue'}
@@ -410,7 +435,8 @@ export default function OnboardingPage() {
 
                 <button
                   onClick={skipAllergies}
-                  className="w-full px-6 py-3 rounded-xl text-recipzee-subtle hover:text-recipzee-text transition-colors"
+                  disabled={!disclaimerAcknowledged}
+                  className="w-full px-6 py-3 rounded-xl text-recipzee-subtle hover:text-recipzee-text disabled:opacity-40 transition-colors"
                 >
                   Skip for now
                 </button>

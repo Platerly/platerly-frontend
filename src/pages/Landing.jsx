@@ -14,13 +14,13 @@ const Landing = () => {
   }, [authed, navigate])
 
   useEffect(() => {
-    document.title = 'Recipzee — Nickel Allergy Recipes & Allergy-Safe Cooking Community'
+    document.title = 'Recipzee — Nickel Allergy Recipes & Allergen-Aware Cooking Community'
   }, [])
 
   return (
     <div className="min-h-screen bg-recipzee-dark text-recipzee-text relative overflow-hidden">
       <Helmet>
-        <title>Recipzee — Nickel Allergy Recipes &amp; Allergy-Safe Cooking Community</title>
+        <title>Recipzee — Nickel Allergy Recipes &amp; Allergen-Aware Cooking Community</title>
         <meta name="description" content="Recipzee is the only recipe community built for nickel allergy sufferers — and every other allergy too. Find low-nickel recipes, flag allergens instantly, and cook with total confidence." />
         <link rel="canonical" href="https://www.recipzee.com/" />
       </Helmet>
@@ -39,17 +39,17 @@ const Landing = () => {
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight mb-6">
-            Know if a recipe is safe
+            Know what's in your recipes
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-recipzee-green to-emerald-400">
-              before you cook it
+              before you cook them
             </span>
           </h1>
 
           <p className="text-lg sm:text-xl text-recipzee-subtle max-w-xl mx-auto mb-10 leading-relaxed">
-            Open any recipe and instantly know if it's safe for your allergies —
+            Open any recipe and instantly see if it contains your flagged allergens —
             nickel, gluten, dairy, shellfish, and 10 more.
-            No guessing. No label-reading. Just confidence.
+            No guessing. No label-reading. Make informed food choices.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -89,9 +89,9 @@ const Landing = () => {
             <div className="w-9 h-9 rounded-lg bg-recipzee-green/20 flex items-center justify-center mb-3">
               <Shuffle className="w-5 h-5 text-recipzee-green" />
             </div>
-            <h3 className="font-semibold mb-1">Safe substitutions</h3>
+            <h3 className="font-semibold mb-1">Allergen-aware substitutions</h3>
             <p className="text-sm text-recipzee-subtle">
-              Click any ingredient to see community-tested safe alternatives with confidence scores and conversion ratios.
+              Click any ingredient to see community-tested alternatives with confidence scores and conversion ratios.
             </p>
           </div>
 
