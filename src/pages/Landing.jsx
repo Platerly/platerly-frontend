@@ -133,6 +133,59 @@ const Landing = () => {
           </ul>
         </div>
 
+        {/* ── EXPLORE RECIPES FEATURE ── */}
+        <div className="mb-16 rounded-2xl border border-recipzee-green/20 bg-gradient-to-br from-recipzee-card to-recipzee-light overflow-hidden">
+          <div className="px-6 py-8 sm:px-10 sm:py-10">
+            <div className="flex items-start gap-3 mb-4">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-recipzee-green/15 border border-recipzee-green/30 px-3 py-1 text-xs font-semibold text-recipzee-green uppercase tracking-wider">
+                ✦ New
+              </span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-recipzee-text mb-3 leading-snug">
+              Discover halal recipes from across the internet
+            </h2>
+            <p className="text-recipzee-subtle text-base mb-6 max-w-xl leading-relaxed">
+              Every recipe verified halal and analysed for your allergen profile before you cook it.
+              Browse thousands of dishes from trusted sources — every one screened by the Recipzee Halal Gate,
+              with full nickel load and allergen intelligence built in.
+            </p>
+
+            <ul className="grid sm:grid-cols-2 gap-2.5 text-sm text-recipzee-subtle mb-8">
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-recipzee-green shrink-0" />
+                Every recipe individually halal-verified
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-recipzee-green shrink-0" />
+                Allergen analysis on every recipe
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-recipzee-green shrink-0" />
+                Nickel load calculated per recipe
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-recipzee-green shrink-0" />
+                Filter by cuisine, allergens, or nickel risk
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-recipzee-green shrink-0" />
+                Save any recipe to your cookbooks
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-recipzee-green shrink-0" />
+                Source attribution on every result
+              </li>
+            </ul>
+
+            <Link
+              to="/explore-recipes"
+              className="inline-flex items-center gap-2 rounded-2xl bg-recipzee-green px-6 py-3 font-semibold text-sm text-recipzee-dark hover:opacity-90 transition-opacity shadow-lg shadow-recipzee-green/20"
+            >
+              Explore halal recipes →
+            </Link>
+          </div>
+        </div>
+
         {/* ── PRICING ── */}
         <div className="mb-16">
           <h2 className="text-center text-2xl font-bold mb-2">Simple pricing</h2>

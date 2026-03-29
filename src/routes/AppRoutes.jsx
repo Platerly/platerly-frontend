@@ -64,6 +64,8 @@ const AccountPage = lazy(() => import('../components/account/AccountPage'))
 const SearchResultsPage = lazy(() => import('../pages/SearchResultsPage'))
 const ExploreChefsPage = lazy(() => import('../pages/ExploreChefsPage'))
 const TrendingPage = lazy(() => import('../pages/TrendingPage'))
+const ExploreRecipesPage = lazy(() => import('../pages/ExploreRecipesPage'))
+const IndexedRecipeDetailPage = lazy(() => import('../pages/IndexedRecipeDetailPage'))
 
 // Public/legal pages
 const TermsPage = lazy(() => import('../pages/public/TermsPage'))
@@ -203,6 +205,8 @@ const AppRoutes = () => {
     // Public content (with layout but no auth required)
     { path: '/feed', element: withLayout(Feed) },
     { path: '/trending', element: withLayout(TrendingPage) },
+    { path: '/explore-recipes', element: withLayout(ExploreRecipesPage) },
+    { path: '/recipes/:idSlug', element: withLayout(IndexedRecipeDetailPage) },
     // SEO-friendly recipe URLs: /username/recipe-slug (GitHub style)
     { path: '/:username/:slug', element: withLayout(RecipeDetailsPage) },
     // Legacy route for backwards compatibility (GUIDs still work)

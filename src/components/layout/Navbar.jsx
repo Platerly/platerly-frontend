@@ -25,9 +25,10 @@ const Navbar = () => {
     { name: 'Register', path: '/register' },
   ]
   const authedLinks = [
-    { name: 'Home', path: '/feed' },
-    { name: 'Explore', path: '/explore' },
-    { name: 'Chefs', path: '/chefs' },
+    { name: 'Home',            path: '/feed'             },
+    { name: 'Explore Recipes', path: '/explore-recipes'  },
+    { name: 'Trending',        path: '/trending'         },
+    { name: 'Chefs',           path: '/explore-chefs'    },
   ]
 
   const handleLogout = async () => {
