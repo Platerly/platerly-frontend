@@ -12,8 +12,9 @@ import { toast } from 'react-hot-toast'
 import {
   MoreVertical, Pencil, Trash2, RefreshCw, BookmarkPlus,
   AlertTriangle, Clock, Tag as TagIcon, Globe, BookOpenText, ListChecks,
-  Plus, Minus, Share2, Mail, LinkIcon, X, Check, ArrowLeftRight
+  Plus, Minus, Share2, Mail, LinkIcon, X, Check, ArrowLeftRight, FileDown
 } from 'lucide-react'
+import { exportRecipePdf } from '../utils/exportPdf'
 
 // Social media brand icons
 const XIcon = ({ className }) => (
@@ -466,6 +467,30 @@ const RecipeDetailsPage = () => {
     }
   }
 
+  const [pdfLoading, setPdfLoading] = useState(false)
+
+  const handleExportPdf = async () => {
+    setMenuOpen(false)
+    if (!recipe) return
+    setPdfLoading(true)
+    try {
+      await exportRecipePdf({
+        recipe,
+        allergenTerms: bannerTerms,
+        difficulty,
+        prep,
+        cook,
+        total: totalFmt,
+        scale: ingredientScale,
+        isPremium: scanStatusPremium,
+        token,
+        apiBase: API_BASE_URL,
+      })
+    } finally {
+      setPdfLoading(false)
+    }
+  }
+
   /* ---------- Render ---------- */
   if (loading) {
     return (
@@ -616,6 +641,12 @@ const RecipeDetailsPage = () => {
               </button>
               <button onClick={handleShare} className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/5">
                 <Share2 className="w-4 h-4" /> Share
+              </button>
+              <button
+                onClick={handleExportPdf}
+                disabled={pdfLoading}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/5 disabled:opacity-50">
+                <FileDown className="w-4 h-4" /> {pdfLoading ? 'Preparing…' : 'Export PDF'}
               </button>
             </div>
           )}
