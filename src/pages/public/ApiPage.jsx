@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import {
   ShieldCheck, FlaskConical, Shuffle, ClipboardCheck, BarChart3,
-  Globe2, TrendingUp, Webhook, LayoutTemplate, Leaf,
+  Globe2, TrendingUp, Webhook, LayoutTemplate,
   Check, ArrowRight, Mail, Zap, Building2, Rocket, Microscope, FileText
 } from 'lucide-react'
 import Footer from '../../components/Footer'
@@ -21,7 +21,7 @@ const FEATURES = [
   {
     icon: ShieldCheck,
     title: 'Allergen Intelligence',
-    desc: 'FDA Big 9, EU 14 allergens + nickel — all with severity levels, cross-reactivity flags, and per-ingredient confidence scores.',
+    desc: 'FDA Big 9, EU 14 allergens + nickel — all with severity levels, cross-reactivity flags, and per-ingredient confidence levels — HIGH, MEDIUM, or LOW.',
     color: 'text-recipzee-green',
     bg: 'bg-recipzee-green/10',
   },
@@ -42,21 +42,21 @@ const FEATURES = [
   {
     icon: BarChart3,
     title: 'Nutrition Estimation',
-    desc: 'USDA-backed macro and micronutrient data for any ingredient or recipe. Includes calorie density, protein, fat, carbs, fibre, and key micronutrients.',
+    desc: 'USDA-backed macronutrient data for any ingredient or recipe. Includes calorie density, protein, total fat, carbohydrates, and dietary fibre.',
     color: 'text-violet-400',
     bg: 'bg-violet-400/10',
   },
   {
     icon: Globe2,
     title: 'Regional Demand Forecasting',
-    desc: 'Ingredient usage trends segmented by geography, season, and cuisine type. Useful for menu planning and procurement.',
+    desc: 'Ingredient usage trends segmented by geography, season, and cuisine type. Useful for menu planning and procurement. Data richness scales with platform usage.',
     color: 'text-cyan-400',
     bg: 'bg-cyan-400/10',
   },
   {
     icon: TrendingUp,
     title: 'Dietary Trend Analytics',
-    desc: 'Growth and decline rates for dietary tags — vegan, keto, gluten-free, halal, low-nickel, and more — over 30-day windows.',
+    desc: 'Growth and decline rates for dietary tags — vegan, keto, gluten-free, halal, low-nickel, and more — over 30-day windows. Statistical significance improves with platform scale.',
     color: 'text-pink-400',
     bg: 'bg-pink-400/10',
   },
@@ -73,13 +73,6 @@ const FEATURES = [
     desc: 'Real-time push notifications when allergen data updates, new substitutions are validated, or safety thresholds are crossed.',
     color: 'text-rose-400',
     bg: 'bg-rose-400/10',
-  },
-  {
-    icon: Leaf,
-    title: 'Sustainability Scoring',
-    desc: 'Carbon footprint estimates and sustainability scores per ingredient and recipe, sourced from agricultural lifecycle data.',
-    color: 'text-lime-400',
-    bg: 'bg-lime-400/10',
   },
 ]
 
@@ -136,7 +129,6 @@ const TIERS = [
       'Everything in Professional',
       'Unlimited API calls',
       'White-label embeddable widget',
-      'Sustainability scoring',
       'Bulk data enrichment endpoint',
       'Custom SLA and uptime guarantee',
       'Dedicated account manager',

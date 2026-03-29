@@ -51,6 +51,9 @@ const ShoppingListPage = lazy(() => import('../pages/ShoppingListPage'))
 // Meal planner
 const MealPlannerPage = lazy(() => import('../pages/MealPlannerPage'))
 
+// Widget preview (authenticated)
+const WidgetPreviewPage = lazy(() => import('../pages/WidgetPreviewPage'))
+
 // Settings pages
 const SettingsPage = lazy(() => import('../pages/SettingsPage'))
 const AllergySettingsPage = lazy(() => import('../pages/AllergySettingsTab'))
@@ -194,6 +197,7 @@ const AppRoutes = () => {
       )
     },
     { path: '/account', element: withAuth(AccountPage) },
+    { path: '/widget-preview', element: withAuth(WidgetPreviewPage) },
     { path: '/notifications', element: withAuth(NotificationsPage) },
 
     // Public content (with layout but no auth required)
