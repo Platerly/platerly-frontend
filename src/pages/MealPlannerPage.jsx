@@ -18,7 +18,8 @@ const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export default function MealPlannerPage() {
   const { token } = useAuth()
-  const { isPremium } = usePremium()
+  const { isPremium, isOnTrial } = usePremium()
+  const hasPremiumAccess = isPremium || isOnTrial
 
   // Meal plans list
   const [plans, setPlans] = useState([])
@@ -115,10 +116,10 @@ export default function MealPlannerPage() {
     const startDate = new Date(newPlanStart)
     const endDate = new Date(newPlanEnd)
     const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1
-    const maxDays = isPremium ? 31 : 7
+    const maxDays = hasPremiumAccess ? 31 : 7
 
     if (days > maxDays) {
-      toast.error(isPremium
+      toast.error(hasPremiumAccess
         ? `Plans cannot exceed ${maxDays} days`
         : `Free users can only create ${maxDays}-day plans. Upgrade for longer plans.`)
       return
@@ -268,7 +269,7 @@ export default function MealPlannerPage() {
   // Generate shopping list
   const handleGenerateShoppingList = async () => {
     if (!selectedPlanId || !token) return
-    if (!isPremium) {
+    if (!hasPremiumAccess) {
       toast.error('Generating shopping lists from meal plans is a Premium feature')
       return
     }
@@ -324,7 +325,7 @@ export default function MealPlannerPage() {
   }
 
   // Max days for new plan
-  const maxDays = isPremium ? 31 : 7
+  const maxDays = hasPremiumAccess ? 31 : 7
 
   if (loading) {
     return (
@@ -346,7 +347,7 @@ export default function MealPlannerPage() {
             <h1 className="text-3xl font-bold text-recipzee-text">Meal Planner</h1>
             <p className="text-base text-recipzee-subtle">
               Plan your meals for the week
-              {!isPremium && <span className="text-recipzee-muted"> (up to 7 days)</span>}
+              {!hasPremiumAccess && <span className="text-recipzee-muted"> (up to 7 days)</span>}
             </p>
           </div>
         </div>
@@ -365,7 +366,7 @@ export default function MealPlannerPage() {
         const selectedDays = newPlanStart && newPlanEnd
           ? Math.ceil((new Date(newPlanEnd) - new Date(newPlanStart)) / (1000 * 60 * 60 * 24)) + 1
           : 0
-        const exceedsLimit = !isPremium && selectedDays > 7
+        const exceedsLimit = !hasPremiumAccess && selectedDays > 7
 
         return (
           <div className="mb-6 p-5 rounded-xl bg-recipzee-card border border-recipzee-border">
@@ -394,7 +395,7 @@ export default function MealPlannerPage() {
                 <div>
                   <label className="block text-sm font-medium text-recipzee-subtle mb-1">
                     End Date
-                    {!isPremium && <span className="text-xs text-recipzee-muted ml-1">(max {maxDays} days)</span>}
+                    {!hasPremiumAccess && <span className="text-xs text-recipzee-muted ml-1">(max {maxDays} days)</span>}
                   </label>
                   <input
                     type="date"
@@ -568,7 +569,7 @@ export default function MealPlannerPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      {isPremium ? (
+                      {hasPremiumAccess ? (
                         <button
                           onClick={handleGenerateShoppingList}
                           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-recipzee-green text-recipzee-dark text-base font-semibold hover:opacity-90"

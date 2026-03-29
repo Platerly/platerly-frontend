@@ -15,7 +15,8 @@ const cx = (...a) => a.filter(Boolean).join(' ')
 
 export default function ShoppingListPage() {
   const { token } = useAuth()
-  const { isPremium } = usePremium()
+  const { isPremium, isOnTrial } = usePremium()
+  const hasPremiumAccess = isPremium || isOnTrial
 
   const [lists, setLists] = useState([])
   const [loading, setLoading] = useState(true)
@@ -335,7 +336,7 @@ export default function ShoppingListPage() {
   const totalCount = selectedList?.items?.length || 0
 
   // Premium gate for multiple lists
-  const canCreateMoreLists = isPremium || lists.length === 0
+  const canCreateMoreLists = hasPremiumAccess || lists.length === 0
 
   if (loading) {
     return (

@@ -484,7 +484,7 @@ export default function ApiPage() {
           <p className="text-xs text-recipzee-muted/70 text-center leading-relaxed border border-recipzee-border/40 rounded-xl px-6 py-4">
             Data provided for informational and compliance reference purposes only.
             Not a substitute for laboratory testing or professional dietary advice.
-            Recipzee / Platerly Inc. accepts no liability for decisions made based on API output.
+            Recipzee accepts no liability for decisions made based on API output.
             Source: Rebelytics R&D Inc. v9.1.1 (2025), 257 peer-reviewed studies, 20,575 measurements.
           </p>
         </section>

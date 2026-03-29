@@ -356,7 +356,7 @@ ${subHtml}
     Allergen and substitution data is for informational purposes only and does not constitute medical advice.
     Source: Rebelytics R&amp;D Inc. v9.1.1 (2025), 257 studies, 20,575 measurements.
     Consult a healthcare professional for allergy management decisions.
-    Recipzee / Platerly Inc. accepts no liability for adverse reactions from reliance on this data.
+    Recipzee accepts no liability for adverse reactions from reliance on this data.
   </p>
 </footer>
 

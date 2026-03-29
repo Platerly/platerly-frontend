@@ -88,7 +88,8 @@ const EmptyState = () => (
 
 const CookbookPage = () => {
   const { token } = useAuth();
-  const { isPremium, loading: premiumLoading } = usePremium();
+  const { isPremium, isOnTrial, loading: premiumLoading } = usePremium();
+  const hasPremiumAccess = isPremium || isOnTrial;
 
   const [cookbooks, setCookbooks] = useState([]);
   const [title, setTitle] = useState("");
@@ -222,7 +223,7 @@ const CookbookPage = () => {
   }
 
   // Premium gate
-  if (!isPremium) {
+  if (!hasPremiumAccess) {
     return <PremiumUpgradePrompt />;
   }
 
