@@ -1,7 +1,7 @@
 // src/components/layout/Sidebar.jsx
 import React from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { Home, PlusCircle, Book, Settings, User, Users, Sparkles, Bell, ShoppingCart, CalendarDays } from 'lucide-react'
+import { Home, PlusCircle, Book, Settings, User, Users, Sparkles, Bell, ShoppingCart, CalendarDays, Globe } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import NotificationBell from '../notifications/NotificationBell'
 import { useNotifications } from '../../context/NotificationsContext'
@@ -142,6 +142,7 @@ export const SidebarPanel = () => {
         {authed ? (
           <nav className="flex flex-col space-y-1.5" role="navigation" aria-label="Main">
             <FeedNavItem icon={Home} />
+            <NavItem to="/explore-recipes" icon={Globe} end>Explore Recipes</NavItem>
             <NavItem to="/explore-chefs" icon={Users} end>Explore Chefs</NavItem>
             <NavItem to="/create" icon={PlusCircle} end>Create Recipe</NavItem>
             <NavItem to="/cookbooks" icon={Book} end>My Cookbooks</NavItem>
@@ -297,7 +298,7 @@ const MobileTabBar = ({ authed }) => {
     >
       <ul className="safe-area-inset-b h-[72px] grid grid-cols-5 px-1">
         <FeedTabItem icon={Home} />
-        <TabItem to="/explore-chefs" icon={Users} label="Chefs" />
+        <TabItem to="/explore-recipes" icon={Globe} label="Explore" />
         <TabItem to="/create" icon={PlusCircle} label="Create" />
         <TabItem to="/cookbooks" icon={Book} label="Books" matchStartsWith />
         <TabItem to="/settings" icon={Settings} label="Settings" matchStartsWith />

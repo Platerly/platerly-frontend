@@ -20,9 +20,10 @@ const Navbar = () => {
   const logoTarget = authed ? '/feed' : '/login'
 
   const guestLinks = [
-    { name: 'Home', path: '/login' },
-    { name: 'Login', path: '/login' },
-    { name: 'Register', path: '/register' },
+    { name: 'Home',            path: '/login'           },
+    { name: 'Explore Recipes', path: '/explore-recipes' },
+    { name: 'Login',           path: '/login'           },
+    { name: 'Register',        path: '/register'        },
   ]
   const authedLinks = [
     { name: 'Home',            path: '/feed'             },
