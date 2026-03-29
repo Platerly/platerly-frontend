@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Settings, User, AlertTriangle, CreditCard, Check, LogOut, Shield, Eye, EyeOff, Mail, Lock, Globe } from "lucide-react";
+import { Settings, User, AlertTriangle, CreditCard, Check, LogOut, Shield, Eye, EyeOff, Mail, Lock, Globe, Download, Trash2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import AllergySettingsTab from "./AllergySettingsTab";
 import BillingPanel from "../components/account/BillingPanel";
@@ -114,6 +114,15 @@ const AccountSecurityTab = ({ token, user }) => {
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [emailSuccess, setEmailSuccess] = useState("");
+
+  // Data export state
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportError, setExportError] = useState("");
+
+  // Delete account state
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   // Change Password state
   const [currentPassword, setCurrentPassword] = useState("");
@@ -260,6 +269,56 @@ const AccountSecurityTab = ({ token, user }) => {
     }
   };
 
+  const handleDownloadData = async () => {
+    setExportError("");
+    setExportLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/user/data-export`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const disposition = res.headers.get("Content-Disposition") || "";
+      const filenameMatch = disposition.match(/filename="?([^";\n]+)"?/);
+      const filename = filenameMatch ? filenameMatch[1] : "recipzee-data.json";
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setExportError("Failed to download your data. Please try again.");
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== "delete my account") return;
+    setDeleteError("");
+    setDeleteLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/user/account`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ confirmation: "delete my account" }),
+      });
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg || "Failed to delete account");
+      }
+      // Redirect to home — account is gone, token is invalid
+      window.location.href = "/";
+    } catch (err) {
+      setDeleteError(err.message || "Failed to delete account");
+      setDeleteLoading(false);
+    }
+  };
+
   const PasswordInput = ({ value, onChange, show, setShow, placeholder, id }) => (
     <div className="relative">
       <input
@@ -305,6 +364,8 @@ const AccountSecurityTab = ({ token, user }) => {
       </div>
     );
   };
+
+  const deleteReady = deleteConfirm === "delete my account";
 
   return (
     <div className="space-y-8">
@@ -482,6 +543,62 @@ const AccountSecurityTab = ({ token, user }) => {
             </Button>
           </form>
         )}
+      </div>
+
+      {/* Download My Data */}
+      <div className="bg-recipzee-card border border-recipzee-border rounded-xl p-6">
+        <div className="flex items-center gap-3 mb-2">
+          <Download className="w-5 h-5 text-recipzee-green" />
+          <h3 className="text-lg font-semibold">Download My Data</h3>
+        </div>
+        <p className="text-sm text-recipzee-subtle mb-4">
+          Download a copy of all your personal data stored on Recipzee — profile, recipes, comments, allergies, shopping lists, and more. Your data will be exported as a JSON file.
+        </p>
+        {exportError && (
+          <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-4">
+            {exportError}
+          </div>
+        )}
+        <Button onClick={handleDownloadData} loading={exportLoading} disabled={exportLoading}>
+          <Download className="w-4 h-4" />
+          {exportLoading ? "Preparing..." : "Download My Data"}
+        </Button>
+      </div>
+
+      {/* Delete Account */}
+      <div className="bg-recipzee-card border border-red-500/20 rounded-xl p-6">
+        <div className="flex items-center gap-3 mb-2">
+          <Trash2 className="w-5 h-5 text-red-400" />
+          <h3 className="text-lg font-semibold text-red-400">Delete My Account</h3>
+        </div>
+        <p className="text-sm text-recipzee-subtle mb-4">
+          Permanently delete your account and all associated data. This action cannot be undone. Your recipes will be removed and your profile will no longer be accessible.
+        </p>
+        <div className="space-y-4">
+          <Field label={`Type "delete my account" to confirm`}>
+            <input
+              type="text"
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              placeholder="delete my account"
+              className={inputClasses}
+            />
+          </Field>
+          {deleteError && (
+            <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+              {deleteError}
+            </div>
+          )}
+          <Button
+            onClick={handleDeleteAccount}
+            loading={deleteLoading}
+            disabled={!deleteReady || deleteLoading}
+            variant="danger"
+          >
+            <Trash2 className="w-4 h-4" />
+            {deleteLoading ? "Deleting..." : "Delete My Account"}
+          </Button>
+        </div>
       </div>
     </div>
   );
