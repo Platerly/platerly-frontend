@@ -166,20 +166,32 @@ export default function IndexedRecipeDetailPage() {
   const thresholdPercent  = nickelData?.thresholdPercent ?? 0
   const nickelIngredients = nickelData?.meals?.[0]?.ingredients ?? []
 
-  const allergenFlags      = allergenData?.allergenFlags ?? []
+  const allergenFlags       = allergenData?.allergenFlags ?? []
   const overallAllergenRisk = allergenData?.overallRiskLevel ?? recipe.allergenSummary?.overallRiskLevel ?? 'Unknown'
-  const flaggedAllergenSet  = new Set(allergenFlags.map(f => f.detail?.toLowerCase()))
 
   // Personalised check: does this recipe contain any of the user's flagged allergens?
   // API returns plain strings e.g. ["nickel", "dairy_lactose"]
   const userAllergenNames  = userAllergens.map(a => (typeof a === 'string' ? a : a.name ?? '').toLowerCase())
   // Each name may be underscore-separated — split into individual terms for matching
   const userAllergenTerms  = userAllergenNames.flatMap(n => n.split('_')).filter(Boolean)
-  const personalHits       = userAllergenNames.filter(name =>
-    name.split('_').some(term => flaggedAllergenSet.has(term))
-  )
-  const isPersonallySafe   = recipe.isAnalysed && personalHits.length === 0
+  const userHasNickel      = userAllergenTerms.includes('nickel')
   const hasPersonalProfile = userAllergens.length > 0
+
+  // Flags relevant to this user's profile — used for both allergen check display and safety summary
+  const personalFlags = hasPersonalProfile && userAllergenTerms.length > 0
+    ? allergenFlags.filter(flag => {
+        const detail = (flag.detail || flag.ingredientName || '').toLowerCase()
+        return userAllergenTerms.some(term => detail.includes(term))
+      })
+    : allergenFlags
+
+  const isPersonallySafe = recipe.isAnalysed && personalFlags.length === 0
+  // Collect the user's allergen names that actually matched something in this recipe
+  const personalHits = userAllergenNames.filter(name =>
+    name.split('_').some(term =>
+      allergenFlags.some(f => (f.detail || f.ingredientName || '').toLowerCase().includes(term))
+    )
+  )
 
   // ── Ingredient pill color map ──────────────────────────────────────────
   // Build name → 'high' | 'medium' map from allergen flags + nickel data,
@@ -197,7 +209,6 @@ export default function IndexedRecipeDetailPage() {
       if (!ingFlagMap[name] || level === 'high') ingFlagMap[name] = level
     })
 
-    const userHasNickel = userAllergenTerms.includes('nickel')
     if (userHasNickel) {
       nickelIngredients.forEach(ing => {
         const name = (ing.name || '').toLowerCase()
@@ -323,7 +334,8 @@ export default function IndexedRecipeDetailPage() {
           {/* ── MIDDLE: Recipzee value-add grid ──────────────────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-            {/* Nickel risk card */}
+            {/* Nickel risk card — only shown when user has nickel in their profile */}
+            {userHasNickel && (
             <Section className={nickelConf.bg}>
               <SectionTitle icon={Flame}>Nickel Load</SectionTitle>
               {!recipe.isAnalysed ? (
@@ -363,6 +375,7 @@ export default function IndexedRecipeDetailPage() {
                 </div>
               )}
             </Section>
+            )}
 
             {/* Allergen summary card */}
             <Section>
@@ -370,13 +383,8 @@ export default function IndexedRecipeDetailPage() {
               {!recipe.isAnalysed ? (
                 <p className="text-sm text-recipzee-muted">Analysis pending.</p>
               ) : (() => {
-                // When user has an allergen profile, only show flags relevant to them
-                const displayFlags = hasPersonalProfile && userAllergenTerms.length > 0
-                  ? allergenFlags.filter(flag => {
-                      const detail = (flag.detail || flag.ingredientName || '').toLowerCase()
-                      return userAllergenTerms.some(term => detail.includes(term))
-                    })
-                  : allergenFlags
+                // personalFlags already computed above: profile-filtered when user has a profile
+                const displayFlags = personalFlags
 
                 if (displayFlags.length === 0) {
                   return (
@@ -447,8 +455,8 @@ export default function IndexedRecipeDetailPage() {
             </Section>
           )}
 
-          {/* ── Ingredient nickel breakdown table ─────────────────────── */}
-          {recipe.isAnalysed && nickelIngredients.length > 0 && (
+          {/* ── Ingredient nickel breakdown table — only for nickel-allergic users ── */}
+          {userHasNickel && recipe.isAnalysed && nickelIngredients.length > 0 && (
             <Section>
               <SectionTitle icon={TrendingUp}>Nickel Breakdown by Ingredient</SectionTitle>
 

@@ -131,10 +131,12 @@ export default function IndexedRecipeCard({
 
         {/* ── Badges row ───────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-1.5">
-          {/* Nickel risk — always visible */}
-          <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${nickelBadge.cls}`}>
-            {nickelBadge.label}
-          </span>
+          {/* Nickel risk — only shown when user has nickel in their allergen profile */}
+          {userAllergenNames.includes('nickel') && (
+            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${nickelBadge.cls}`}>
+              {nickelBadge.label}
+            </span>
+          )}
 
           {/* Cuisine */}
           {recipe.cuisineType && (
