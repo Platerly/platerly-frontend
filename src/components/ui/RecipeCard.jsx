@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, memo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Heart, Repeat2, Wand2, Share2, LinkIcon, Mail, Flame, X, Check } from 'lucide-react'
 import { API_BASE_URL } from '../../utils/api'
@@ -607,4 +607,4 @@ const RecipeCard = ({
   )
 }
 
-export default RecipeCard
+export default memo(RecipeCard)

@@ -82,11 +82,19 @@ const Feed = () => {
 
   const fetchUserAllergies = async () => {
     if (!token) return
+    const cacheKey = 'rz_allergies_v1'
     try {
+      const cached = sessionStorage.getItem(cacheKey)
+      if (cached) {
+        setUserAllergies(JSON.parse(cached))
+        return
+      }
       const res = await apiFetch('/api/Allergy/my-allergies')
       if (res.ok) {
         const data = await res.json()
-        setUserAllergies(Array.isArray(data) ? data.map(n => (n || '').toLowerCase()) : [])
+        const list = Array.isArray(data) ? data.map(n => (n || '').toLowerCase()) : []
+        setUserAllergies(list)
+        sessionStorage.setItem(cacheKey, JSON.stringify(list))
       }
     } catch (err) {
       logger.error('Failed to fetch allergies', err)
