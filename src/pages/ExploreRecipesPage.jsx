@@ -156,13 +156,13 @@ export default function ExploreRecipesPage() {
   // ── Fetch user's allergens (cached for the session) ───────────────────
   useEffect(() => {
     if (!authed || !token) return
-    const cacheKey = 'rz_allergens_explore_v2'
+    const cacheKey = 'rz_allergens_explore_v3'
     const cached = sessionStorage.getItem(cacheKey)
     if (cached) {
       try {
         const list = JSON.parse(cached)
         setAllAllergens(list)
-        setExcludedAllergens(list)
+        // Do NOT auto-select — user controls what to exclude
         return
       } catch { /* ignore, refetch */ }
     }
@@ -173,7 +173,7 @@ export default function ExploreRecipesPage() {
       .then(data => {
         const list = Array.isArray(data) ? data : (data?.items ?? [])
         setAllAllergens(list)
-        setExcludedAllergens(list)
+        // Do NOT auto-select — user controls what to exclude
         sessionStorage.setItem(cacheKey, JSON.stringify(list))
       })
       .catch(err => logger.warn('Failed to load user allergens', err))

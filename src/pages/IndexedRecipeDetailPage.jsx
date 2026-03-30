@@ -171,10 +171,54 @@ export default function IndexedRecipeDetailPage() {
   const flaggedAllergenSet  = new Set(allergenFlags.map(f => f.detail?.toLowerCase()))
 
   // Personalised check: does this recipe contain any of the user's flagged allergens?
-  const userAllergenNames  = userAllergens.map(a => a.name?.toLowerCase())
-  const personalHits       = userAllergenNames.filter(name => flaggedAllergenSet.has(name))
+  // API returns plain strings e.g. ["nickel", "dairy_lactose"]
+  const userAllergenNames  = userAllergens.map(a => (typeof a === 'string' ? a : a.name ?? '').toLowerCase())
+  // Each name may be underscore-separated — split into individual terms for matching
+  const userAllergenTerms  = userAllergenNames.flatMap(n => n.split('_')).filter(Boolean)
+  const personalHits       = userAllergenNames.filter(name =>
+    name.split('_').some(term => flaggedAllergenSet.has(term))
+  )
   const isPersonallySafe   = recipe.isAnalysed && personalHits.length === 0
   const hasPersonalProfile = userAllergens.length > 0
+
+  // ── Ingredient pill color map ──────────────────────────────────────────
+  // Build name → 'high' | 'medium' map from allergen flags + nickel data,
+  // filtered to the user's allergen profile so only relevant warnings show.
+  const ingFlagMap = {}
+
+  if (recipe.isAnalysed && userAllergenTerms.length > 0) {
+    allergenFlags.forEach(flag => {
+      const name = (flag.ingredientName || '').toLowerCase()
+      if (!name) return
+      const detail = (flag.detail || '').toLowerCase()
+      const relevant = userAllergenTerms.some(term => detail.includes(term))
+      if (!relevant) return
+      const level = ['high', 'critical'].includes((flag.severity || '').toLowerCase()) ? 'high' : 'medium'
+      if (!ingFlagMap[name] || level === 'high') ingFlagMap[name] = level
+    })
+
+    const userHasNickel = userAllergenTerms.includes('nickel')
+    if (userHasNickel) {
+      nickelIngredients.forEach(ing => {
+        const name = (ing.name || '').toLowerCase()
+        if (!name) return
+        if (ing.nickelClassification === 'High') ingFlagMap[name] = 'high'
+        else if (ing.nickelClassification === 'Moderate' && ingFlagMap[name] !== 'high') ingFlagMap[name] = 'medium'
+      })
+    }
+  }
+
+  function getIngColor(ingString) {
+    const lower = ingString.toLowerCase()
+    let best = null
+    for (const [name, level] of Object.entries(ingFlagMap)) {
+      if (lower.includes(name)) {
+        if (level === 'high') return 'high'
+        best = 'medium'
+      }
+    }
+    return best
+  }
 
   const canonicalUrl = `https://recipzee.com/recipes/${recipeId}-${slugify(recipe.title)}`
 
@@ -236,11 +280,11 @@ export default function IndexedRecipeDetailPage() {
                 )}
               </div>
               <h1 className="text-2xl font-bold text-recipzee-text leading-snug">{recipe.title}</h1>
-              {(recipe.prepTimeMinutes || recipe.cookTimeMinutes) && (
+              {(recipe.prepTimeMinutes > 0 || recipe.cookTimeMinutes > 0) && (
                 <div className="flex items-center gap-3 text-sm text-recipzee-muted">
                   <Clock className="w-4 h-4" />
-                  {recipe.prepTimeMinutes && <span>{recipe.prepTimeMinutes}m prep</span>}
-                  {recipe.cookTimeMinutes && <span>{recipe.cookTimeMinutes}m cook</span>}
+                  {recipe.prepTimeMinutes > 0 && <span>{recipe.prepTimeMinutes}m prep</span>}
+                  {recipe.cookTimeMinutes > 0 && <span>{recipe.cookTimeMinutes}m cook</span>}
                 </div>
               )}
             </div>
@@ -325,36 +369,57 @@ export default function IndexedRecipeDetailPage() {
               <SectionTitle icon={AlertTriangle}>Allergen Check</SectionTitle>
               {!recipe.isAnalysed ? (
                 <p className="text-sm text-recipzee-muted">Analysis pending.</p>
-              ) : allergenFlags.length === 0 ? (
-                <div className="flex items-center gap-2 text-emerald-400">
-                  <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-                  <p className="text-sm font-medium">No allergens detected in this recipe</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="flex flex-wrap gap-2">
-                    {allergenFlags.slice(0, 8).map((flag, i) => (
-                      <span
-                        key={i}
-                        className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs ${ALLERGEN_SEVERITY[flag.severity] ?? 'bg-white/5 border-white/10 text-recipzee-muted'}`}
-                      >
-                        <AlertTriangle className="w-3 h-3" />
-                        {flag.detail || flag.ingredientName}
-                      </span>
-                    ))}
-                    {allergenFlags.length > 8 && (
-                      <span className="text-xs text-recipzee-muted self-center">+{allergenFlags.length - 8} more</span>
+              ) : (() => {
+                // When user has an allergen profile, only show flags relevant to them
+                const displayFlags = hasPersonalProfile && userAllergenTerms.length > 0
+                  ? allergenFlags.filter(flag => {
+                      const detail = (flag.detail || flag.ingredientName || '').toLowerCase()
+                      return userAllergenTerms.some(term => detail.includes(term))
+                    })
+                  : allergenFlags
+
+                if (displayFlags.length === 0) {
+                  return (
+                    <div className="flex items-center gap-2 text-emerald-400">
+                      <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+                      <p className="text-sm font-medium">
+                        {hasPersonalProfile
+                          ? 'No allergens matching your profile detected'
+                          : 'No allergens detected in this recipe'}
+                      </p>
+                    </div>
+                  )
+                }
+
+                return (
+                  <div className="space-y-2">
+                    {hasPersonalProfile && (
+                      <p className="text-xs text-recipzee-muted mb-2">Showing allergens relevant to your profile</p>
                     )}
+                    <div className="flex flex-wrap gap-2">
+                      {displayFlags.slice(0, 8).map((flag, i) => (
+                        <span
+                          key={i}
+                          className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs ${ALLERGEN_SEVERITY[flag.severity] ?? 'bg-white/5 border-white/10 text-recipzee-muted'}`}
+                        >
+                          <AlertTriangle className="w-3 h-3" />
+                          {flag.detail || flag.ingredientName}
+                        </span>
+                      ))}
+                      {displayFlags.length > 8 && (
+                        <span className="text-xs text-recipzee-muted self-center">+{displayFlags.length - 8} more</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-recipzee-muted">
+                      Overall risk: <span className={
+                        overallAllergenRisk === 'High' ? 'text-red-400' :
+                        overallAllergenRisk === 'Medium' ? 'text-orange-400' :
+                        overallAllergenRisk === 'Low' ? 'text-amber-400' : 'text-emerald-400'
+                      }>{overallAllergenRisk}</span>
+                    </p>
                   </div>
-                  <p className="text-xs text-recipzee-muted">
-                    Overall risk: <span className={
-                      overallAllergenRisk === 'High' ? 'text-red-400' :
-                      overallAllergenRisk === 'Medium' ? 'text-orange-400' :
-                      overallAllergenRisk === 'Low' ? 'text-amber-400' : 'text-emerald-400'
-                    }>{overallAllergenRisk}</span>
-                  </p>
-                </div>
-              )}
+                )
+              })()}
             </Section>
 
           </div>
@@ -445,13 +510,21 @@ export default function IndexedRecipeDetailPage() {
           <Section>
             <SectionTitle icon={ChefHat}>Ingredients</SectionTitle>
             {recipe.ingredients?.length > 0 ? (
-              <ul className="space-y-2">
-                {recipe.ingredients.map((ing, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-recipzee-text/90">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-recipzee-green flex-shrink-0" />
-                    {ing}
-                  </li>
-                ))}
+              <ul className="flex flex-wrap gap-2">
+                {recipe.ingredients.map((ing, i) => {
+                  const color = getIngColor(ing)
+                  const cls = color === 'high'
+                    ? 'border-red-500/40 bg-red-900/20 text-red-200'
+                    : color === 'medium'
+                    ? 'border-amber-500/40 bg-amber-900/20 text-amber-200'
+                    : 'border-recipzee-border/60 bg-white/5 text-recipzee-text/80'
+                  return (
+                    <li key={i} className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm ${cls}`}>
+                      {color && <AlertTriangle className="w-3 h-3 flex-shrink-0" />}
+                      {ing}
+                    </li>
+                  )
+                })}
               </ul>
             ) : (
               <p className="text-sm text-recipzee-muted">No ingredients data available.</p>
