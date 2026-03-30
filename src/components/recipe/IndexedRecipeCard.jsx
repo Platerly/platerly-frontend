@@ -36,12 +36,13 @@ function RecipePlaceholder({ cuisineType, title }) {
 // ── Main card ──────────────────────────────────────────────────────────────
 export default function IndexedRecipeCard({
   recipe,
-  atLimit       = false,
-  isAuthenticated = false,
-  isPremium     = false,
-  isOnTrial     = false,
-  isSaved       = false,
+  atLimit          = false,
+  isAuthenticated  = false,
+  isPremium        = false,
+  isOnTrial        = false,
+  isSaved          = false,
   onSave,
+  userAllergenNames = [],   // e.g. ['nickel', 'dairy_lactose']
 }) {
   const navigate = useNavigate()
   const [imgError, setImgError] = useState(false)
@@ -58,7 +59,20 @@ export default function IndexedRecipeCard({
   const visibleIngs   = ingExpanded ? ingredients : ingredients.slice(0, MAX_VISIBLE)
 
   const canSeeAllergenDetail = isPremium || isOnTrial || !atLimit
-  const flaggedAllergens     = recipe.allergenSummary?.flaggedAllergens ?? []
+  const allFlaggedAllergens  = recipe.allergenSummary?.flaggedAllergens ?? []
+
+  // If the user has an allergen profile, show only allergens that match it.
+  // Each user allergen name may be underscore-separated (e.g. "dairy_lactose")
+  // so we split on '_' and check each term against the detail string.
+  const flaggedAllergens = userAllergenNames.length > 0
+    ? allFlaggedAllergens.filter(detail => {
+        const detailLower = detail.toLowerCase()
+        return userAllergenNames.some(allergen =>
+          allergen.split('_').some(term => detailLower.includes(term))
+        )
+      })
+    : allFlaggedAllergens
+
   const hasFlaggedAllergens  = flaggedAllergens.length > 0
 
   function handleViewRecipe(e) {

@@ -101,16 +101,16 @@ function AllergenMultiSelect({ allAllergens, selected, onChange }) {
           ) : (
             allAllergens.map((a) => (
               <label
-                key={a.id ?? a.name}
+                key={a}
                 className="flex items-center gap-3 px-4 py-2.5 hover:bg-recipzee-light cursor-pointer text-sm text-recipzee-text"
               >
                 <input
                   type="checkbox"
-                  checked={selected.includes(a.name)}
-                  onChange={() => toggle(a.name)}
+                  checked={selected.includes(a)}
+                  onChange={() => toggle(a)}
                   className="accent-recipzee-green w-4 h-4 flex-shrink-0"
                 />
-                <span className="truncate">{a.name}</span>
+                <span className="truncate">{a}</span>
               </label>
             ))
           )}
@@ -156,13 +156,13 @@ export default function ExploreRecipesPage() {
   // ── Fetch user's allergens (cached for the session) ───────────────────
   useEffect(() => {
     if (!authed || !token) return
-    const cacheKey = 'rz_allergens_explore_v1'
+    const cacheKey = 'rz_allergens_explore_v2'
     const cached = sessionStorage.getItem(cacheKey)
     if (cached) {
       try {
         const list = JSON.parse(cached)
         setAllAllergens(list)
-        setExcludedAllergens(list.map(a => a.name))
+        setExcludedAllergens(list)
         return
       } catch { /* ignore, refetch */ }
     }
@@ -173,7 +173,7 @@ export default function ExploreRecipesPage() {
       .then(data => {
         const list = Array.isArray(data) ? data : (data?.items ?? [])
         setAllAllergens(list)
-        setExcludedAllergens(list.map(a => a.name))
+        setExcludedAllergens(list)
         sessionStorage.setItem(cacheKey, JSON.stringify(list))
       })
       .catch(err => logger.warn('Failed to load user allergens', err))
@@ -415,6 +415,7 @@ export default function ExploreRecipesPage() {
                   isOnTrial={isOnTrial}
                   isSaved={savedIds.has(recipe.id)}
                   onSave={handleSave}
+                  userAllergenNames={allAllergens}
                 />
               ))}
             </div>
