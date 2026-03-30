@@ -334,7 +334,7 @@ const Feed = () => {
           <div className="rounded-xl border border-recipzee-light bg-recipzee-card p-6 text-center">
             <p className="text-recipzee-subtle">{error}</p>
             <button
-              onClick={fetchFeed}
+              onClick={() => fetchFeed()}
               className="mt-4 inline-flex items-center rounded-md bg-recipzee-green text-recipzee-dark px-4 py-2 hover:opacity-90"
             >
               Try again
