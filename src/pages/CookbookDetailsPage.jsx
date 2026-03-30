@@ -254,6 +254,7 @@ const CookbookDetailsPage = () => {
 
   // reorder state (grid, drag & drop)
   const [recipes, setRecipes] = useState([]); // normalized from cookbook.items
+  const [indexedRecipes, setIndexedRecipes] = useState([]); // from cookbook.indexedItems
   const [dragIndex, setDragIndex] = useState(-1);
   const [orderDirty, setOrderDirty] = useState(false);
   const [savingOrder, setSavingOrder] = useState(false);
@@ -747,6 +748,15 @@ const CookbookDetailsPage = () => {
           note: r.note,
         }));
         setRecipes(normalized);
+        setIndexedRecipes((data?.indexedItems || []).map((r) => ({
+          id: r.recipeIndexId,
+          title: r.title,
+          imageUrl: r.thumbnailUrl,
+          sourceDomain: r.sourceDomain,
+          sourceUrl: r.sourceUrl,
+          savedAt: r.savedAt,
+          note: r.note,
+        })));
         setOrderDirty(false);
       } catch (e) {
         if (e?.name === "AbortError" || e?.name === "CanceledError") return;
@@ -897,6 +907,20 @@ const CookbookDetailsPage = () => {
       scheduleAutoSave(n);
       return n;
     });
+  };
+
+  const handleIndexedRecipeRemove = async (recipeIndexId) => {
+    try {
+      const res = await apiFetch(
+        `${API_BASE_URL}/api/Cookbook/${id}/indexed-recipes/${recipeIndexId}`,
+        { method: 'DELETE', headers: authHeaders }
+      );
+      if (!res.ok) throw new Error(`Failed to remove (${res.status})`);
+      setIndexedRecipes((prev) => prev.filter((r) => r.id !== recipeIndexId));
+    } catch (err) {
+      setInlineMsg(getErrorText(err, 'Failed to remove recipe from cookbook.'));
+      setTimeout(() => setInlineMsg(''), 3000);
+    }
   };
 
   /* --------- Drag & Drop ---------- */
@@ -1490,7 +1514,7 @@ const CookbookDetailsPage = () => {
 
       {/* Recipes grid with Drag & Drop (owner-only handles) */}
       <Section
-        title={`Recipes (${recipes.length})`}
+        title={`Recipes (${recipes.length + indexedRecipes.length})`}
         right={
           isOwner ? (
             <div className="text-xs text-recipzee-subtle">
@@ -1503,7 +1527,7 @@ const CookbookDetailsPage = () => {
           ) : null
         }
       >
-        {recipes.length === 0 ? (
+        {recipes.length === 0 && indexedRecipes.length === 0 ? (
           <p className="text-recipzee-subtle">No recipes saved in this cookbook yet.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -1609,6 +1633,83 @@ const CookbookDetailsPage = () => {
                     Add note
                   </button>
                 ) : null}
+              </div>
+            ))}
+
+            {/* Indexed (web-sourced) recipes — always show source attribution */}
+            {indexedRecipes.map((r) => (
+              <div
+                key={r.id}
+                className="group relative rounded-2xl border border-recipzee-border bg-recipzee-card overflow-hidden transition-all"
+              >
+                {/* Thumbnail */}
+                <a
+                  href={`/recipes/${r.id}`}
+                  className="block relative w-full aspect-[4/3] bg-recipzee-light cursor-pointer overflow-hidden"
+                >
+                  {r.imageUrl ? (
+                    <img
+                      src={r.imageUrl}
+                      alt={r.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-recipzee-subtle text-sm">No image</div>
+                  )}
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-transparent" />
+                </a>
+
+                {/* Remove button (owner only) */}
+                {isOwner && (
+                  <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ConfirmDialog
+                      title="Remove this recipe?"
+                      description="It will be removed from this cookbook."
+                      confirmLabel="Remove"
+                      cancelLabel="Cancel"
+                      tone="danger"
+                      onConfirm={() => handleIndexedRecipeRemove(r.id)}
+                      trigger={
+                        <button
+                          type="button"
+                          onClick={(e) => e.stopPropagation()}
+                          title="Remove from cookbook"
+                          aria-label="Remove from cookbook"
+                          className="inline-flex items-center justify-center rounded-xl h-9 w-9 min-h-[44px] min-w-[44px] bg-red-600/90 text-white hover:bg-red-600 backdrop-blur border border-white/10 shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      }
+                    />
+                  </div>
+                )}
+
+                {/* Content */}
+                <div className="p-4">
+                  <a
+                    href={`/recipes/${r.id}`}
+                    className="block text-base font-semibold text-recipzee-text mb-2 line-clamp-2 hover:text-recipzee-green transition-colors"
+                  >
+                    {r.title}
+                  </a>
+                  {/* Source attribution — always visible, non-removable */}
+                  <div className="flex items-center gap-1.5 mb-3">
+                    <Globe className="w-3.5 h-3.5 text-recipzee-subtle shrink-0" />
+                    <span className="text-xs text-recipzee-subtle truncate">From: {r.sourceDomain}</span>
+                  </div>
+                  <a
+                    href={r.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-recipzee-green hover:text-recipzee-green/80 transition-colors"
+                  >
+                    <Globe className="w-3 h-3" />
+                    View full recipe at {r.sourceDomain}
+                  </a>
+                </div>
               </div>
             ))}
           </div>

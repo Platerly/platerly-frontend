@@ -76,6 +76,7 @@ const RefundsPage = lazy(() => import('../pages/public/RefundsPage'))
 const ContactPage = lazy(() => import('../pages/public/ContactPage'))
 const ApiPage = lazy(() => import('../pages/public/ApiPage'))
 const RoadmapPage = lazy(() => import('../pages/public/RoadmapPage'))
+const BotPage = lazy(() => import('../pages/public/BotPage'))
 const IngredientsPage = lazy(() => import('../pages/public/IngredientsPage'))
 const IngredientDetailPage = lazy(() => import('../pages/public/IngredientDetailPage'))
 const NotFoundPage = lazy(() => import('../pages/public/NotFoundPage'))
@@ -154,6 +155,7 @@ const AppRoutes = () => {
     { path: '/contact', element: withSuspense(ContactPage) },
     { path: '/api', element: withSuspense(ApiPage) },
     { path: '/roadmap', element: withSuspense(RoadmapPage) },
+    { path: '/bot', element: withSuspense(BotPage) },
     { path: '/ingredients', element: withSuspense(IngredientsPage) },
     { path: '/ingredients/:slug', element: withSuspense(IngredientDetailPage) },
 

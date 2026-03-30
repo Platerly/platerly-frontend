@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { API_BASE_URL } from "../../utils/api";
+import RecipeIndexPanel from "./RecipeIndexPanel";
 
 const AdminDashboard = () => {
   const { token, user } = useAuth();
@@ -113,6 +114,9 @@ const AdminDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Recipe Index Engine panel */}
+      <RecipeIndexPanel token={token} />
 
       {/* Role Info */}
       <div className="mt-6 bg-gray-50 rounded-lg p-4">
