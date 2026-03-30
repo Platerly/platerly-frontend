@@ -1,10 +1,18 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { CheckCircle2, Clock, Sparkles, ArrowRight, Bell } from 'lucide-react'
+import { CheckCircle2, Clock, Sparkles, ArrowRight, Bell, PackageCheck } from 'lucide-react'
 
 // ── Status badge configs ──────────────────────────────────────────────────────
 const STATUS = {
+  shipped: {
+    label: 'Shipped',
+    icon: PackageCheck,
+    badge: 'bg-blue-500/15 text-blue-400 border border-blue-500/30',
+    bar: 'bg-blue-400',
+    glow: 'shadow-[0_0_24px_rgba(96,165,250,0.06)]',
+    border: 'border-blue-500/15',
+  },
   inProgress: {
     label: 'In Progress',
     icon: Clock,
@@ -33,6 +41,31 @@ const STATUS = {
 
 const ROADMAP = [
   {
+    status: 'shipped',
+    items: [
+      {
+        title: 'Halal-verified recipe web indexer',
+        desc: 'Recipzee Bot automatically crawls top food blogs, parses structured recipe data, screens every recipe through the Halal Gate, and surfaces results in Explore Recipes — with full source attribution and robots.txt compliance.',
+        link: '/bot',
+        linkLabel: 'How the bot works →',
+      },
+      {
+        title: 'Ingredient substitution engine',
+        desc: 'Community-sourced ingredient alternatives with confidence scores, conversion ratios, dietary tags, and up/down voting — backed by the Recipzee substitution database.',
+      },
+      {
+        title: 'Premium tier + 7-day free trial',
+        desc: 'Full premium access on sign-up — unlimited allergen scans, recipe remixing, and the "hide my allergens" feed filter. Free accounts get 3 scans per week.',
+      },
+      {
+        title: 'B2B API (early access)',
+        desc: 'Allergen analytics, nickel load data, substitution intelligence, and menu optimisation endpoints — available now for B2B partners.',
+        link: '/api',
+        linkLabel: 'View API docs →',
+      },
+    ],
+  },
+  {
     status: 'inProgress',
     items: [
       {
@@ -53,6 +86,10 @@ const ROADMAP = [
     status: 'comingSoon',
     items: [
       {
+        title: 'Ingredient substitution widget',
+        desc: 'Click any ingredient pill on a recipe page to instantly see community-suggested alternatives — with confidence scores, conversion ratios, and one-tap voting.',
+      },
+      {
         title: 'iOS mobile app',
         eta: 'Late 2026 – Early 2027',
         desc: 'Native app with offline recipe access, camera-based barcode scanning, and push notifications for allergen alerts.',
@@ -64,12 +101,6 @@ const ROADMAP = [
       {
         title: 'Expanded dietary restriction support',
         desc: 'Beyond the FDA Big 9 — structured support for low-FODMAP, low-histamine, AIP, and elimination diets.',
-      },
-      {
-        title: 'B2B API portal',
-        desc: 'Self-serve API key management, usage dashboards, and full documentation at recipzee.com/api.',
-        link: '/api',
-        linkLabel: 'Learn more →',
       },
     ],
   },
@@ -135,11 +166,13 @@ const SectionHeader = ({ status, count }) => {
   return (
     <div className="flex items-center gap-3 mb-5">
       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+        status === 'shipped'     ? 'bg-blue-500/20' :
         status === 'inProgress' ? 'bg-recipzee-green/20' :
         status === 'comingSoon' ? 'bg-recipzee-yellow/20' :
         'bg-white/5'
       }`}>
         <Icon className={`w-4 h-4 ${
+          status === 'shipped'     ? 'text-blue-400' :
           status === 'inProgress' ? 'text-recipzee-green' :
           status === 'comingSoon' ? 'text-recipzee-yellow' :
           'text-recipzee-muted'
@@ -201,7 +234,7 @@ export default function RoadmapPage() {
           </p>
 
           <p className="mt-3 text-xs text-recipzee-muted/60">
-            Last updated March 2026
+            Last updated March 2026 · <span className="text-blue-400">4 features shipped</span>
           </p>
         </div>
 
