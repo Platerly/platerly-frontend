@@ -7,7 +7,7 @@ const NICKEL_BADGE = {
   SAFE:     { label: 'Low Nickel',    cls: 'bg-emerald-900/50 border-emerald-500/50 text-emerald-200' },
   MODERATE: { label: 'Mod. Nickel',   cls: 'bg-amber-900/50  border-amber-500/50  text-amber-200'   },
   EXCEEDED: { label: 'High Nickel',   cls: 'bg-red-900/50    border-red-500/50    text-red-200'     },
-  Unknown:  { label: 'Nickel TBD',    cls: 'bg-white/5       border-white/10      text-recipzee-muted' },
+  Unknown:  { label: 'Nickel N/A',    cls: 'bg-white/5       border-white/10      text-recipzee-muted' },
 }
 
 const ALLERGEN_RISK = {
@@ -136,12 +136,12 @@ export default function IndexedRecipeCard({
         </div>
 
         {/* Prep time */}
-        {(recipe.prepTimeMinutes || recipe.cookTimeMinutes) && (
+        {(recipe.prepTimeMinutes > 0 || recipe.cookTimeMinutes > 0) && (
           <div className="flex items-center gap-1 text-xs text-recipzee-muted">
             <Clock className="w-3 h-3" />
-            {recipe.prepTimeMinutes && <span>{recipe.prepTimeMinutes}m prep</span>}
-            {recipe.prepTimeMinutes && recipe.cookTimeMinutes && <span>·</span>}
-            {recipe.cookTimeMinutes && <span>{recipe.cookTimeMinutes}m cook</span>}
+            {recipe.prepTimeMinutes > 0 && <span>{recipe.prepTimeMinutes}m prep</span>}
+            {recipe.prepTimeMinutes > 0 && recipe.cookTimeMinutes > 0 && <span>·</span>}
+            {recipe.cookTimeMinutes > 0 && <span>{recipe.cookTimeMinutes}m cook</span>}
           </div>
         )}
 

@@ -28,7 +28,7 @@ const NICKEL_RISK = {
   SAFE:     { label: 'Low Risk',  color: 'text-emerald-400', bar: 'bg-emerald-500', border: 'border-emerald-500/40', bg: 'bg-emerald-900/20' },
   MODERATE: { label: 'Moderate',  color: 'text-amber-400',   bar: 'bg-amber-500',   border: 'border-amber-500/40',   bg: 'bg-amber-900/20'   },
   EXCEEDED: { label: 'High Risk', color: 'text-red-400',     bar: 'bg-red-500',     border: 'border-red-500/40',     bg: 'bg-red-900/20'     },
-  Unknown:  { label: 'Pending',   color: 'text-recipzee-muted', bar: 'bg-white/20', border: 'border-white/10',       bg: 'bg-white/5'        },
+  Unknown:  { label: 'No Data',   color: 'text-recipzee-muted', bar: 'bg-white/20', border: 'border-white/10',       bg: 'bg-white/5'        },
 }
 
 const ALLERGEN_SEVERITY = {
