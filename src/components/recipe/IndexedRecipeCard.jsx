@@ -217,7 +217,7 @@ export default function IndexedRecipeCard({
         <div className="flex gap-2 pt-2 border-t border-recipzee-border">
           <button
             onClick={e => { e.stopPropagation(); onSave?.(recipe) }}
-            className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition-all ${
+            className={`flex shrink-0 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition-all ${
               isSaved
                 ? 'border-recipzee-green/40 bg-recipzee-green/10 text-recipzee-green'
                 : 'border-recipzee-border bg-white/5 text-recipzee-subtle hover:border-recipzee-green/40 hover:text-recipzee-green'
@@ -230,11 +230,11 @@ export default function IndexedRecipeCard({
 
           <button
             onClick={handleViewRecipe}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-recipzee-border bg-white/5 px-3 py-2 text-xs font-medium text-recipzee-subtle hover:border-recipzee-green/40 hover:text-recipzee-text transition-all"
+            className="flex flex-1 min-w-0 items-center justify-center gap-1.5 rounded-xl border border-recipzee-border bg-white/5 px-3 py-2 text-xs font-medium text-recipzee-subtle hover:border-recipzee-green/40 hover:text-recipzee-text transition-all overflow-hidden"
             title={`View full recipe at ${recipe.sourceDomain}`}
           >
             <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-            <span className="truncate">View at {recipe.sourceDomain} →</span>
+            <span className="truncate">View at {recipe.sourceDomain}</span>
           </button>
         </div>
       </div>
