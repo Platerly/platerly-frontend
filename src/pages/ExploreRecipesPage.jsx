@@ -153,19 +153,16 @@ export default function ExploreRecipesPage() {
   // Debounce ref
   const debounceRef = useRef(null)
 
-  // ── Fetch user's allergens (cached for the session) ───────────────────
+  // ── Clear any stale allergen caches from old versions ─────────────────
+  useEffect(() => {
+    sessionStorage.removeItem('rz_allergens_explore_v1')
+    sessionStorage.removeItem('rz_allergens_explore_v2')
+    sessionStorage.removeItem('rz_allergens_explore_v3')
+  }, [])
+
+  // ── Fetch user's allergens (always fresh — reflects latest profile changes) ──
   useEffect(() => {
     if (!authed || !token) return
-    const cacheKey = 'rz_allergens_explore_v3'
-    const cached = sessionStorage.getItem(cacheKey)
-    if (cached) {
-      try {
-        const list = JSON.parse(cached)
-        setAllAllergens(list)
-        // Do NOT auto-select — user controls what to exclude
-        return
-      } catch { /* ignore, refetch */ }
-    }
     fetch(`${API_BASE_URL}/api/Allergy/my-allergies`, {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -173,8 +170,6 @@ export default function ExploreRecipesPage() {
       .then(data => {
         const list = Array.isArray(data) ? data : (data?.items ?? [])
         setAllAllergens(list)
-        // Do NOT auto-select — user controls what to exclude
-        sessionStorage.setItem(cacheKey, JSON.stringify(list))
       })
       .catch(err => logger.warn('Failed to load user allergens', err))
   }, [authed, token])
