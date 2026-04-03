@@ -129,7 +129,7 @@ const TIERS = [
     icon: Zap,
     accent: 'border-recipzee-green',
     badge: 'Most popular',
-    badgeColor: 'bg-recipzee-green/15 text-recipzee-green border border-recipzee-green/30',
+    badgeColor: 'bg-recipzee-green text-black',
     cta: 'Get started',
     features: [
       'Everything in Starter',
@@ -168,7 +168,7 @@ const TIERS = [
     icon: Microscope,
     accent: 'border-violet-500/40',
     badge: 'Institutional',
-    badgeColor: 'bg-violet-500/15 text-violet-300 border border-violet-500/30',
+    badgeColor: 'bg-violet-500 text-white',
     cta: 'Contact us',
     features: [
       'Everything in Enterprise',
