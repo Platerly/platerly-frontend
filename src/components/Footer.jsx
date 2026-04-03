@@ -75,7 +75,7 @@ const Footer = ({ variant = 'full', className = '' }) => {
             <Link to="/api" className="hover:text-white transition-colors">
               API
             </Link>
-            <a href="https://developer.recipzee.com" className="hover:text-white transition-colors">
+            <a href="https://developer.recipzee.com/developer" className="hover:text-white transition-colors">
               Developers
             </a>
             <Link to="/cookie-policy" className="hover:text-white transition-colors">
