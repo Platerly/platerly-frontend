@@ -15,8 +15,10 @@
  */
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useCookieConsent } from '../context/CookieConsentContext'
 
 const Footer = ({ variant = 'full', className = '' }) => {
+  const { openManage } = useCookieConsent()
   const container =
     variant === 'contained'
       ? 'mx-auto w-full max-w-3xl px-4'
@@ -73,6 +75,15 @@ const Footer = ({ variant = 'full', className = '' }) => {
             <Link to="/api" className="hover:text-white transition-colors">
               API
             </Link>
+            <Link to="/cookie-policy" className="hover:text-white transition-colors">
+              Cookies
+            </Link>
+            <button
+              onClick={openManage}
+              className="hover:text-white transition-colors bg-transparent border-0 p-0 cursor-pointer text-sm text-recipzee-subtle font-inherit"
+            >
+              Manage Cookies
+            </button>
           </nav>
         </div>
       </div>

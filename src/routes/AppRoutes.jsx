@@ -119,6 +119,7 @@ const ResearchPage = lazy(() => import('../pages/public/ResearchPage'))
 const IngredientsPage = lazy(() => import('../pages/public/IngredientsPage'))
 const IngredientDetailPage = lazy(() => import('../pages/public/IngredientDetailPage'))
 const NotFoundPage = lazy(() => import('../pages/public/NotFoundPage'))
+const CookiePolicyPage = lazy(() => import('../pages/public/CookiePolicyPage'))
 
 // B2B pages
 const B2BPricingPage = lazy(() => import('../pages/b2b/B2BPricingPage'))
@@ -201,7 +202,13 @@ const RouteTracker = () => {
   const location = useLocation()
   useEffect(() => {
     if (import.meta.env.VITE_GA_ID && import.meta.env.VITE_ENV === 'production') {
-      ReactGA.send({ hitType: 'pageview', page: location.pathname + location.search })
+      // Only fire pageview if the user has consented to analytics cookies
+      try {
+        const stored = localStorage.getItem('rz_cookie_consent_v1')
+        if (stored && JSON.parse(stored)?.analytics) {
+          ReactGA.send({ hitType: 'pageview', page: location.pathname + location.search })
+        }
+      } catch { /* ignore */ }
     }
   }, [location])
   return null
@@ -232,6 +239,7 @@ const AppRoutes = () => {
     { path: '/roadmap', element: withSuspense(RoadmapPage) },
     { path: '/bot', element: withSuspense(BotPage) },
     { path: '/research', element: withSuspense(ResearchPage) },
+    { path: '/cookie-policy', element: withSuspense(CookiePolicyPage) },
     { path: '/ingredients', element: withSuspense(IngredientsPage) },
     { path: '/ingredients/:slug', element: withSuspense(IngredientDetailPage) },
 

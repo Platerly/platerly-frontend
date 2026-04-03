@@ -36,7 +36,8 @@ import AppRoutes from './routes/AppRoutes'
 import './index.css'
 import { Toaster } from 'react-hot-toast'
 import SoftWallRoot from './components/softwall/SoftWallRoot'
-import ReactGA from "react-ga4";
+import { CookieConsentProvider } from './context/CookieConsentContext'
+import CookieConsentBanner from './components/common/CookieConsentBanner'
 
 // Temporary canonicalization in production: force www
 // Redirects recipzee.com → www.recipzee.com to consolidate SEO authority
@@ -44,13 +45,10 @@ if (import.meta.env.PROD && location.hostname === 'recipzee.com') {
   location.replace(`https://www.recipzee.com${location.pathname}${location.search}${location.hash}`);
 }
 
-
-// Initialize GA only in production when the measurement ID is available
-if (import.meta.env.VITE_GA_ID && import.meta.env.VITE_ENV === "production") {
-  ReactGA.initialize(import.meta.env.VITE_GA_ID);
-  // Fire an initial pageview for the entry URL (SPA — only happens once on load)
-  ReactGA.send("pageview");
-}
+// GA4 and Meta Pixel are now initialised lazily inside CookieConsentContext
+// only when the user has granted the corresponding consent category.
+// Do NOT call ReactGA.initialize() here — doing so would fire tracking
+// before consent is obtained, which violates PIPEDA.
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   // StrictMode intentionally double-invokes certain lifecycle methods in dev
@@ -62,14 +60,20 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <AuthProvider>
         {/* NotificationsProvider depends on AuthContext for the token and authed state */}
         <NotificationsProvider>
-          {/* BrowserRouter scopes history to the component tree below */}
-          <BrowserRouter>
-            <AppRoutes />
-            {/* SoftWallRoot renders outside routes so it can overlay any page */}
-            <SoftWallRoot />
-            {/* Toaster renders toast notifications in a fixed portal overlay */}
-            <Toaster position="top-right" reverseOrder={false} />
-          </BrowserRouter>
+          {/* CookieConsentProvider manages consent state and activates GA4 / Meta Pixel
+              only after the user has accepted the corresponding cookie category */}
+          <CookieConsentProvider>
+            {/* BrowserRouter scopes history to the component tree below */}
+            <BrowserRouter>
+              <AppRoutes />
+              {/* SoftWallRoot renders outside routes so it can overlay any page */}
+              <SoftWallRoot />
+              {/* CookieConsentBanner renders the bottom bar and manage-cookies modal */}
+              <CookieConsentBanner />
+              {/* Toaster renders toast notifications in a fixed portal overlay */}
+              <Toaster position="top-right" reverseOrder={false} />
+            </BrowserRouter>
+          </CookieConsentProvider>
         </NotificationsProvider>
       </AuthProvider>
     </HelmetProvider>
