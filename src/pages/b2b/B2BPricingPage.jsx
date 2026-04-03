@@ -32,8 +32,8 @@ const PLANS = [
     annualPriceLabel: '$4,990',
     annualSavings: 'Save $998',
     description: 'For indie developers and small food-tech teams getting started with allergen data.',
-    priceIdMonthly: 'price_b2b_starter_monthly_placeholder',
-    priceIdAnnual: 'price_b2b_starter_annual_placeholder',
+    priceIdMonthly: 'price_1TI7kPRuXXbuzMDV1HC0lNej',
+    priceIdAnnual: 'price_1TI7lZRuXXbuzMDVMoNrOqIk',
     features: [
       '10,000 API calls / month',
       'Allergen Intelligence (FDA Big 9 + EU 14)',
@@ -63,8 +63,8 @@ const PLANS = [
     annualPriceLabel: '$12,990',
     annualSavings: 'Save $2,598',
     description: 'For growing food-tech companies that need richer analytics and higher throughput.',
-    priceIdMonthly: 'price_b2b_professional_monthly_placeholder',
-    priceIdAnnual: 'price_b2b_professional_annual_placeholder',
+    priceIdMonthly: 'price_1TI7mrRuXXbuzMDVCC1SZszi',
+    priceIdAnnual: 'price_1TI7nVRuXXbuzMDVxyX3Zh69',
     features: [
       '100,000 API calls / month',
       'Everything in Starter',
