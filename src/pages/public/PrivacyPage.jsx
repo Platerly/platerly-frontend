@@ -153,28 +153,42 @@ const PrivacyPage = () => (
         </p>
       </div>
 
+      {/* Canadian privacy law */}
+      <div>
+        <h2 className="text-xl font-semibold mb-3">Canadian Privacy Law (PIPEDA)</h2>
+        <p>
+          Recipzee is operated from Canada and complies with the{" "}
+          <em>Personal Information Protection and Electronic Documents Act</em> (PIPEDA) and
+          applicable provincial privacy legislation. We collect, use, and disclose personal
+          information only for purposes that a reasonable person would consider appropriate
+          in the circumstances, with your knowledge and consent where required.
+        </p>
+      </div>
+
       {/* International transfers */}
       <div>
         <h2 className="text-xl font-semibold mb-3">International Data Transfers</h2>
         <p>
-          Recipzee is operated from the United States. If you access the service from another
-          country, your data may be transferred to and processed in the US or other countries
-          where our service providers operate. We rely on appropriate safeguards (including
-          standard contractual clauses where required) for such transfers.
+          Recipzee is operated from Canada. Some of our third-party service providers (including
+          Stripe, Google, Microsoft Azure, and Sentry) may process or store your data outside
+          Canada. We take reasonable contractual and technical measures to ensure that personal
+          information transferred outside Canada receives a comparable level of protection.
         </p>
       </div>
 
       {/* Your rights */}
       <div>
         <h2 className="text-xl font-semibold mb-3">Your Rights</h2>
-        <p className="mb-2">You have the right to:</p>
+        <p className="mb-2">
+          Under PIPEDA and applicable provincial legislation, you have the right to:
+        </p>
         <ul className="list-disc ml-6 space-y-2">
           <li><strong>Access</strong> the personal data we hold about you.</li>
           <li><strong>Correct</strong> inaccurate or incomplete information in your profile.</li>
           <li><strong>Delete</strong> your account and associated personal data.</li>
           <li><strong>Export</strong> a copy of your data (available via account settings — coming soon).</li>
-          <li><strong>Object or restrict</strong> certain processing where permitted by applicable law.</li>
-          <li><strong>Withdraw consent</strong> where we rely on consent as a legal basis.</li>
+          <li><strong>Withdraw consent</strong> at any time, subject to legal or contractual restrictions and reasonable notice.</li>
+          <li><strong>File a complaint</strong> with the Office of the Privacy Commissioner of Canada if you believe your privacy rights have been violated.</li>
         </ul>
         <p className="mt-2">
           To exercise these rights, email{" "}
@@ -231,7 +245,7 @@ const PrivacyPage = () => (
         </p>
       </div>
 
-      <p className="pt-4 text-sm text-recipzee-subtle">Last updated: April 2, 2026</p>
+      <p className="pt-4 text-sm text-recipzee-subtle">Last updated: April 3, 2026</p>
     </section>
   </PublicPage>
 );
