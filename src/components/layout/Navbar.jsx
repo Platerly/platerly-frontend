@@ -1,3 +1,30 @@
+/**
+ * Navbar.jsx — Sticky top navigation bar for Recipzee.
+ *
+ * Layer: Layout.
+ *
+ * Auth-conditional display:
+ *   - Guest:           guestLinks (Home, Explore, Login, Register)
+ *   - Authenticated:   authedLinks (Home/Feed, Explore, Trending, Chefs) + Create CTA + Log Out
+ *
+ * The logo target adjusts to /feed for authed users and /login for guests.
+ * On the landing page (`/`) the nav links and mobile menu button are hidden
+ * so the marketing page can render its own CTA layout.
+ *
+ * Logout flow:
+ *   1. POST /api/Auth/logout — attempts to clear the HttpOnly refresh cookie on
+ *      the server.  Network errors are silently swallowed so logout always
+ *      completes client-side.
+ *   2. `logout()` from AuthContext clears the in-memory token and user state.
+ *   3. Redirect to /login (replace so back-button cannot re-enter authed pages).
+ *
+ * Mobile menu:
+ *   - Toggled by the hamburger / X button (visible only on sm and below).
+ *   - Closes automatically on route change via the `location.pathname` effect.
+ *
+ * Premium badge / scan status are not rendered in Navbar; they appear in
+ * Sidebar and RightColumn to reduce navbar clutter.
+ */
 // src/components/layout/Navbar.jsx
 import React, { useState, useEffect } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'

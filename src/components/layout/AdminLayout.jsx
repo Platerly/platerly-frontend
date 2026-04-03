@@ -1,7 +1,31 @@
+/**
+ * AdminLayout.jsx — Layout wrapper for all /admin/* pages.
+ *
+ * Layer: Layout / admin-only.
+ *
+ * This component is only accessible after passing the RequireAdmin guard.
+ * On mount it:
+ *   - Injects `noindex, nofollow` meta tags so search engines never index admin pages.
+ *   - Sets `window.__PLATERLY_ADMIN_MODE__ = true` which AnalyticsTracker checks
+ *     before firing GA4 hits (admin navigation is excluded from analytics).
+ *
+ * Sidebar navigation:
+ *   - `navItems`       — available to all admin roles (Admin + SuperAdmin).
+ *   - `superAdminItems`— only shown when `isSuperAdmin` is true (User Management,
+ *     Audit Logs).  These routes are also protected by `superAdminOnly` on the
+ *     route level.
+ *
+ * Props:
+ *   @prop {ReactNode} children — The admin page content rendered in the main area.
+ */
 import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
+/**
+ * @param {{ children: ReactNode }} props
+ * @returns {JSX.Element}
+ */
 const AdminLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const location = useLocation();

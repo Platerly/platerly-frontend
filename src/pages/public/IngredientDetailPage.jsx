@@ -1,3 +1,32 @@
+/**
+ * IngredientDetailPage.jsx
+ * Layer: Public / Ingredient detail
+ *
+ * Displays nickel content data and allergen information for a single ingredient,
+ * identified by its URL slug (e.g. /ingredients/spinach).
+ *
+ * Data source: GET /api/public/ingredients/:slug (no auth required)
+ *
+ * Sections displayed:
+ *   - Nickel classification card (LOW / MODERATE / HIGH) with μg/serving,
+ *     confidence level, data-point count, high-variability warning, summary
+ *     text, and preparation note when present.
+ *   - Allergen pills — allergenTypes[] from the API response.
+ *   - Cross-reactivity — co-sensitisation relationships with related allergens.
+ *     This section is subject to a premium gate (see gate logic below).
+ *   - Data source citation with clinical threshold reference.
+ *
+ * Cross-reactivity gate logic:
+ *   - Premium / trial users: always visible (no gate).
+ *   - Free / anonymous users: the FIRST ingredient lookup per browser session
+ *     is shown free (tracked via sessionStorage key "rz_xr_seen"). Subsequent
+ *     lookups in the same session show a blur overlay with an upgrade prompt.
+ *   - The gate is evaluated once per page load via a ref guard (xrInitialised)
+ *     to prevent re-evaluation on auth state changes mid-view.
+ *
+ * Background glow colour is dynamically matched to the nickel classification.
+ * Structured JSON-LD (Article schema) is injected for Google SEO.
+ */
 import React, { useEffect, useState, useRef } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
@@ -12,10 +41,17 @@ import { usePremium } from '../../hooks/usePremium'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const XR_SEEN_KEY = 'rz_xr_seen'     // sessionStorage — tracks first free cross-reactivity view
+// sessionStorage key — presence means the user has already seen the free cross-reactivity preview this session
+const XR_SEEN_KEY = 'rz_xr_seen'
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
+/**
+ * Returns Tailwind class sets for colouring the nickel classification card
+ * based on LOW / MODERATE / HIGH (or unknown).
+ * @param {string|undefined} classification
+ * @returns {{ bg: string, text: string, border: string, dot: string, glow: string }}
+ */
 function nickelColors(classification) {
   switch (classification?.toLowerCase()) {
     case 'low':      return { bg: 'bg-emerald-500/15', text: 'text-emerald-300', border: 'border-emerald-500/30', dot: 'bg-emerald-400', glow: 'shadow-[0_0_30px_rgba(52,211,153,0.12)]' }
@@ -25,6 +61,12 @@ function nickelColors(classification) {
   }
 }
 
+/**
+ * Returns a combined Tailwind class string for the clinical significance badge
+ * inside a cross-reactivity row.
+ * @param {string|undefined} sig — "HIGH" | "MODERATE" | other
+ * @returns {string}
+ */
 function significanceColors(sig) {
   switch (sig?.toUpperCase()) {
     case 'HIGH':     return 'text-red-300 bg-red-500/15 border-red-500/30'
@@ -33,6 +75,12 @@ function significanceColors(sig) {
   }
 }
 
+/**
+ * Converts a nickel confidence level string into a human-readable label and
+ * a Tailwind colour class for display alongside the classification card.
+ * @param {string|undefined} level — "high" | "medium" | "low"
+ * @returns {{ label: string, color: string }}
+ */
 function confidenceLabel(level) {
   switch (level?.toLowerCase()) {
     case 'high':    return { label: 'High confidence', color: 'text-emerald-400' }
@@ -44,6 +92,7 @@ function confidenceLabel(level) {
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
+/** Generic animated placeholder block used during data fetch. */
 const Skeleton = ({ className }) => (
   <div className={`animate-pulse bg-white/8 rounded-xl ${className}`} />
 )
@@ -60,20 +109,24 @@ const LoadingSkeleton = () => (
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 
+/**
+ * @returns {JSX.Element}
+ */
 export default function IngredientDetailPage() {
   const { slug } = useParams()
   const navigate = useNavigate()
   const { authed } = useAuth()
   const { isPremium, isOnTrial } = usePremium()
+  // Both active premium subscribers and users on a free trial get full access
   const hasPremiumAccess = isPremium || isOnTrial
 
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
-  // Cross-reactivity gate: premium always sees it;
-  // free/anon users get it free on their first lookup per session, then gated
+  // xrGated = true means the cross-reactivity section is behind the upgrade blur
   const [xrGated, setXrGated] = useState(false)
+  // Ref prevents re-running the gate check if auth state changes after data loads
   const xrInitialised = useRef(false)
 
   useEffect(() => {
@@ -96,11 +149,13 @@ export default function IngredientDetailPage() {
     return () => { cancelled = true }
   }, [slug])
 
-  // Determine cross-reactivity gate once data loads and auth state is known
+  // Evaluate the cross-reactivity gate exactly once per page view, after data
+  // has loaded and the auth/premium state is known
   useEffect(() => {
     if (!data || xrInitialised.current) return
     xrInitialised.current = true
 
+    // Premium/trial users bypass the gate entirely
     if (hasPremiumAccess) {
       setXrGated(false)
       return
@@ -109,13 +164,15 @@ export default function IngredientDetailPage() {
     try {
       const alreadySeen = sessionStorage.getItem(XR_SEEN_KEY)
       if (alreadySeen) {
+        // Not their first lookup this session — gate the section
         setXrGated(true)
       } else {
-        // First lookup this session — show free, mark as seen
+        // First lookup this session — show free, mark as seen so next visit is gated
         sessionStorage.setItem(XR_SEEN_KEY, '1')
         setXrGated(false)
       }
     } catch {
+      // sessionStorage unavailable (e.g. privacy mode) — default to showing free
       setXrGated(false)
     }
   }, [data, hasPremiumAccess])
@@ -156,7 +213,7 @@ export default function IngredientDetailPage() {
   const confInfo = confidenceLabel(data.nickelConfidenceLevel)
   const hasXR    = data.crossReactivity?.length > 0
 
-  // SEO description
+  // Build a compact meta description from structured data fields for SEO
   const metaDesc = `${data.name} nickel classification: ${data.nickelClassification?.toUpperCase() ?? 'UNKNOWN'}` +
     (data.nickelMicrogramsPerServing ? ` — ${parseFloat(data.nickelMicrogramsPerServing).toFixed(1)} μg per serving` : '') +
     `. ${data.nickelSummary?.slice(0, 120) ?? ''}`
@@ -424,12 +481,19 @@ export default function IngredientDetailPage() {
               {data.dataSourceCitation}{' '}
               Clinical thresholds: LOW &lt;10 μg/serving, MODERATE 10–20 μg/serving, HIGH &gt;20 μg/serving
               (Mislankar &amp; Zirwas 2013, daily threshold 150 μg/day).
-              Not a substitute for professional dietary advice.
+              Not a substitute for professional dietary advice.{' '}
+              <Link
+                to="/research"
+                className="inline-flex items-center gap-1 text-recipzee-muted hover:text-recipzee-text transition-colors underline-offset-2 underline"
+              >
+                View research sources
+              </Link>
+              {' · '}
               <a
                 href="https://www.recipzee.com/disclaimer"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 ml-1 text-recipzee-muted hover:text-recipzee-text transition-colors underline-offset-2 underline"
+                className="inline-flex items-center gap-1 text-recipzee-muted hover:text-recipzee-text transition-colors underline-offset-2 underline"
               >
                 Full disclaimer <ExternalLink className="w-3 h-3" />
               </a>

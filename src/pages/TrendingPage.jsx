@@ -1,3 +1,20 @@
+/**
+ * TrendingPage
+ *
+ * Layer: Public trending recipes leaderboard.
+ * Route: /trending
+ *
+ * What this page does:
+ *  - Fetches GET /api/Recipe/trending (supports optional region, timeWindow, recipeType filters)
+ *  - Top 3 recipes get premium FeaturedRecipeCard treatment (Gold/Silver/Bronze styling)
+ *  - Remaining recipes use TrendingRecipeCard with rank number and trend delta indicators
+ *  - TrendIndicator shows +N / -N rank change arrows based on delta from previous period
+ *  - Filters update URL query params and re-fetch
+ *
+ * State managed:
+ *  - recipes, loading, error — API data
+ *  - region, timeWindow, recipeType — filter state
+ */
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'

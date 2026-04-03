@@ -9,9 +9,21 @@ import logger from "../utils/logger";
 
 /**
  * VerifyEmail
- * - Premium platerly styling with gradient orbs
- * - Accessible: aria-live regions, focus-visible rings
- * - Mobile-first layout with safe area padding
+ *
+ * Layer: Public email verification landing page.
+ * Route: /verify-email?token=<jwt>
+ *
+ * Flow:
+ *  1. User clicks the verification link from the registration welcome email
+ *  2. Token is extracted from ?token= query param
+ *  3. GET /api/User/verify-email?token=… is called once (guarded by hasVerified ref
+ *     to prevent double-verify in React StrictMode double-invocation)
+ *  4. On 200: refreshes AuthContext user object from /api/User/me, then navigates
+ *     to /feed after 1.4 s (gives the user time to read the success message)
+ *  5. On error: shows retry options (resend link or go home)
+ *
+ * Styling: premium Platerly dark theme, gradient orbs
+ * A11y: aria-live polite status region so screen readers announce verification outcome
  */
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();

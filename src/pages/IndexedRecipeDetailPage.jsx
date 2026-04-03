@@ -1,3 +1,29 @@
+/**
+ * IndexedRecipeDetailPage
+ *
+ * Layer: Public-facing SEO page (no auth required to view; auth enhances the experience)
+ * Route: /recipes/:idSlug  (idSlug = "<uuid>-<url-friendly-title>")
+ *
+ * What this page does:
+ *  - Displays an externally-sourced, halal-verified recipe from the Recipzee index
+ *    (sourced by the backend crawler, NOT user-created recipes — see RecipeDetailsPage for those)
+ *  - Shows allergen analysis and nickel load derived from the backend analysis pipeline
+ *  - Personalises the display to the authenticated user's allergen profile
+ *  - Gates the nickel per-ingredient breakdown table behind the scan quota (premium/trial bypass)
+ *
+ * State managed:
+ *  - recipe, nickelData, allergenData — fetched from public API
+ *  - userAllergens — fetched for logged-in users; drives all personalisation
+ *  - saveOpen / isSaved — cookbook save modal
+ *
+ * Tier logic:
+ *  - canSeeDetail = isPremium || isOnTrial || !atLimit
+ *    Free users who have hit their weekly scan limit see the nickel breakdown blurred
+ *  - Nickel Load section and Nickel Breakdown table are hidden entirely when `userHasNickel`
+ *    is false (nickel is only relevant to users who flagged it in their allergen profile)
+ *
+ * SEO: Helmet sets canonical URL, OG tags, and JSON-LD Recipe schema
+ */
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
@@ -82,6 +108,7 @@ function DetailSkeleton() {
 }
 
 // ── Main page ──────────────────────────────────────────────────────────────
+/** @returns {JSX.Element} */
 export default function IndexedRecipeDetailPage() {
   const { idSlug } = useParams()
   const navigate   = useNavigate()
@@ -137,6 +164,8 @@ export default function IndexedRecipeDetailPage() {
       .catch(() => {})
   }, [authed, token])
 
+  // Premium and trial users always have full access; free users are allowed access
+  // as long as they haven't hit their weekly scan quota.
   const canSeeDetail = isPremium || isOnTrial || !atLimit
 
   // ── 404 ───────────────────────────────────────────────────────────────
@@ -170,23 +199,37 @@ export default function IndexedRecipeDetailPage() {
   const overallAllergenRisk = allergenData?.overallRiskLevel ?? recipe.allergenSummary?.overallRiskLevel ?? 'Unknown'
 
   // Personalised check: does this recipe contain any of the user's flagged allergens?
-  // API returns plain strings e.g. ["nickel", "dairy_lactose"]
+  // The API returns plain lowercase strings e.g. ["nickel", "dairy_lactose"] (not objects).
   const userAllergenNames  = userAllergens.map(a => (typeof a === 'string' ? a : a.name ?? '').toLowerCase())
-  // Each name may be underscore-separated — split into individual terms for matching
+
+  // Allergen names may be underscore-separated compound names (e.g. "dairy_lactose").
+  // Splitting on '_' produces individual match terms so that "dairy_lactose" generates
+  // both "dairy" and "lactose" — enabling substring matching against flag detail strings.
   const userAllergenTerms  = userAllergenNames.flatMap(n => n.split('_')).filter(Boolean)
+
+  // Gate: show the Nickel Load section and Nickel Breakdown table only when the user
+  // has explicitly flagged nickel as one of their allergens.
   const userHasNickel      = userAllergenTerms.includes('nickel')
   const hasPersonalProfile = userAllergens.length > 0
 
-  // Flags relevant to this user's profile — used for both allergen check display and safety summary
+  // Filter the recipe's full allergen flag list down to only flags that mention at least
+  // one of the user's allergen terms.  Uses `.includes()` substring matching — this is
+  // intentional.  A previous version used Set.has() (exact match) which missed compound
+  // names like "dairy_lactose" containing "dairy" and "lactose" as substrings.
+  // When the user has no profile we fall back to showing all flags.
   const personalFlags = hasPersonalProfile && userAllergenTerms.length > 0
     ? allergenFlags.filter(flag => {
         const detail = (flag.detail || flag.ingredientName || '').toLowerCase()
+        // Note: .includes() not .has() — exact-match set lookup was the previous bug
         return userAllergenTerms.some(term => detail.includes(term))
       })
     : allergenFlags
 
   const isPersonallySafe = recipe.isAnalysed && personalFlags.length === 0
-  // Collect the user's allergen names that actually matched something in this recipe
+
+  // personalHits: the user's own allergen names that actually triggered a flag in this recipe.
+  // Used in the safety summary banner ("Contains your flagged allergens: dairy, nickel").
+  // Again uses .includes() so "dairy_lactose" matches a flag detail string containing "dairy".
   const personalHits = userAllergenNames.filter(name =>
     name.split('_').some(term =>
       allergenFlags.some(f => (f.detail || f.ingredientName || '').toLowerCase().includes(term))
@@ -194,8 +237,15 @@ export default function IndexedRecipeDetailPage() {
   )
 
   // ── Ingredient pill color map ──────────────────────────────────────────
-  // Build name → 'high' | 'medium' map from allergen flags + nickel data,
-  // filtered to the user's allergen profile so only relevant warnings show.
+  // Maps lowercase ingredient name → 'high' | 'medium' severity level.
+  // Only populated when the recipe has been analysed AND the user has a profile,
+  // ensuring unprofilesd/anonymous visitors see plain neutral pills.
+  //
+  // Two sources contribute to the map:
+  //   1. allergenFlags (from the allergen analysis) — filtered to user profile terms
+  //   2. nickelIngredients (from nickel analysis) — only when user has nickel flagged
+  //
+  // If an ingredient appears in both sources, the higher severity wins.
   const ingFlagMap = {}
 
   if (recipe.isAnalysed && userAllergenTerms.length > 0) {
@@ -203,22 +253,40 @@ export default function IndexedRecipeDetailPage() {
       const name = (flag.ingredientName || '').toLowerCase()
       if (!name) return
       const detail = (flag.detail || '').toLowerCase()
+      // Only include flags that are relevant to this user's allergen profile
       const relevant = userAllergenTerms.some(term => detail.includes(term))
       if (!relevant) return
+      // Treat 'critical' as equivalent to 'high' for pill colouring purposes
       const level = ['high', 'critical'].includes((flag.severity || '').toLowerCase()) ? 'high' : 'medium'
+      // Never downgrade an existing 'high' entry
       if (!ingFlagMap[name] || level === 'high') ingFlagMap[name] = level
     })
 
+    // Add nickel-derived colouring only when the user has nickel in their profile
     if (userHasNickel) {
       nickelIngredients.forEach(ing => {
         const name = (ing.name || '').toLowerCase()
         if (!name) return
         if (ing.nickelClassification === 'High') ingFlagMap[name] = 'high'
+        // Only assign 'medium' for Moderate nickel if the slot isn't already 'high'
         else if (ing.nickelClassification === 'Moderate' && ingFlagMap[name] !== 'high') ingFlagMap[name] = 'medium'
       })
     }
   }
 
+  /**
+   * Returns the highest-severity colour category ('high' | 'medium' | null) for a raw
+   * ingredient string by checking whether the string contains any key in ingFlagMap.
+   *
+   * Uses substring matching (string.includes) rather than exact equality because:
+   *  - Ingredient strings in the rendered list often carry quantity prefixes
+   *    e.g. "2 cups plain flour" — the map key is just "plain flour" or "flour".
+   *  - Progressive word-drop from the analysis pipeline means short canonical names
+   *    (e.g. "lentils") must match longer display strings ("200g green lentils").
+   *
+   * Always returns 'high' immediately if any high-severity key matches, so there is
+   * no need to continue iterating after the first high hit.
+   */
   function getIngColor(ingString) {
     const lower = ingString.toLowerCase()
     let best = null
@@ -334,7 +402,9 @@ export default function IndexedRecipeDetailPage() {
           {/* ── MIDDLE: Recipzee value-add grid ──────────────────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-            {/* Nickel risk card — only shown when user has nickel in their profile */}
+            {/* Nickel Load section — hidden when `!userHasNickel`.
+                Nickel content is irrelevant to users who haven't flagged nickel sensitivity,
+                so we suppress the entire section rather than showing unhelpful data. */}
             {userHasNickel && (
             <Section className={nickelConf.bg}>
               <SectionTitle icon={Flame}>Nickel Load</SectionTitle>
@@ -455,12 +525,19 @@ export default function IndexedRecipeDetailPage() {
             </Section>
           )}
 
-          {/* ── Ingredient nickel breakdown table — only for nickel-allergic users ── */}
+          {/* ── Nickel Breakdown table — gated by both userHasNickel and canSeeDetail ──
+              This table is suppressed entirely when:
+               a) the user hasn't flagged nickel (userHasNickel = false), or
+               b) the recipe hasn't been analysed yet
+              When the user IS nickel-sensitive but has hit their free scan limit
+              (canSeeDetail = false), the table renders but is blurred with a paywall overlay.
+              Premium and trial users always see it unblurred regardless of scan count. */}
           {userHasNickel && recipe.isAnalysed && nickelIngredients.length > 0 && (
             <Section>
               <SectionTitle icon={TrendingUp}>Nickel Breakdown by Ingredient</SectionTitle>
 
               <div className="relative">
+                {/* Apply blur + pointer-events-none when canSeeDetail is false */}
                 <div className={canSeeDetail ? '' : 'blur-sm select-none pointer-events-none'} aria-hidden={!canSeeDetail}>
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">

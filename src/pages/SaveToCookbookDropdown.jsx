@@ -7,12 +7,24 @@ import { Loader2, Plus } from "lucide-react";
 
 /**
  * SaveToCookbookDropdown
- * - Brand-consistent (neutral + emerald/teal accents)
- * - Mobile-friendly (sheet-style on <420px width)
- * - A11y: role="menu", keyboard nav (↑/↓/Enter/Escape), focus management
- * - Click-outside + Escape to close
- * - Smart positioning (measures dropdown size; flips when needed)
- * - Skeleton loading + friendly empty states
+ *
+ * Layer: Reusable UI component — portalled dropdown for saving a recipe to a cookbook.
+ * Used by: IndexedRecipeCard, RecipeCard, and any other card that has a "Save" action.
+ *
+ * What this component does:
+ *  - Fetches the user's own cookbooks (GET /api/Cookbook/mine) and cookbooks they
+ *    can collaborate on (GET /api/Cookbook/can-write) in parallel on mount
+ *  - Deduplicates: collaborative cookbooks already in "mine" are filtered out
+ *  - POST /api/Cookbook/:cookbookId/recipes to save the recipe
+ *  - Portalled to document.body via createPortal to escape any overflow:hidden parents
+ *  - Smart positioning: measures anchor rect and flips vertically if not enough space below
+ *  - On mobile (<420px) renders as a bottom-anchored sheet rather than a dropdown
+ *
+ * A11y: role="menu", keyboard nav (↑/↓ arrow keys, Enter to select, Escape to close),
+ *       focus management (first item receives focus when opened)
+ *
+ * @param {{ recipeId: string, onClose: () => void, anchorRef: React.RefObject, onCreateNew?: () => void }} props
+ * @returns {JSX.Element | null}
  */
 
 const MOBILE_BREAKPOINT = 420;
@@ -163,6 +175,7 @@ export default function SaveToCookbookDropdown({ recipeId, onClose, anchorRef, o
     }
   };
 
+  // Group the two lists under separate section headers for clarity
   const menuItems = useMemo(() => [{ title: "My cookbooks", list: mine }, { title: "I can collaborate on", list: writable }], [mine, writable]);
 
   if (typeof window === "undefined") return null;

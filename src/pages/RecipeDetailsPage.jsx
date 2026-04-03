@@ -1,3 +1,29 @@
+/**
+ * RecipeDetailsPage
+ *
+ * Layer: Authenticated recipe detail view for user-created (community) recipes.
+ *        Different from IndexedRecipeDetailPage which handles externally-sourced recipes.
+ * Routes:
+ *  - /recipe/:id                  (legacy UUID-based URL)
+ *  - /:username/:slug             (SEO-friendly GitHub-style URL, preferred)
+ *
+ * What this page does:
+ *  - Loads a user-created recipe from the API (supports both URL patterns)
+ *  - Shows ingredients with allergen hit highlighting keyed by ingredient ID
+ *  - Loads allergen hits for the current user via GET /api/Allergy/hits?recipeId=…
+ *  - Handles the 402 scan-limit response: sets `scanLimitReached` state which triggers
+ *    a blur overlay over the ingredients list; also calls clearScanStatusCache() to force
+ *    the scan counter UI to refresh immediately
+ *  - Premium and trial users bypass the scan gate — the API returns 200 for them so the
+ *    402 branch is never hit
+ *  - Supports ingredient scaling, sharing, PDF export, remixing, and saving to cookbook
+ *
+ * State managed:
+ *  - recipe, remixMeta, allergenHits, severityMap — API data
+ *  - scanLimitReached — 402 gate flag; drives ingredient blur overlay
+ *  - ingredientScale — multiplier for scaling ingredient quantities
+ *  - saveOpen, menuOpen, confirmOpen — modal and menu visibility
+ */
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import SaveToCookbookSection from '../pages/SaveToCookbookSection'
@@ -12,7 +38,8 @@ import { toast } from 'react-hot-toast'
 import {
   MoreVertical, Pencil, Trash2, RefreshCw, BookmarkPlus,
   AlertTriangle, Clock, Tag as TagIcon, Globe, BookOpenText, ListChecks,
-  Plus, Minus, Share2, Mail, LinkIcon, X, Check, ArrowLeftRight, FileDown
+  Plus, Minus, Share2, Mail, LinkIcon, X, Check, ArrowLeftRight, FileDown,
+  Flame, TrendingUp, Info
 } from 'lucide-react'
 import { exportRecipePdf } from '../utils/exportPdf'
 
@@ -58,6 +85,21 @@ import { clearScanStatusCache, useScanStatus } from '../hooks/useScanStatus'
 import { Helmet } from 'react-helmet-async'
 
 const DIFFICULTY_MAP = { 0: 'Easy', 1: 'Medium', 2: 'Hard' }
+
+/* ---------- Nickel risk config ---------- */
+const NICKEL_RISK = {
+  SAFE:     { label: 'Low Risk',  color: 'text-emerald-400', bar: 'bg-emerald-500', border: 'border-emerald-500/40', bg: 'bg-emerald-900/20' },
+  MODERATE: { label: 'Moderate',  color: 'text-amber-400',   bar: 'bg-amber-500',   border: 'border-amber-500/40',   bg: 'bg-amber-900/20'   },
+  EXCEEDED: { label: 'High Risk', color: 'text-red-400',     bar: 'bg-red-500',     border: 'border-red-500/40',     bg: 'bg-red-900/20'     },
+  Unknown:  { label: 'No Data',   color: 'text-recipzee-muted', bar: 'bg-white/20', border: 'border-white/10',       bg: 'bg-white/5'        },
+}
+
+const NICKEL_CLASS_COLOR = {
+  High:     'text-red-400',
+  Moderate: 'text-amber-400',
+  Low:      'text-emerald-400',
+  Unknown:  'text-recipzee-muted',
+}
 
 /* ---------- Pills ---------- */
 const PILL_BASE = 'inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm border shadow-sm'
@@ -195,6 +237,8 @@ const RecipeDetailsPage = () => {
   const [menuOpen, setMenuOpen] = useState(false)
   const [saveOpen, setSaveOpen] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [userAllergens, setUserAllergens] = useState([])
+  const [nickelData, setNickelData] = useState(null)
   const [ingredientScale, setIngredientScale] = useState(1)
 
   const menuRef = useRef(null)
@@ -247,8 +291,9 @@ const RecipeDetailsPage = () => {
     }
   }
 
-  /* ---------- NEW: load hits for highlighting ---------- */
+  /* ---------- Load allergen hits for ingredient highlighting ---------- */
   const loadAllergenHits = async (signal) => {
+    // Unauthenticated users have no allergen profile — skip entirely
     if (!token) { setAllergenHits([]); return }
 
     try {
@@ -259,11 +304,15 @@ const RecipeDetailsPage = () => {
       })
 
       if (res.status === 402) {
-        // Scan limit reached — show blur overlay
+        // 402 Payment Required = free user has hit their weekly scan limit.
+        // setScanLimitReached(true) triggers the blur overlay over the ingredients section.
+        // clearScanStatusCache() forces the ScanCounter component to re-fetch the quota
+        // immediately rather than waiting for the 2-minute TTL to expire.
+        // Premium and trial users never receive 402 — the API bypasses the scan check for them.
         const limitData = await res.json().catch(() => ({}))
         setScanLimitReached(true)
         setScanLimitData(limitData)
-        clearScanStatusCache()
+        clearScanStatusCache() // force quota refresh so counter updates at once
         setAllergenHits([])
         return
       }
@@ -275,7 +324,9 @@ const RecipeDetailsPage = () => {
 
       const data = await res.json()
       setAllergenHits(Array.isArray(data) ? data : [])
-      clearScanStatusCache() // refresh counter after successful scan
+      // After a successful scan, the backend has recorded a new UserAllergenScan row.
+      // Invalidate the local scan status cache so the ScanCounter reflects the updated count.
+      clearScanStatusCache()
     } catch (e) {
       if (!signal || !signal.aborted) {
         logger.error('Recipe operation failed', e)
@@ -320,6 +371,31 @@ const RecipeDetailsPage = () => {
       setScanLimitReached(false)
     }
   }, [scanStatusPremium, scansRemaining])
+
+  /* ---------- Load user allergens for nickel gate ---------- */
+  useEffect(() => {
+    if (!token) return
+    fetch(`${API_BASE_URL}/api/Allergy/my-allergies`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setUserAllergens(Array.isArray(data) ? data : (data?.items ?? [])))
+      .catch(() => {})
+  }, [token])
+
+  /* ---------- Fetch nickel load when user has nickel sensitivity ---------- */
+  useEffect(() => {
+    if (!token || !recipeId || userAllergens.length === 0) return
+    const allergenNames = userAllergens.map(a => (typeof a === 'string' ? a : a.name ?? '').toLowerCase())
+    const hasNickel = allergenNames.flatMap(n => n.split('_')).includes('nickel')
+    if (!hasNickel) return
+    fetch(`${API_BASE_URL}/api/Recipe/${recipeId}/nickel-load`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setNickelData(data) })
+      .catch(() => {})
+  }, [token, recipeId, userAllergens])
 
   /* ---------- Track view for trending ---------- */
   useEffect(() => {
@@ -400,6 +476,18 @@ const RecipeDetailsPage = () => {
   const totalFmt = (prepMin + cookMin) > 0 ? fmtMinutes(prepMin + cookMin) : null
 
   const tags = coerceTags(recipe, topLevelForTags)
+
+  // Nickel gate: only show nickel section when user has flagged nickel sensitivity
+  const userAllergenNames = userAllergens.map(a => (typeof a === 'string' ? a : a.name ?? '').toLowerCase())
+  const userAllergenTerms = userAllergenNames.flatMap(n => n.split('_')).filter(Boolean)
+  const userHasNickel = userAllergenTerms.includes('nickel')
+
+  // Nickel display values
+  const nickelRiskLevel = nickelData?.riskLevel ?? 'Unknown'
+  const nickelConf = NICKEL_RISK[nickelRiskLevel in NICKEL_RISK ? nickelRiskLevel : 'Unknown']
+  const totalNickelMcg   = nickelData?.totalNickelMcg ?? 0
+  const thresholdPercent = nickelData?.thresholdPercent ?? 0
+  const nickelIngredients = nickelData?.meals?.[0]?.ingredients ?? []
 
   const isOwner = useMemo(() => {
     if (!user?.username || !recipe?.authorUsername) return false
@@ -781,6 +869,106 @@ const RecipeDetailsPage = () => {
         <Section icon={ListChecks} title="Instructions">
           <div className="text-recipzee-text/95 whitespace-pre-line">{recipe?.instructions || 'No instructions provided.'}</div>
         </Section>
+
+        {/* Nickel Load — only shown when user has flagged nickel sensitivity */}
+        {userHasNickel && nickelData && (
+          <div className={`rounded-2xl border ${nickelConf.border} ${nickelConf.bg} p-5`}>
+            <div className="flex items-center gap-2 mb-4">
+              <Flame className="w-4 h-4 text-recipzee-green flex-shrink-0" />
+              <h2 className="font-semibold text-recipzee-text text-sm uppercase tracking-wider">Nickel Load</h2>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-end gap-3">
+                <span className={`text-4xl font-bold ${nickelConf.color}`}>
+                  {totalNickelMcg > 0 ? `${Math.round(totalNickelMcg)}` : '—'}
+                </span>
+                {totalNickelMcg > 0 && <span className="text-sm text-recipzee-muted pb-1">μg</span>}
+                <span className={`ml-auto text-lg font-bold ${nickelConf.color}`}>{nickelConf.label}</span>
+              </div>
+              {totalNickelMcg > 0 && (
+                <>
+                  <div>
+                    <div className="flex justify-between text-xs text-recipzee-muted mb-1">
+                      <span>{Math.round(thresholdPercent)}% of 150μg daily threshold</span>
+                      <span className={thresholdPercent >= 100 ? 'text-red-400' : thresholdPercent >= 50 ? 'text-amber-400' : 'text-emerald-400'}>
+                        {thresholdPercent >= 100 ? 'Exceeds limit' : `${Math.round(150 - totalNickelMcg)}μg remaining`}
+                      </span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${nickelConf.bar}`}
+                        style={{ width: `${Math.min(100, thresholdPercent)}%` }}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-recipzee-muted">
+                    Clinical threshold: 150μg/day (Mislankar &amp; Zirwas 2013)
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Nickel Breakdown table — gated by scan limit for free users */}
+        {userHasNickel && nickelIngredients.length > 0 && (
+          <div className="rounded-2xl border border-recipzee-border bg-recipzee-card p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="w-4 h-4 text-recipzee-green flex-shrink-0" />
+              <h2 className="font-semibold text-recipzee-text text-sm uppercase tracking-wider">Nickel Breakdown by Ingredient</h2>
+            </div>
+            <div className="relative">
+              <div className={!scanLimitReached ? '' : 'blur-sm select-none pointer-events-none'} aria-hidden={scanLimitReached}>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-recipzee-border text-recipzee-muted uppercase tracking-wider">
+                        <th className="text-left py-2 pr-4 font-medium">Ingredient</th>
+                        <th className="text-right py-2 pr-4 font-medium">μg</th>
+                        <th className="text-right py-2 pr-4 font-medium hidden sm:table-cell">Classification</th>
+                        <th className="text-right py-2 font-medium hidden sm:table-cell">Confidence</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-recipzee-border/50">
+                      {nickelIngredients.map((ing, i) => (
+                        <tr key={i} className="text-recipzee-text/90">
+                          <td className="py-2.5 pr-4 font-medium">{ing.name}</td>
+                          <td className="py-2.5 pr-4 text-right tabular-nums">
+                            {ing.matched && ing.nickelContributionMcg > 0
+                              ? `${ing.nickelContributionMcg.toFixed(1)}`
+                              : <span className="text-recipzee-muted">—</span>
+                            }
+                          </td>
+                          <td className="py-2.5 pr-4 text-right hidden sm:table-cell">
+                            <span className={NICKEL_CLASS_COLOR[ing.nickelClassification] ?? 'text-recipzee-muted'}>
+                              {ing.nickelClassification ?? '—'}
+                            </span>
+                          </td>
+                          <td className="py-2.5 text-right hidden sm:table-cell text-recipzee-muted">
+                            {ing.dataConfidence ?? '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              {scanLimitReached && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-xl bg-recipzee-card/80 backdrop-blur-[2px] px-4 text-center">
+                  <Info className="w-5 h-5 text-recipzee-yellow" />
+                  <p className="text-sm text-recipzee-text font-medium">Weekly scan limit reached</p>
+                  <p className="text-xs text-recipzee-muted">Upgrade to Premium for unlimited allergen and nickel detail.</p>
+                  <Link
+                    to="/account"
+                    className="rounded-xl bg-recipzee-yellow px-4 py-2 text-sm font-semibold text-recipzee-dark hover:opacity-90 transition-opacity"
+                  >
+                    Upgrade to Premium
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         <Card>
           <div className="px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between bg-white/5 border-b border-recipzee-border/70">

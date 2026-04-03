@@ -1,6 +1,20 @@
+/**
+ * ContactPage.jsx
+ * Layer: Public / Support
+ *
+ * Simple static contact page with three mailto links:
+ *   - support@recipzee.com  — account issues, bug reports, general help
+ *   - contact@recipzee.com  — partnerships, press, business inquiries
+ *   - api@recipzee.com      — B2B API and data inquiries (also links to /api)
+ *
+ * Rendered inside PublicPage for consistent layout and styling.
+ */
 import React from "react";
 import PublicPage from "./PublicPage";
 
+/**
+ * @returns {JSX.Element}
+ */
 const ContactPage = () => (
   <PublicPage title="Contact" subtitle="We'd love to hear from you.">
     <section className="space-y-8 leading-relaxed text-recipzee-text">

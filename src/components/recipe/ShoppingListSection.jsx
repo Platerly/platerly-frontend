@@ -1,3 +1,35 @@
+/**
+ * ShoppingListSection.jsx — Inline expandable section to add a recipe's
+ * ingredients to a user's shopping list.
+ *
+ * Layer: Feature / recipe detail page.
+ *
+ * Add-to-list flow:
+ *   - Section header is always visible; clicking it toggles expansion and
+ *     triggers a fetch of the user's shopping lists.
+ *   - User selects an existing list → POST /api/shopping-list/:id/recipes
+ *     with `{ recipeId, scaleFactor }`.
+ *   - User creates a new list → POST /api/shopping-list/from-recipe/:recipeId
+ *     which auto-populates the list from the recipe's ingredients.
+ *   - HTTP 402 from either endpoint means the free-tier recipe-per-list limit
+ *     has been reached; the error message is surfaced inline.
+ *   - HTTP 409 means the recipe is already in that list (shown as "Already added").
+ *
+ * Free-tier limit:
+ *   - `canCreateNew` is false for free users who already have ≥1 list (premium
+ *     required for multiple lists).  The "Create new list" button is replaced by
+ *     an upgrade link in that case.
+ *
+ * Scale factor:
+ *   - A ± stepper allows 0.5× to 10× scaling; sent as `scaleFactor` to the API
+ *     so quantities are adjusted server-side before adding items.
+ *
+ * Props:
+ *   @prop {string[]} [ingredients=[]] — Ingredient strings (used to decide whether
+ *     to render at all — returns null when empty).
+ *   @prop {string|number} recipeId   — The recipe whose ingredients are being added.
+ */
+
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {

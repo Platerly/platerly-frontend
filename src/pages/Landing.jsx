@@ -1,3 +1,31 @@
+/**
+ * Landing.jsx
+ * Layer: Public / Marketing — main landing / home page
+ *
+ * The public-facing entry point for unauthenticated visitors. Authenticated
+ * users are immediately redirected to /feed on mount so they never see this.
+ *
+ * Page sections (top to bottom):
+ *   1. Hero             — headline "Know what's in your recipes before you cook them",
+ *                         sub-copy covering 13 allergens including nickel, primary
+ *                         CTA ("Try it free for 7 days" → /register), secondary
+ *                         link to /feed?tab=explore, sign-in link.
+ *   2. Why it's different — three feature highlight cards:
+ *                         Instant allergen scan, Allergen-aware substitutions,
+ *                         Filter your feed.
+ *   3. Nickel callout   — amber callout box positioning Recipzee as the only
+ *                         recipe app that tracks nickel allergy; 6-point feature
+ *                         list specific to nickel users.
+ *   4. Explore feature  — "New" section card promoting the halal-verified
+ *                         recipe index (Recipzee Bot feed), CTA → /explore-recipes.
+ *   5. Pricing          — Free ($0) vs Premium ($6.99/mo) side-by-side cards;
+ *                         Premium card is highlighted with a "7 DAYS FREE" badge.
+ *   6. Final CTA        — repeat registration CTA button, no-card disclaimer.
+ *   7. Footer nav       — inline links to /privacy, /terms, /api.
+ *
+ * SEO: Helmet sets the canonical URL and a full meta description targeting
+ * nickel allergy and allergen-aware cooking search terms.
+ */
 import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -5,14 +33,19 @@ import Button from '../components/ui/Button'
 import { Helmet } from 'react-helmet-async'
 import { ArrowRight, AlertCircle, ShieldCheck, Shuffle, Filter } from 'lucide-react'
 
+/**
+ * @returns {JSX.Element}
+ */
 const Landing = () => {
   const { authed } = useAuth()
   const navigate = useNavigate()
 
+  // Redirect authenticated users straight to the feed — landing page is for guests only
   useEffect(() => {
     if (authed) navigate('/feed', { replace: true })
   }, [authed, navigate])
 
+  // Set document.title directly in addition to the Helmet tag for faster paint
   useEffect(() => {
     document.title = 'Recipzee — Nickel Allergy Recipes & Allergen-Aware Cooking Community'
   }, [])

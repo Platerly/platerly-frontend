@@ -1,3 +1,19 @@
+/**
+ * VerifyEmailChange
+ *
+ * Layer: Public email-change confirmation page.
+ * Route: /verify-email-change?token=<jwt>
+ *
+ * Flow:
+ *  1. User clicks the confirmation link sent to their NEW email address after
+ *     requesting an email change in Settings → Account
+ *  2. GET /api/Auth/verify-email-change?token=… is called on mount
+ *  3. On success: shows confirmation, then logs the user out after 3 seconds.
+ *     The logout is required because the JWT still encodes the OLD email — the user
+ *     must log in fresh with their new credentials.
+ *  4. After logout: navigates to /login?message=email-changed
+ *  5. On failure: shows error with links to Settings and Home
+ */
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Check, X, Loader2, Mail } from 'lucide-react'
@@ -32,7 +48,8 @@ const VerifyEmailChange = () => {
         setStatus('success')
         setMessage('Your email has been changed successfully!')
 
-        // Log user out after 3 seconds so they can log in with new email
+        // The existing JWT encodes the old email address, so it must be invalidated.
+        // The user logs back in with their new email to get a fresh token.
         setTimeout(() => {
           logout()
           navigate('/login?message=email-changed')

@@ -1,3 +1,29 @@
+/**
+ * IndexedSaveToCookbookModal.jsx — Modal for saving an indexed recipe to a cookbook.
+ *
+ * Layer: Feature / modal.
+ *
+ * Save flow:
+ *   1. On mount, two requests fire in parallel:
+ *      - GET /api/Cookbook/mine         — fetches the user's cookbook list.
+ *      - GET /api/indexed-recipes/saved/count — fetches how many indexed recipes
+ *        the user has already saved (for free-tier cap enforcement).
+ *   2. The user selects a cookbook; POST /api/Cookbook/:id/indexed-recipes is
+ *      called with `{ recipeIndexId: recipe.id }`.
+ *   3. On success, `onSaved(recipe.id)` notifies the parent (e.g. to flip the
+ *      card's "Saved" button state).
+ *
+ * Free-tier cap (`FREE_SAVE_LIMIT = 3`):
+ *   - If `savedCount >= FREE_SAVE_LIMIT` AND the user is not premium/trial,
+ *     the cookbook list is replaced by an upgrade prompt.
+ *   - The `handleSave` guard also prevents the API call client-side, though the
+ *     API enforces this independently.
+ *
+ * Props:
+ *   @prop {object}          recipe   — The indexed recipe being saved (must have `.id` and `.title`).
+ *   @prop {() => void}      onClose  — Called to close the modal (backdrop click or ✕).
+ *   @prop {(id) => void}    [onSaved] — Called with the recipe id after a successful save.
+ */
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { X, Loader2, BookmarkPlus, Check } from 'lucide-react'
 import axios from 'axios'
@@ -5,6 +31,7 @@ import { API_BASE_URL } from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
 import { usePremium } from '../../hooks/usePremium'
 
+// Maximum indexed recipes a free user can save; enforced client-side and by the API
 const FREE_SAVE_LIMIT = 3
 
 export default function IndexedSaveToCookbookModal({ recipe, onClose, onSaved }) {
@@ -43,7 +70,8 @@ export default function IndexedSaveToCookbookModal({ recipe, onClose, onSaved })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSave(cookbookId) {
-    if (!isPremium && !isOnTrial && savedCount >= FREE_SAVE_LIMIT) return // gate enforced by API too
+    // Client-side free-tier guard; the API will also return 402 if exceeded
+    if (!isPremium && !isOnTrial && savedCount >= FREE_SAVE_LIMIT) return
     setSavingId(cookbookId)
     setError('')
     try {
@@ -59,6 +87,7 @@ export default function IndexedSaveToCookbookModal({ recipe, onClose, onSaved })
     }
   }
 
+  // When true, the cookbook list is replaced entirely by the upgrade call-to-action
   const atFreeLimit = !isPremium && !isOnTrial && savedCount >= FREE_SAVE_LIMIT
 
   return (

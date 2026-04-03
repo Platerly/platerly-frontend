@@ -1,3 +1,57 @@
+/**
+ * RecipeCard.jsx — Primary card component for user-created Recipzee recipes.
+ *
+ * Layer: Presentational / feed and search results.
+ *
+ * Allergen hit display:
+ *   `allergenSeverity` is a map of `{ ingredientName: 'high'|'medium'|'low' }` from
+ *   the scan API.  The card resolves each ingredient against this map (via
+ *   `allergenHelpers`) and shows a "Potential allergens" warning with colour-coded
+ *   ingredient names: high = red/bold, medium = amber, low = green.
+ *   When `atLimit` is true (free user has used all weekly scans), the ingredient
+ *   names are blurred and an "Unlock" upgrade link is shown in their place.
+ *
+ * Premium remix gate:
+ *   The "Remix" button calls `handleRemixClick`.  Premium users and trial users
+ *   are navigated to /remix/:id.  Free users instead set `remixUpgradeOpen=true`,
+ *   which renders an inline upgrade panel beneath the action bar.
+ *
+ * Inline upgrade panel for free users:
+ *   A yellow-tinted box appears below the action row when `remixUpgradeOpen` is
+ *   true, offering an "Upgrade" link and a dismiss (×) button.
+ *
+ * Like / Repost:
+ *   Both actions use optimistic UI — state is flipped immediately and reverted
+ *   on API failure.  DELETE /api/Recipe/:id/like | POST are used for toggle.
+ *
+ * Share menu:
+ *   Opens as a fixed bottom sheet on mobile and a dropdown on desktop.
+ *   Supports X, Facebook, Pinterest, WhatsApp, LinkedIn, Reddit, Email, Copy Link.
+ *   Uses /api/share/:id URLs so social media crawlers receive OG meta tags.
+ *
+ * Props:
+ *   @prop {string|number} id
+ *   @prop {string}  author
+ *   @prop {string}  title
+ *   @prop {string}  [description]
+ *   @prop {string}  [imageUrl]
+ *   @prop {string}  [photoCredit]
+ *   @prop {string}  [photoCreditUrl]
+ *   @prop {number}  [likes=0]
+ *   @prop {boolean} [isLiked=false]
+ *   @prop {number}  [reposts=0]
+ *   @prop {boolean} [isRepostedByCurrentUser=false]
+ *   @prop {string[]} [ingredientNames=[]]
+ *   @prop {object}  [allergenSeverity={}]  — { ingredientName: severity }
+ *   @prop {number}  [prepTime]
+ *   @prop {number}  [cookTime]
+ *   @prop {string}  [difficulty]
+ *   @prop {string|string[]} [tags='']
+ *   @prop {boolean} [isTrending=false]
+ *   @prop {number|null} [trendingRank=null]
+ *   @prop {string|null} [slug=null]
+ *   @prop {string|null} [authorUsername=null]
+ */
 import React, { useState, useEffect, useMemo, memo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Heart, Repeat2, Wand2, Share2, LinkIcon, Mail, Flame, X, Check } from 'lucide-react'
@@ -238,6 +292,8 @@ const RecipeCard = ({
     }
   }
 
+  // Premium remix gate: premium/trial users go straight to the remix page;
+  // free users trigger the inline upgrade panel instead
   const handleRemixClick = () => {
     if (isPremium || isOnTrial) {
       navigate(`/remix/${id}`)
@@ -381,6 +437,9 @@ const RecipeCard = ({
           )}
         </div>
 
+        {/* Allergen hit display: shows ingredient names colour-coded by severity.
+            When the free user is at their scan limit, names are blurred and an
+            "Unlock" upgrade link is displayed instead of the readable text. */}
         {hasAllergyMatch && (
           <div className="text-sm font-medium mb-2 flex flex-wrap items-center gap-x-1 gap-y-0.5">
             <span>⚠️ Potential allergens</span>
@@ -437,6 +496,7 @@ const RecipeCard = ({
             </button>
           </div>
 
+          {/* Inline upgrade panel for free users who click Remix */}
           {remixUpgradeOpen && (
             <div
               onClick={(e) => e.stopPropagation()}

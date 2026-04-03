@@ -1,3 +1,38 @@
+/**
+ * routes/AppRoutes.jsx — Layer: Routing / Route definitions
+ *
+ * Defines all client-side routes using react-router-dom v6 `useRoutes`.
+ * Every page is lazy-loaded via React.lazy() for code-splitting so the initial
+ * bundle only contains the code needed to render the landing page.
+ *
+ * Route protection levels:
+ *  Public (no wrapper)   — Accessible to anyone; includes landing, auth pages, legal pages,
+ *                          and content pages that are intentionally SEO-indexed.
+ *  withLayout            — Adds AppLayout (nav + footer) but no auth check.
+ *                          Used for feed/explore/recipe detail pages that guests can browse.
+ *  withAuth / RequireAuth — Requires an authenticated session (token + user).
+ *                          Redirects unauthenticated visitors to /login.
+ *  withAdmin / RequireAdmin — Requires both authentication AND an admin role.
+ *                          The `superAdminOnly` flag restricts certain pages further.
+ *                          Admin pages use AdminLayout instead of AppLayout.
+ *
+ * Helper wrappers (defined inline):
+ *  withSuspense(Component)          — Wraps in Suspense with PageLoader fallback; no layout/auth
+ *  withLayout(Component, Layout)    — Suspense + Layout; no auth
+ *  withAuth(Component, Layout)      — RequireAuth + Suspense + Layout
+ *  withAdmin(Component, superOnly)  — RequireAdmin + Suspense + AdminLayout
+ *
+ * GA4 page tracking:
+ *  RouteTracker is a renderless component that fires a GA4 pageview on every
+ *  location change.  It is rendered alongside the route outlet so it tracks
+ *  all navigations, including within the same "page" (e.g. modal-like routes).
+ *
+ * URL conventions:
+ *  /:username/:slug           — SEO-friendly recipe URLs (preferred, e.g. /johndoe/pasta-carbonara)
+ *  /recipe/:id                — Legacy GUID-based recipe URLs (backwards compatibility)
+ *  /recipes/:idSlug           — Indexed (admin-uploaded) recipe detail pages
+ *  /admin/*                   — Admin-only; not indexed by search engines
+ */
 import { Suspense, lazy, useEffect } from 'react'
 import { useRoutes, useLocation } from 'react-router-dom'
 import ReactGA from 'react-ga4'
@@ -6,7 +41,10 @@ import RequireAuth from '../components/RequireAuth'
 import RequireAdmin from '../components/RequireAdmin'
 import AdminLayout from '../components/layout/AdminLayout'
 
-// Loading fallback component
+/**
+ * Full-screen loading spinner shown while a lazy-loaded page chunk is being
+ * fetched.  Uses the app's dark background to prevent a white flash.
+ */
 const PageLoader = () => (
   <div className="min-h-screen bg-recipzee-dark flex items-center justify-center">
     <div className="flex flex-col items-center gap-4">
@@ -77,17 +115,28 @@ const ContactPage = lazy(() => import('../pages/public/ContactPage'))
 const ApiPage = lazy(() => import('../pages/public/ApiPage'))
 const RoadmapPage = lazy(() => import('../pages/public/RoadmapPage'))
 const BotPage = lazy(() => import('../pages/public/BotPage'))
+const ResearchPage = lazy(() => import('../pages/public/ResearchPage'))
 const IngredientsPage = lazy(() => import('../pages/public/IngredientsPage'))
 const IngredientDetailPage = lazy(() => import('../pages/public/IngredientDetailPage'))
 const NotFoundPage = lazy(() => import('../pages/public/NotFoundPage'))
 
-// Admin pages (only loaded when accessed)
+// B2B pages
+const B2BPricingPage = lazy(() => import('../pages/b2b/B2BPricingPage'))
+const B2BBillingPage = lazy(() => import('../pages/b2b/B2BBillingPage'))
+
+// Admin pages (only loaded when accessed — kept in a separate chunk)
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'))
 const ProhibitedIngredientsPage = lazy(() => import('../pages/admin/ProhibitedIngredientsPage'))
 const UserManagementPage = lazy(() => import('../pages/admin/UserManagementPage'))
 const AuditLogsPage = lazy(() => import('../pages/admin/AuditLogsPage'))
 
-// Wrap component with Suspense
+/**
+ * Wraps a lazy component in Suspense with the PageLoader fallback.
+ * No layout shell or auth check — used for standalone pages (landing, login, legal).
+ *
+ * @param {React.LazyExoticComponent} Component
+ * @returns {JSX.Element}
+ */
 // eslint-disable-next-line no-unused-vars
 const withSuspense = (Component) => (
   <Suspense fallback={<PageLoader />}>
@@ -95,7 +144,14 @@ const withSuspense = (Component) => (
   </Suspense>
 )
 
-// Wrap with Suspense and layout
+/**
+ * Wraps a lazy component in Suspense + a layout shell.
+ * No auth check — used for publicly accessible pages that still need nav/footer.
+ *
+ * @param {React.LazyExoticComponent} Component
+ * @param {React.ComponentType} Layout - Defaults to AppLayout
+ * @returns {JSX.Element}
+ */
 // eslint-disable-next-line no-unused-vars
 const withLayout = (Component, Layout = AppLayout) => (
   <Suspense fallback={<PageLoader />}>
@@ -103,7 +159,14 @@ const withLayout = (Component, Layout = AppLayout) => (
   </Suspense>
 )
 
-// Wrap with Suspense, layout, and auth
+/**
+ * Wraps a lazy component in RequireAuth + Suspense + a layout shell.
+ * Redirects unauthenticated visitors to /login.
+ *
+ * @param {React.LazyExoticComponent} Component
+ * @param {React.ComponentType} Layout - Defaults to AppLayout
+ * @returns {JSX.Element}
+ */
 // eslint-disable-next-line no-unused-vars
 const withAuth = (Component, Layout = AppLayout) => (
   <RequireAuth>
@@ -113,7 +176,14 @@ const withAuth = (Component, Layout = AppLayout) => (
   </RequireAuth>
 )
 
-// Wrap with Suspense, admin layout, and admin auth
+/**
+ * Wraps a lazy component in RequireAdmin + Suspense + AdminLayout.
+ * RequireAdmin checks both authentication and admin role membership.
+ *
+ * @param {React.LazyExoticComponent} Component
+ * @param {boolean} superAdminOnly - When true, restricts to super-admins only (e.g. user management, audit logs)
+ * @returns {JSX.Element}
+ */
 const withAdmin = (Component, superAdminOnly = false) => (
   <RequireAdmin superAdminOnly={superAdminOnly}>
     <Suspense fallback={<PageLoader />}>
@@ -122,6 +192,11 @@ const withAdmin = (Component, superAdminOnly = false) => (
   </RequireAdmin>
 )
 
+/**
+ * Renderless component that fires a GA4 pageview on every route change.
+ * Placed inside BrowserRouter so it has access to useLocation.
+ * Only fires in production when VITE_GA_ID is set.
+ */
 const RouteTracker = () => {
   const location = useLocation()
   useEffect(() => {
@@ -134,10 +209,10 @@ const RouteTracker = () => {
 
 const AppRoutes = () => {
   const routes = useRoutes([
-    // Marketing landing at root
+    // Marketing landing at root — public, no layout shell
     { path: '/', element: withSuspense(Landing) },
 
-    // Public auth routes
+    // Public auth routes — no layout shell, no auth required
     { path: '/register', element: withSuspense(Register) },
     { path: '/login', element: withSuspense(Login) },
     { path: '/verify-email', element: withSuspense(VerifyEmail) },
@@ -146,7 +221,7 @@ const AppRoutes = () => {
     { path: '/reset-password', element: withSuspense(ResetPassword) },
     { path: '/forgot-password', element: withSuspense(ForgotPassword) },
 
-    // Legal/public pages
+    // Legal/public pages — no layout shell, no auth required, publicly indexed
     { path: '/terms', element: withSuspense(TermsPage) },
     { path: '/privacy', element: withSuspense(PrivacyPage) },
     { path: '/guidelines', element: withSuspense(GuidelinesPage) },
@@ -156,10 +231,12 @@ const AppRoutes = () => {
     { path: '/api', element: withSuspense(ApiPage) },
     { path: '/roadmap', element: withSuspense(RoadmapPage) },
     { path: '/bot', element: withSuspense(BotPage) },
+    { path: '/research', element: withSuspense(ResearchPage) },
     { path: '/ingredients', element: withSuspense(IngredientsPage) },
     { path: '/ingredients/:slug', element: withSuspense(IngredientDetailPage) },
 
-    // Onboarding (protected but without layout)
+    // Onboarding — protected (requires auth) but intentionally without the main layout
+    // so new users see a focused full-screen onboarding experience
     { path: '/onboarding', element: (
       <RequireAuth>
         <Suspense fallback={<PageLoader />}>
@@ -168,7 +245,7 @@ const AppRoutes = () => {
       </RequireAuth>
     )},
 
-    // Protected routes
+    // Protected routes — require authentication, rendered inside AppLayout
     { path: '/create', element: withAuth(CreateRecipe) },
     { path: '/remix/:originalId', element: withAuth(RemixPage) },
     { path: '/cookbooks', element: withAuth(CookbookPage) },
@@ -180,6 +257,7 @@ const AppRoutes = () => {
     { path: '/settings/allergies', element: withAuth(AllergySettingsPage) },
     { path: '/settings/profile', element: withAuth(MyProfileSettingsPage) },
     { path: '/edit-recipe/:id', element: withAuth(EditRecipePage) },
+    // Follow list pages inline RequireAuth to pass the `type` prop directly to FollowListPage
     {
       path: '/user/:username/followers',
       element: (
@@ -204,7 +282,8 @@ const AppRoutes = () => {
     { path: '/widget-preview', element: withAuth(WidgetPreviewPage) },
     { path: '/notifications', element: withAuth(NotificationsPage) },
 
-    // Public content (with layout but no auth required)
+    // Public content — with AppLayout but no auth required
+    // Guests can browse these pages; the soft wall may appear after threshold views
     { path: '/feed', element: withLayout(Feed) },
     { path: '/trending', element: withLayout(TrendingPage) },
     { path: '/explore-recipes', element: withLayout(ExploreRecipesPage) },
@@ -216,23 +295,29 @@ const AppRoutes = () => {
     { path: '/profile/:username', element: withLayout(UserProfilePage) },
     { path: '/search', element: withLayout(SearchResultsPage) },
 
-    // Optional protected explore
+    // Optional protected explore — requires auth (prevents guest spam on chef discovery)
     { path: '/explore-chefs', element: withAuth(ExploreChefsPage) },
 
-    // Admin routes (protected, no indexing, no analytics)
+    // B2B routes
+    { path: '/b2b/pricing', element: withSuspense(B2BPricingPage) },
+    { path: '/b2b/billing', element: withAuth(B2BBillingPage) },
+
+    // Admin routes — require admin role; use AdminLayout; not indexed by search engines
     { path: '/admin', element: withAdmin(AdminDashboard) },
     { path: '/admin/prohibited-ingredients', element: withAdmin(ProhibitedIngredientsPage) },
     { path: '/admin/categories', element: withAdmin(ProhibitedIngredientsPage) },
     { path: '/admin/ingredients', element: withAdmin(ProhibitedIngredientsPage) },
     { path: '/admin/substitutions', element: withAdmin(ProhibitedIngredientsPage) },
+    // superAdminOnly=true: user management and audit logs are restricted to super-admins
     { path: '/admin/users', element: withAdmin(UserManagementPage, true) },
     { path: '/admin/audit-logs', element: withAdmin(AuditLogsPage, true) },
 
-    // 404 fallback
+    // 404 fallback — catches all unmatched paths
     { path: '*', element: withSuspense(NotFoundPage) },
   ])
   return (
     <>
+      {/* RouteTracker fires GA4 pageview on every navigation */}
       <RouteTracker />
       {routes}
     </>

@@ -1,3 +1,31 @@
+/**
+ * ExploreFilters.jsx — Filter bar for the Explore Recipes page.
+ *
+ * Layer: Feature / feed filtering UI.
+ *
+ * Renders a horizontal filter row with:
+ *   - Difficulty selector (Any / Easy / Medium / Hard)
+ *   - Tag chips input (comma or Enter to add; debounced 250 ms)
+ *   - "Require all tags" checkbox
+ *   - "Hide remixes" checkbox
+ *   - "Hide my allergens" checkbox — LOCKED for free users (no premium/trial)
+ *
+ * Hide-my-allergens gate:
+ *   The checkbox is disabled and has a "Premium" badge when the user is neither
+ *   premium nor on trial.  Clicking it while locked opens an inline upgrade
+ *   prompt (`allergenUpgradeOpen`) rather than activating the filter.  The
+ *   backend also enforces this: `effectiveHideMyAllergens` is ignored for free
+ *   users in `FeedController.GetExploreFeed`.
+ *
+ * All filter state changes reset `page` to 1 and are pushed to the parent via
+ * the `onChange` callback.
+ *
+ * Props:
+ *   @prop {object}  value    — Current filter values (difficulty, tags[], requireAllTags,
+ *                              hideMyAllergens, hideRemixes).
+ *   @prop {(v: object) => void} onChange — Called whenever any filter changes.
+ *   @prop {boolean} loading  — Disables all controls while the feed is fetching.
+ */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { usePremium } from "../../hooks/usePremium";
@@ -33,6 +61,7 @@ export default function ExploreFilters({ value, onChange, loading }) {
   const [allergenUpgradeOpen, setAllergenUpgradeOpen] = useState(false);
 
   const { isPremium, isOnTrial } = usePremium();
+  // Only premium subscribers and active trial users can filter by their allergen profile
   const hasAllergenFilter = isPremium || isOnTrial;
 
   const disabled = !!loading;
@@ -206,8 +235,10 @@ export default function ExploreFilters({ value, onChange, loading }) {
                 type="checkbox"
                 className="h-4 w-4 rounded border-recipzee-border bg-recipzee-card text-recipzee-green focus:ring-recipzee-green/60"
                 checked={hideMyAllergens}
+                // Checkbox is visually and functionally disabled for free users
                 disabled={disabled || !hasAllergenFilter}
                 onChange={(e) => {
+                  // Free users see the upgrade prompt instead of toggling the filter
                   if (!hasAllergenFilter) {
                     setAllergenUpgradeOpen(true);
                     return;
@@ -216,12 +247,14 @@ export default function ExploreFilters({ value, onChange, loading }) {
                 }}
               />
               Hide my allergens
+              {/* Premium badge shown next to the label for free users */}
               {!hasAllergenFilter && (
                 <span className="text-[10px] font-semibold text-yellow-400 border border-yellow-500/50 rounded-full px-1.5 py-0.5">
                   Premium
                 </span>
               )}
             </label>
+            {/* Inline upgrade prompt — appears when a free user clicks the locked checkbox */}
             {allergenUpgradeOpen && !hasAllergenFilter && (
               <div className="flex items-center gap-2 text-xs text-yellow-200">
                 <Link

@@ -1,3 +1,27 @@
+/**
+ * EmailVerificationBanner.jsx — Persistent banner for unverified email accounts.
+ *
+ * Layer: Layout / auth nudge.
+ *
+ * Unverified email detection:
+ *   - Reads `user.isEmailVerified` from AuthContext.
+ *   - If the field is missing (older JWT payloads), it performs a one-time
+ *     GET /api/User/me to hydrate the flag and patches it into context via
+ *     `setUser`.  A `cancelled` flag prevents state updates after unmount.
+ *
+ * Resend flow:
+ *   - POST /api/User/resend-verification-email — triggers a new verification email.
+ *   - If the API returns HTTP 400 with "already verified" in the message body,
+ *     the banner hides itself by setting `isEmailVerified: true` in context.
+ *
+ * Dismissal:
+ *   - The ✕ button sets local `dismissed` state; the banner will re-appear on
+ *     next session (no localStorage persistence intentional — keeps nagging until
+ *     the user verifies).
+ *
+ * The component renders nothing when: user is null, email is already verified,
+ * or the banner has been dismissed in the current session.
+ */
 // src/components/account/EmailVerificationBanner.jsx
 import { useEffect, useState, useMemo } from 'react'
 import { useAuth } from '../../context/AuthContext'

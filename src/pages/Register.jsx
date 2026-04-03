@@ -1,3 +1,32 @@
+/**
+ * Register
+ *
+ * Layer: Public account creation page.
+ * Route: /register
+ *
+ * What this page does:
+ *  - Primary path: Google OAuth via SocialLoginButtons (one click)
+ *  - Secondary path: collapsible email/password form (hidden by default)
+ *  - Email registration flow:
+ *      1. POST /api/Auth/register → receives JWT + user on success
+ *      2. Calls AuthContext.login() to persist the session
+ *      3. Fires `trackSignUp('email')` and `trackStartTrial()` analytics events
+ *      4. Navigates to /onboarding for profile setup
+ *  - Google OAuth flow:
+ *      - `data.isNewUser` flag (from LoginResponse) distinguishes new sign-ups from
+ *        returning users — analytics events fire only for new users
+ *      - All users with email-based usernames are sent to /onboarding
+ *  - Trial activation:
+ *      - The backend sets TrialStartUtc/TrialEndUtc on every new registration
+ *        (both email and Google — handled in AuthController.Register + HandleGoogleAuth)
+ *      - `trackStartTrial()` fires on the frontend as a matching analytics signal
+ *  - Password strength indicator with 5-level scoring (shown only when password field has input)
+ *
+ * State managed:
+ *  - form: name, email, password, confirmPassword
+ *  - errors: per-field validation + social error
+ *  - showEmailForm: toggles collapsible email section
+ */
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ChevronDown, ChevronUp } from 'lucide-react'
@@ -37,12 +66,14 @@ const getPasswordStrength = (password) => {
   return { score, label: levels[index].label, color: levels[index].color }
 }
 
+/** @returns {JSX.Element} */
 const Register = () => {
   const [form, setForm] = useState({
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    agreedToTerms: false
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
@@ -52,8 +83,8 @@ const Register = () => {
   const { login } = useAuth()
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setForm((s) => ({ ...s, [name]: value }))
+    const { name, value, type, checked } = e.target
+    setForm((s) => ({ ...s, [name]: type === 'checkbox' ? checked : value }))
   }
 
   const validate = () => {
@@ -62,6 +93,7 @@ const Register = () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email.'
     if (form.password.length < 8) e.password = 'Minimum 8 characters.'
     if (form.password !== form.confirmPassword) e.confirmPassword = 'Passwords do not match.'
+    if (!form.agreedToTerms) e.agreedToTerms = 'You must agree to the Terms and Services to continue.'
     return e
   }
 
@@ -152,6 +184,8 @@ const Register = () => {
             onSuccess={(data) => {
               if (data?.token && data?.user) {
                 login({ token: data.token, user: data.user, remember: true })
+                // isNewUser is set by the backend LoginResponse only for first-time Google sign-ups.
+                // Returning Google users who happen to use this page should NOT re-fire trial events.
                 if (data.isNewUser) {
                   trackSignUp('google')
                   trackStartTrial()
@@ -263,6 +297,28 @@ const Register = () => {
               required
               autoComplete="new-password"
             />
+
+            {/* Terms agreement */}
+            <div>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="agreedToTerms"
+                  checked={form.agreedToTerms}
+                  onChange={handleChange}
+                  className="mt-0.5 w-4 h-4 rounded border-recipzee-border accent-recipzee-green flex-shrink-0 cursor-pointer"
+                />
+                <span className="text-sm text-recipzee-muted leading-snug">
+                  I agree to the{' '}
+                  <Link to="/terms" className="text-recipzee-accent hover:underline">Terms and Services</Link>
+                  {' '}and{' '}
+                  <Link to="/privacy" className="text-recipzee-accent hover:underline">Privacy Policy</Link>
+                </span>
+              </label>
+              {errors.agreedToTerms && (
+                <p className="mt-1.5 text-xs text-red-400">{errors.agreedToTerms}</p>
+              )}
+            </div>
 
             <Button type="submit" size="lg" className="w-full" disabled={loading}>
               {loading ? 'Creating Account...' : 'Continue'}

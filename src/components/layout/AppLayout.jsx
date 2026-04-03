@@ -1,3 +1,32 @@
+/**
+ * AppLayout.jsx — Primary three-column authenticated app shell for Recipzee.
+ *
+ * Layer: Layout.
+ *
+ * Structure (desktop):
+ *   ┌──────────────────────────────────────────────────────┐
+ *   │  Sidebar (fixed 260 px left)  │  Main  │ RightColumn │
+ *   │                               │  area  │ (fixed 320) │
+ *   └──────────────────────────────────────────────────────┘
+ *
+ * On mobile:
+ *   - A sticky top bar replaces the sidebar; a hamburger button opens a
+ *     slide-in drawer containing `SidebarPanel`.
+ *   - The right column is hidden entirely.
+ *   - Body scroll is locked while the drawer is open.
+ *
+ * Banner render order (top of main content column):
+ *   1. `EmailVerificationBanner` — shown first because it blocks key features.
+ *   2. `TrialExpiryBanner`       — shown second; handles both Day 7 gold banner
+ *      and the Day 8 post-trial modal.
+ *
+ * Guest view counting:
+ *   `bumpGuestSeenCount` is called on every render where auth state is known to
+ *   be unauthenticated, feeding the SoftWallRoot rolling-window counter.
+ *
+ * Props:
+ *   @prop {ReactNode} children — Page content rendered in the centred content area.
+ */
 import React, { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
@@ -9,6 +38,10 @@ import Footer from '../Footer'
 import { useAuth } from '../../context/AuthContext'
 import { bumpGuestSeenCount } from '../../utils/softwall'
 
+/**
+ * @param {{ children: ReactNode }} props
+ * @returns {JSX.Element}
+ */
 const AppLayout = ({ children }) => {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const { authed, loading } = useAuth()
@@ -108,7 +141,9 @@ const AppLayout = ({ children }) => {
         ].join(' ')}
       >
         <div className="w-full max-w-3xl mx-auto">
+          {/* Email verification banner renders first — it's the most urgent nudge */}
           <EmailVerificationBanner />
+          {/* Trial expiry banner/modal renders second, below email verification */}
           <TrialExpiryBanner />
           {children}
           <div className="h-8" />

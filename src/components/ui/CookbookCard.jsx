@@ -1,3 +1,24 @@
+/**
+ * CookbookCard.jsx — Clickable card representing a user's cookbook.
+ *
+ * Layer: Presentational / cookbook list UI.
+ *
+ * Navigates to /cookbook/:id on click or keyboard activation (Enter/Space).
+ * Displays the cover image (with an inline SVG placeholder if none), recipe
+ * count badge, public/private visibility badge, title, description, and
+ * creation date.  An optional `accentColor` renders a thin stripe at the
+ * bottom of the image as a visual differentiator.
+ *
+ * Props:
+ *   @prop {string}  [id='']              — Cookbook ID (used in the navigation URL).
+ *   @prop {string}  [title='Untitled']   — Cookbook name.
+ *   @prop {string}  [description='']     — Short description.
+ *   @prop {boolean} isPublic             — Controls the visibility badge.
+ *   @prop {string}  [createdAt]          — ISO date string for the creation date label.
+ *   @prop {string}  [coverImageUrl]      — URL for the cover photo; falls back to SVG placeholder.
+ *   @prop {number}  [recipeCount=0]      — Recipe count shown in the badge.
+ *   @prop {string|null} [accentColor=null] — CSS colour for the bottom accent stripe.
+ */
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Lock, Globe } from "lucide-react";

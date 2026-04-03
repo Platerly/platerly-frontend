@@ -1,3 +1,20 @@
+/**
+ * CookbookPage
+ *
+ * Layer: Authenticated, premium-gated cookbook management page.
+ * Route: /cookbooks
+ *
+ * What this page does:
+ *  - Lists all cookbooks owned by the current user
+ *  - Free users see the PremiumUpgradePrompt instead of the cookbook list
+ *  - Allows creating new cookbooks with a name, description, visibility setting
+ *    (public/private), and an accent colour from COLOR_PRESETS
+ *  - Each cookbook renders as a CookbookCard navigating to /cookbook/:id
+ *
+ * Tier gate:
+ *  - cookbooks are a premium feature; free users are redirected to the upgrade
+ *    prompt (usePremium hook provides isPremium and isOnTrial)
+ */
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";

@@ -1,3 +1,21 @@
+/**
+ * ErrorBoundary.jsx — React class-based error boundary for Recipzee.
+ *
+ * Layer: Application root / infrastructure.
+ *
+ * Wraps the entire component tree (see App.jsx) so any unhandled render error
+ * is caught before it can unmount the whole application.
+ *
+ * On error:
+ *   - Captures the exception to Sentry (if configured)
+ *   - Replaces the broken subtree with a friendly fallback UI
+ *   - Exposes raw error details in development only
+ *
+ * Props:
+ *   @prop {ReactNode} children  — The subtree to protect.
+ *   @prop {ReactNode} [fallback] — Optional custom fallback UI; if omitted the
+ *                                  built-in card with "Try Again" / "Go Home" is shown.
+ */
 import React from 'react'
 import * as Sentry from '@sentry/react'
 

@@ -1,3 +1,35 @@
+/**
+ * OnboardingPage
+ *
+ * Layer: Post-registration setup wizard (runs immediately after account creation
+ *        for both email and OAuth/Google sign-ups).
+ * Route: /onboarding
+ *
+ * What this page does:
+ *  - Two-step wizard:
+ *      Step 1 — Username & display name
+ *               Fetches suggested usernames from GET /api/User/suggest-usernames
+ *               Auto-populates the first suggestion; user can type a custom one
+ *               Validates username availability (debounced check)
+ *      Step 2 — Allergen profile setup
+ *               Displays COMMON_ALLERGENS (FDA Big 9 + EU allergens + Nickel)
+ *               User taps allergens they want to be warned about
+ *               Saves via PUT /api/Allergy/update with matched allergen IDs
+ *               Medical disclaimer acknowledgement is required before proceeding
+ *
+ * Profile setup note:
+ *  - Step 1 also saves the username and displayName via PATCH /api/User/me
+ *    before advancing to step 2
+ *  - After step 2, the user is navigated to /feed
+ *  - Both email-registered and Google OAuth users go through onboarding
+ *    (Google users often have an email address as their initial username)
+ *
+ * State managed:
+ *  - step (1 | 2), username, displayName — Step 1 form
+ *  - selectedAllergens, disclaimerAcknowledged, allAllergies — Step 2 form
+ *  - usernameError, checkingUsername — async username validation feedback
+ *  - suggestions, loadingSuggestions, isCustomUsername — suggestion chip state
+ */
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -25,6 +57,7 @@ const COMMON_ALLERGENS = [
   { name: 'Nickel', label: 'Nickel' },
 ]
 
+/** @returns {JSX.Element} */
 export default function OnboardingPage() {
   const { user, token, setUser } = useAuth()
   const navigate = useNavigate()

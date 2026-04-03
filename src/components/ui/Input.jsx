@@ -1,3 +1,15 @@
+/**
+ * Input.jsx — Accessible, feature-rich text input primitive for Recipzee.
+ *
+ * Layer: Presentational / design system primitive.
+ *
+ * Features: label + required indicator, left/right icon slots, clearable ×
+ * button, password show/hide toggle, error + hint messages with ARIA
+ * describedby linkage, size variants (sm/md/lg), and automatic inputMode
+ * inference for mobile keyboards.
+ *
+ * All unrecognised props are forwarded to the underlying <input> element.
+ */
 import React, { forwardRef, useId, useState } from "react";
 import classNames from "classnames";
 

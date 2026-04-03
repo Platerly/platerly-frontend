@@ -1,3 +1,32 @@
+/**
+ * ExploreRecipesPage
+ *
+ * Layer: Public browsable index of Recipzee-indexed (externally-sourced) halal recipes.
+ *        Distinct from the user Feed which shows community-created recipes.
+ * Route: /explore-recipes
+ *
+ * What this page does:
+ *  - Searches the public indexed recipe catalogue with server-side filtering
+ *  - Filters: text query, cuisine, nickel load level, allergen exclusions, prep time
+ *  - Allergen exclusion multi-select shows the user's own allergen profile as options
+ *    (populated from /api/Allergy/my-allergies); user explicitly opts in to each exclusion
+ *  - `excludedAllergens` starts empty — the user's allergens are NOT auto-pre-selected
+ *    because automatic exclusion would silently hide recipes without the user knowing
+ *  - Paginated (20 per page) with smooth scroll-to-top on page change
+ *
+ * State managed:
+ *  - Filter state (query, cuisine, nickelLoad, excludedAllergens, prepTimeMax)
+ *  - Pagination state (page, totalCount, totalPages)
+ *  - allAllergens — user's allergen profile, used as options in the multi-select
+ *  - savedIds — optimistic local set of recipe IDs saved this session
+ *
+ * Allergen fetch note:
+ *  - Always fetched fresh from the API on mount — no sessionStorage caching.
+ *    Cached stale data would mean a user who just updated their profile in Settings
+ *    would see outdated allergen options here, causing confusing UX.
+ *  - Old stale cache keys (v1/v2/v3) are cleaned up on mount to prevent leftover
+ *    data from previous cache schemes from persisting in the browser.
+ */
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Search, SlidersHorizontal, ShieldCheck, ChevronLeft, ChevronRight, X, ChevronDown } from 'lucide-react'
@@ -54,6 +83,18 @@ function CardSkeleton() {
 }
 
 // ── Allergen multi-select dropdown ─────────────────────────────────────────
+/**
+ * Dropdown that lets the user choose which of their profile allergens to exclude
+ * from search results.  `allAllergens` is populated from the user's profile
+ * (GET /api/Allergy/my-allergies) — it only lists allergens the user has already
+ * flagged, not the entire allergen catalogue.
+ *
+ * Key design decision: `selected` starts as an empty array so nothing is excluded
+ * by default.  The user deliberately chooses what to filter out each session.
+ *
+ * @param {{ allAllergens: string[], selected: string[], onChange: (v: string[]) => void }} props
+ * @returns {JSX.Element}
+ */
 function AllergenMultiSelect({ allAllergens, selected, onChange }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
@@ -121,6 +162,7 @@ function AllergenMultiSelect({ allAllergens, selected, onChange }) {
 }
 
 // ── Main page ──────────────────────────────────────────────────────────────
+/** @returns {JSX.Element} */
 export default function ExploreRecipesPage() {
   const { token, authed } = useAuth()
   const { isPremium, isOnTrial } = usePremium()
@@ -154,13 +196,20 @@ export default function ExploreRecipesPage() {
   const debounceRef = useRef(null)
 
   // ── Clear any stale allergen caches from old versions ─────────────────
+  // Previous iterations of this page stored allergens in sessionStorage under
+  // versioned keys.  The current approach fetches fresh every time, but these
+  // leftover keys must be purged on mount to avoid stale data surfacing if the
+  // caching strategy is ever reinstated.
   useEffect(() => {
     sessionStorage.removeItem('rz_allergens_explore_v1')
     sessionStorage.removeItem('rz_allergens_explore_v2')
     sessionStorage.removeItem('rz_allergens_explore_v3')
   }, [])
 
-  // ── Fetch user's allergens (always fresh — reflects latest profile changes) ──
+  // ── Fetch user's allergens (always fresh — no sessionStorage) ────────
+  // Intentionally bypasses caching.  A user who just changed their allergen
+  // profile in Settings must see the updated list here immediately without
+  // having to do a hard refresh.  The fetch is cheap; stale data is harmful.
   useEffect(() => {
     if (!authed || !token) return
     fetch(`${API_BASE_URL}/api/Allergy/my-allergies`, {
@@ -410,6 +459,9 @@ export default function ExploreRecipesPage() {
                   isOnTrial={isOnTrial}
                   isSaved={savedIds.has(recipe.id)}
                   onSave={handleSave}
+                  // Pass the user's allergen profile into each card so it can
+                  // highlight relevant allergen warnings without an additional
+                  // per-card API call.
                   userAllergenNames={allAllergens}
                 />
               ))}

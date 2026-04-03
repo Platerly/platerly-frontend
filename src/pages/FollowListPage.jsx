@@ -1,3 +1,21 @@
+/**
+ * FollowListPage
+ *
+ * Layer: Authenticated page showing a user's followers or following list.
+ * Route: /profile/:username/followers  or  /profile/:username/following
+ *        (tab determined by the URL path segment)
+ *
+ * What this page does:
+ *  - Fetches GET /api/User/:username/followers or /following
+ *  - Renders each user as a UserRow with avatar, display name, @username
+ *  - Logged-in users can follow/unfollow each person from this list (except themselves)
+ *  - UserRow hides the follow button when viewing your own profile entry (isOwnProfile)
+ *
+ * State managed:
+ *  - users — list of {id, username, displayName, profileImageUrl, isFollowing}
+ *  - busy — set of user IDs currently being followed/unfollowed (prevents double-clicks)
+ *  - loading, error
+ */
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Users, UserPlus, UserMinus, ArrowLeft } from "lucide-react";

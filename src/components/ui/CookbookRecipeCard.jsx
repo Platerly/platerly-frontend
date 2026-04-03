@@ -1,3 +1,21 @@
+/**
+ * CookbookRecipeCard.jsx — Removable recipe card within a cookbook detail view.
+ *
+ * Layer: Presentational / cookbook feature.
+ *
+ * Clicking the image or title navigates to /recipe/:id.
+ * A hover-visible remove button (×) opens a ConfirmDialog before sending the
+ * DELETE request.  The component tries two URL patterns to handle backend
+ * routing differences (/recipes/:id vs /items/:id) and remembers the working
+ * route in localStorage (`platerly_cb_delete_route`) to avoid 404s on future
+ * requests.
+ *
+ * Props:
+ *   @prop {{ id?: string, recipeId?: string, title: string, imageUrl?: string,
+ *            description?: string }} [recipe={}] — Recipe data to display.
+ *   @prop {string}       cookbookId — The cookbook this recipe belongs to.
+ *   @prop {(id) => void} [onRemove] — Called with the recipe id after successful removal.
+ */
 // src/components/ui/CookbookRecipeCard.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";

@@ -1,3 +1,34 @@
+/**
+ * NotificationBell.jsx — Notification bell icon with unread badge and dropdown.
+ *
+ * Layer: Feature UI / layout widget.
+ *
+ * Unread badge:
+ *   - `unreadCount` is sourced from NotificationsContext (which polls the API).
+ *   - The badge renders a red dot with the count, capped at "99+".
+ *   - The ARIA label includes the count for screen readers.
+ *
+ * Click-to-mark-read:
+ *   - Clicking a notification item calls `markAsRead(id)` from context, which
+ *     optimistically decrements the unread count and PATCHes the API.
+ *   - "Mark all read" calls `markAllAsRead()` in one API call.
+ *
+ * Dropdown:
+ *   - Shows the 5 most recent notifications with type-specific icons and
+ *     relative timestamps.
+ *   - Closes on outside click or Escape key.
+ *
+ * Variants:
+ *   - `'default'` — Full dropdown bell (used in RightColumn / sidebar).
+ *   - `'compact'` — Simple Link to /notifications (used in mobile tab bar
+ *     where a full dropdown is not practical).
+ *
+ * The component renders null for unauthenticated users.
+ *
+ * Props:
+ *   @prop {'default'|'compact'} [variant='default']
+ */
+
 import React, { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Bell, Heart, MessageSquare, UserPlus, Repeat2, AtSign, X, Check } from 'lucide-react'

@@ -1,9 +1,37 @@
+/**
+ * TrialExpiryBanner.jsx — Trial expiry notifications for Recipzee.
+ *
+ * Layer: UI / monetisation nudge.
+ *
+ * Rendered inside AppLayout, immediately after EmailVerificationBanner.
+ * Returns null while loading or for premium subscribers.
+ *
+ * Two distinct UI states:
+ *
+ *   Day 7 gold banner (`showEndingBanner`):
+ *     - Condition: user `isOnTrial` AND `trialDaysRemaining <= 1`.
+ *     - A persistent amber/gold banner at the top of the content column.
+ *     - Dismissable per-session via the × button (`bannerDismissed` state;
+ *       not persisted to localStorage — reappears on next page load).
+ *
+ *   Day 8 post-trial modal (`showDay8Modal`):
+ *     - Condition: trial has ended (not `isOnTrial`), not premium, `trialEndsAt`
+ *       was within the last 7 days, and the modal has not been shown before.
+ *     - A centred modal overlay with a backdrop.
+ *     - One-time display: `localStorage.setItem('pl_trial_day8_shown', '1')` is
+ *       written on dismissal so the modal never appears again.
+ *     - The `day8AlreadyShown` state is initialised from localStorage so the
+ *       modal is suppressed on the very first render if already dismissed.
+ *
+ * @returns {JSX.Element|null}
+ */
 // src/components/ui/TrialExpiryBanner.jsx
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { usePremium } from '../../hooks/usePremium'
 
+// localStorage key that prevents the Day 8 modal from appearing more than once
 const TRIAL_DAY8_KEY = 'pl_trial_day8_shown'
 
 /**
@@ -21,27 +49,29 @@ export default function TrialExpiryBanner() {
 
   const dismissModal = () => {
     setModalDismissed(true)
+    // Persist dismissal so the modal never shows again across sessions
     try { localStorage.setItem(TRIAL_DAY8_KEY, '1') } catch { /* ignore */ }
   }
 
   if (loading || isPremium) return null
 
-  // Day 8 modal: trial ended within 7 days, not on trial, not premium
+  // Calculate how many days have passed since the trial ended (positive = after end)
   const trialEndDate = trialEndsAt ? new Date(trialEndsAt) : null
   const daysSinceTrialEnd = trialEndDate
     ? (Date.now() - trialEndDate.getTime()) / (1000 * 60 * 60 * 24)
     : null
 
+  // Day 8 modal: shows once after trial end, within a 7-day grace window
   const showDay8Modal =
     !isOnTrial &&
     !isPremium &&
-    !day8AlreadyShown &&
-    !modalDismissed &&
+    !day8AlreadyShown &&       // localStorage flag prevents repeat display
+    !modalDismissed &&          // in-session dismiss
     daysSinceTrialEnd !== null &&
-    daysSinceTrialEnd >= 0 &&
-    daysSinceTrialEnd <= 7
+    daysSinceTrialEnd >= 0 &&   // trial has actually ended
+    daysSinceTrialEnd <= 7      // within 7-day re-engagement window
 
-  // Day 7 banner: on trial, 1 day or less remaining
+  // Day 7 gold banner: trial ending tomorrow (≤1 day remaining), dismissable per-session
   const showEndingBanner =
     isOnTrial &&
     trialDaysRemaining !== null &&

@@ -1,18 +1,38 @@
+/**
+ * AdminDashboard.jsx
+ * Layer: Admin
+ *
+ * Landing page for the admin panel. Displays three summary stat cards
+ * (prohibited ingredients count, ingredient categories count, substitution
+ * rules count) fetched in parallel on mount. Also renders quick-action
+ * navigation links and embeds the RecipeIndexPanel sub-component.
+ *
+ * The "User Management" quick action is only shown to SuperAdmin users because
+ * promote/demote operations are restricted to that role.
+ *
+ * Access: JWT-authenticated admin/superadmin users only. This page is rendered
+ * inside the admin layout which itself guards the route.
+ */
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { API_BASE_URL } from "../../utils/api";
 import RecipeIndexPanel from "./RecipeIndexPanel";
 
+/**
+ * Main admin dashboard component.
+ * @returns {JSX.Element}
+ */
 const AdminDashboard = () => {
   const { token, user } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Memoised auth header so it is stable across renders
   const authHeader = useMemo(() => (token ? { Authorization: `Bearer ${token}` } : {}), [token]);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch various admin stats
+        // Fire three independent requests simultaneously to populate the stat cards
         const [prohibited, categories, substitutions] = await Promise.all([
           fetch(`${API_BASE_URL}/api/admin/prohibited-ingredients`, { headers: authHeader }).then(r => r.json()).catch(() => []),
           fetch(`${API_BASE_URL}/api/admin/categories`, { headers: authHeader }).then(r => r.json()).catch(() => []),
@@ -34,6 +54,7 @@ const AdminDashboard = () => {
     if (token) fetchStats();
   }, [token, authHeader]);
 
+  // Backend may return "role" (lowercase) or "Role" (PascalCase) depending on serialiser settings
   const isSuperAdmin = user?.role === "SuperAdmin" || user?.Role === "SuperAdmin";
 
   return (
@@ -132,6 +153,11 @@ const AdminDashboard = () => {
   );
 };
 
+/**
+ * Displays a single dashboard metric with a coloured icon.
+ * @param {{ title: string, value: string|number, icon: string, color: "red"|"blue"|"green"|"purple" }} props
+ * @returns {JSX.Element}
+ */
 const StatCard = ({ title, value, icon, color }) => {
   const colors = {
     red: "bg-red-50 text-red-600",
@@ -157,6 +183,11 @@ const StatCard = ({ title, value, icon, color }) => {
   );
 };
 
+/**
+ * Renders a bordered, hover-coloured navigation card linking to an admin sub-page.
+ * @param {{ to: string, label: string, description: string, color: "red"|"blue"|"green"|"purple" }} props
+ * @returns {JSX.Element}
+ */
 const QuickAction = ({ to, label, description, color }) => {
   const colors = {
     red: "hover:border-red-300 hover:bg-red-50",

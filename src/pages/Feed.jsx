@@ -1,3 +1,31 @@
+/**
+ * Feed
+ *
+ * Layer: Main social feed — the home screen for logged-in users.
+ * Route: /feed (query params: tab, difficulty, recipeType, tags, requireAllTags,
+ *               hideRemixes, hideMyAllergens)
+ *
+ * What this page does:
+ *  - Two tabs: "Explore" (all public recipes, server-filtered) and
+ *    "Following" (recipes from accounts the user follows, client-filtered)
+ *  - Explore tab: filters are passed as query params to GET /api/feed/explore
+ *  - Following tab: full list is fetched, then filtered client-side because the
+ *    following endpoint does not support server-side filter params
+ *  - Infinite scroll via IntersectionObserver on a sentinel div at the bottom
+ *  - Recipe type pill filter row displayed under the sticky tab bar
+ *
+ * Feed fetch note — onClick={() => fetchFeed()} vs onClick={fetchFeed}:
+ *  The "Try again" button uses `onClick={() => fetchFeed()}` (arrow wrapper) deliberately.
+ *  If written as `onClick={fetchFeed}`, React passes the SyntheticEvent object as the
+ *  first argument, which would be received as `pageNum`, causing fetchFeed to try to
+ *  build a URL with pageNum = [object Object] instead of the default value of 1.
+ *
+ * State managed:
+ *  - recipes — current page of loaded recipe cards
+ *  - userAllergies — cached in sessionStorage (rz_allergies_v1) for in-session reuse
+ *  - tab, difficulty, recipeType, tags, hideRemixes, hideMyAllergens — URL search params
+ *  - page, hasMore, loading, loadingMore — pagination / infinite scroll state
+ */
 import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
@@ -18,6 +46,7 @@ const SkeletonPost = () => (
   </div>
 )
 
+/** @returns {JSX.Element} */
 const Feed = () => {
   const [recipes, setRecipes] = useState([])
   const [userAllergies, setUserAllergies] = useState([])
@@ -34,7 +63,8 @@ const Feed = () => {
   const { authed, token, loading: authLoading } = useAuth()
   const { apiFetch } = useApi()
 
-  // Tabs
+  // Active tab: "explore" is the default; "following" requires auth
+  // Unauthenticated users trying to access ?tab=following silently fall back to explore
   const rawTab = sp.get('tab')
   const tab = authed && rawTab === 'following' ? 'following' : 'explore'
 
@@ -334,6 +364,8 @@ const Feed = () => {
           <div className="rounded-xl border border-recipzee-light bg-recipzee-card p-6 text-center">
             <p className="text-recipzee-subtle">{error}</p>
             <button
+              // Arrow wrapper is intentional: onClick={fetchFeed} would pass the
+              // SyntheticEvent as `pageNum`, producing a broken API URL.
               onClick={() => fetchFeed()}
               className="mt-4 inline-flex items-center rounded-md bg-recipzee-green text-recipzee-dark px-4 py-2 hover:opacity-90"
             >

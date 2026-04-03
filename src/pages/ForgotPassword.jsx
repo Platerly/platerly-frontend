@@ -1,9 +1,22 @@
+/**
+ * ForgotPassword
+ *
+ * Layer: Public password-reset request page.
+ * Route: /forgot-password
+ *
+ * Flow:
+ *  1. User enters their email address
+ *  2. POST to forgotPassword() helper (maps to POST /api/Auth/forgot-password)
+ *  3. On success, navigates to /login with a toast confirming the email was sent
+ *     (vague message intentional — avoids confirming whether an account exists)
+ */
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { forgotPassword } from "../utils/api";
 import { useNavigate, Link } from "react-router-dom";
 import logger from "../utils/logger";
 
+/** @returns {JSX.Element} */
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);

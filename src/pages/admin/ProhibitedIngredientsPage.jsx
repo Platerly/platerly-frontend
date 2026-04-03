@@ -1,7 +1,34 @@
+/**
+ * ProhibitedIngredientsPage.jsx
+ * Layer: Admin
+ *
+ * Full CRUD management UI for the prohibited-ingredients blocklist.
+ * Each entry specifies a keyword that the allergen scan engine matches
+ * against recipe ingredient text.
+ *
+ * Operations:
+ *   - List:   GET  /api/admin/prohibited-ingredients
+ *   - Create: POST /api/admin/prohibited-ingredients
+ *   - Update: PUT  /api/admin/prohibited-ingredients/:id
+ *   - Delete: DELETE /api/admin/prohibited-ingredients/:id
+ *
+ * Form fields:
+ *   - keyword    — the text to match
+ *   - category   — Haram | Allergen | Health | Dangerous
+ *   - severity   — Low | Medium | High | Critical
+ *   - matchType  — Exact | Contains | StartsWith | Regex
+ *   - isActive   — whether the rule is currently enforced
+ *   - reason / adminNotes — human-readable context, not shown to end users
+ *
+ * Access: JWT-authenticated admin users only.
+ */
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { API_BASE_URL } from "../../utils/api";
 
+/**
+ * @returns {JSX.Element}
+ */
 const ProhibitedIngredientsPage = () => {
   const { token } = useAuth();
   const [ingredients, setIngredients] = useState([]);
@@ -43,6 +70,7 @@ const ProhibitedIngredientsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // When editingId is set, issue a PUT to update; otherwise POST to create
       const url = editingId
         ? `${API_BASE_URL}/api/admin/prohibited-ingredients/${editingId}`
         : `${API_BASE_URL}/api/admin/prohibited-ingredients`;
@@ -105,6 +133,7 @@ const ProhibitedIngredientsPage = () => {
     });
   };
 
+  // Badge colour maps — keyed on the enum values returned by the API
   const categoryColors = {
     Haram: "bg-red-100 text-red-800",
     Allergen: "bg-yellow-100 text-yellow-800",

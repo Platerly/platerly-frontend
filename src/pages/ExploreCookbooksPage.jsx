@@ -1,3 +1,14 @@
+/**
+ * ExploreCookbooksPage
+ *
+ * Layer: Public cookbook discovery page.
+ * Route: /explore-cookbooks
+ *
+ * Fetches GET /api/Cookbook/public (paginated) and displays a grid of public cookbooks.
+ * Includes a search bar that filters cookbooks by title server-side.
+ * Pagination with previous/next controls.
+ * Authenticated users can navigate into each cookbook to browse its recipes.
+ */
 // src/pages/ExploreCookbooksPage.jsx
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";

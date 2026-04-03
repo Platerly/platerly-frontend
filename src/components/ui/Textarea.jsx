@@ -1,3 +1,13 @@
+/**
+ * Textarea.jsx — Accessible, auto-growing textarea primitive for Recipzee.
+ *
+ * Layer: Presentational / design system primitive.
+ *
+ * Features: optional label + required indicator, auto-grow on content change
+ * (respects `autoGrow` prop), error state with red border and message,
+ * and a 16 px base font on mobile to prevent iOS auto-zoom on focus.
+ * All unrecognised props are forwarded to the underlying <textarea> element.
+ */
 import React, { useEffect, useRef } from 'react'
 import classNames from 'classnames'
 

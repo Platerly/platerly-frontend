@@ -1,3 +1,25 @@
+/**
+ * ShoppingListPage
+ *
+ * Layer: Authenticated, premium/trial-gated shopping list manager.
+ * Route: /shopping-list
+ *
+ * What this page does:
+ *  - Lets premium/trial users create and manage multiple named shopping lists
+ *  - Items can be manually added, checked off, or deleted
+ *  - Recipe-generated items (added via MealPlannerPage or RecipeDetailsPage) are
+ *    grouped separately under "From Recipes" within each list
+ *  - Lists can be shared (copy link) or cleared in bulk
+ *  - Confirm dialogs prevent accidental destructive actions (clear all, clear recipe items, delete list)
+ *  - Free users see an upgrade prompt
+ *
+ * State managed:
+ *  - lists — user's shopping list metadata
+ *  - selectedListId, selectedList — currently viewed list with items
+ *  - newListName, showNewListForm — create form state
+ *  - newItemName, addingItem — add item form state
+ *  - deleteListId, showClearAllConfirm, showClearRecipesConfirm — confirm dialog triggers
+ */
 import React, { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {

@@ -1,3 +1,20 @@
+/**
+ * ProhibitedIngredientsError.jsx — Inline error display for prohibited ingredient violations.
+ *
+ * Layer: Presentational / form feedback.
+ *
+ * Shown on the recipe create/edit form when the API returns a 422 response
+ * indicating one or more ingredients match the admin-managed prohibited
+ * ingredients list (managed via AdminLayout → /admin/prohibited-ingredients).
+ *
+ * Each violation object is passed through `formatViolation` (from parseApiError)
+ * to extract a human-readable ingredient name and reason before rendering.
+ * The component renders nothing when `violations` is empty or undefined.
+ *
+ * Props:
+ *   @prop {string}    [message]    — Optional override for the heading text.
+ *   @prop {object[]}  violations   — Array of violation objects from the API response.
+ */
 import { AlertTriangle, XCircle } from 'lucide-react'
 import { formatViolation } from '../../utils/parseApiError'
 

@@ -1,3 +1,18 @@
+/**
+ * Footer.jsx — Site-wide footer for Recipzee.
+ *
+ * Layer: Presentational / layout.
+ *
+ * Renders an allergen disclaimer, copyright notice, and navigation links
+ * (Terms, Privacy, Guidelines, Allergy, Refunds, Contact, Roadmap, API).
+ *
+ * Props:
+ *   @prop {'full'|'contained'} [variant='full'] — 'contained' constrains the
+ *     inner width to max-w-3xl (used inside AppLayout's centred content column);
+ *     'full' uses the wider max-w-6xl layout.
+ *   @prop {string} [className=''] — Additional Tailwind classes applied to the
+ *     outer <footer> element.
+ */
 import React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -48,6 +63,9 @@ const Footer = ({ variant = 'full', className = '' }) => {
             </Link>
             <Link to="/contact" className="hover:text-white transition-colors">
               Contact
+            </Link>
+            <Link to="/research" className="hover:text-white transition-colors">
+              Research
             </Link>
             <Link to="/roadmap" className="hover:text-white transition-colors">
               Roadmap

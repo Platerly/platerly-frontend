@@ -8,7 +8,21 @@ import { useNotifications } from '../context/NotificationsContext'
 import { useAuth } from '../context/AuthContext'
 
 /**
- * NotificationsPage - Full notifications view with filtering and actions
+ * NotificationsPage
+ *
+ * Layer: Authenticated full-page notifications centre.
+ * Route: /notifications
+ *
+ * What this page does:
+ *  - Full view of all notifications (likes, comments, replies, follows, reposts,
+ *    mentions, cookbook invites, allergen alerts, trending alerts)
+ *  - Consumes NotificationsContext (shared with the header bell badge) so the
+ *    same data source drives both the badge count and this page
+ *  - Actions: mark one as read, mark all as read, delete individual notifications
+ *  - formatRelativeTime() renders human-friendly timestamps ("5 min ago", "3 days ago")
+ *  - getNotificationIcon() maps notification type strings to coloured Lucide icons
+ *
+ * State: entirely managed by NotificationsContext — no local fetch state needed here
  */
 
 const formatRelativeTime = (dateString) => {

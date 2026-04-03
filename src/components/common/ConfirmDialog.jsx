@@ -1,3 +1,35 @@
+/**
+ * ConfirmDialog.jsx — Accessible, reusable confirmation dialog for Recipzee.
+ *
+ * Layer: Common UI / presentational.
+ *
+ * Built on top of Radix UI AlertDialog primitives (see alert-dialog.jsx) which
+ * handle focus-trap, ARIA roles, and keyboard dismissal automatically.
+ *
+ * Two usage modes:
+ *   1. Trigger mode (default): provide a `trigger` element or omit it for a
+ *      default destructive button; the dialog opens when the trigger is clicked.
+ *   2. Controlled mode: provide `open` + `onOpenChange` props and manage
+ *      visibility externally (used by CommentsSection, CookbookRecipeCard, etc.).
+ *
+ * The `tone` prop switches the icon and button colour between danger (red) and
+ * a neutral/confirmation style (emerald).
+ *
+ * Props:
+ *   @prop {string}    [title]          — Dialog heading.
+ *   @prop {string}    [description]    — Body text explaining the consequence.
+ *   @prop {string}    [confirmLabel]   — Label for the confirm button.
+ *   @prop {string}    [cancelLabel]    — Label for the cancel button.
+ *   @prop {'danger'|'default'} [tone='danger'] — Visual style (red vs emerald).
+ *   @prop {ReactNode} [icon]           — Custom icon element; falls back to Trash2/AlertTriangle.
+ *   @prop {() => void|Promise<void>} [onConfirm]  — Async-safe confirm callback.
+ *   @prop {() => void}               [onCancel]   — Called when cancelled (controlled mode).
+ *   @prop {boolean}   [disabled=false] — Disables the trigger button.
+ *   @prop {ReactNode} [trigger]        — Custom trigger element (trigger mode).
+ *   @prop {boolean}   [open]           — Controlled open state.
+ *   @prop {(open: boolean) => void} [onOpenChange] — Controlled state setter.
+ */
+
 import React from "react"
 import { AlertTriangle, Trash2 } from "lucide-react"
 import {

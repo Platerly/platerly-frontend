@@ -1,7 +1,35 @@
+/**
+ * UserManagementPage.jsx
+ * Layer: Admin (SuperAdmin only)
+ *
+ * Allows SuperAdmins to:
+ *   1. Search for any registered user by username or email
+ *      (GET /api/superadmin/users/search?query=)
+ *   2. Promote a User to Moderator or Admin
+ *      (POST /api/superadmin/promote  { userId, newRole })
+ *   3. Demote any Admin/Moderator back to User
+ *      (POST /api/superadmin/demote   { userId })
+ *   4. View the full list of current admin-level accounts
+ *      (GET /api/superadmin/admins)
+ *
+ * SuperAdmin accounts cannot be demoted from this UI — the "Demote" button
+ * is suppressed for any row where role === "SuperAdmin".
+ *
+ * All promote/demote actions are confirmed via window.confirm before the
+ * API call is made, and are automatically recorded in the audit log by
+ * the backend.
+ *
+ * Access: SuperAdmin role required. The route should be guarded in the
+ * admin layout; this page also shows a red security-warning banner as a
+ * secondary reminder.
+ */
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { API_BASE_URL } from "../../utils/api";
 
+/**
+ * @returns {JSX.Element}
+ */
 const UserManagementPage = () => {
   const { token } = useAuth();
   const [admins, setAdmins] = useState([]);
@@ -97,6 +125,7 @@ const UserManagementPage = () => {
     }
   };
 
+  // Badge colour map for every possible role value
   const roleColors = {
     User: "bg-gray-100 text-gray-800",
     Moderator: "bg-blue-100 text-blue-800",
@@ -244,6 +273,7 @@ const UserManagementPage = () => {
                     : "N/A"}
                 </td>
                 <td className="px-6 py-4">
+                  {/* SuperAdmins are intentionally excluded from demotion via this UI */}
                   {admin.role !== "SuperAdmin" && (
                     <button
                       onClick={() => handleDemote(admin.id)}

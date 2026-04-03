@@ -1,8 +1,23 @@
+/**
+ * ResendVerification
+ *
+ * Layer: Public utility page for users whose initial verification email expired.
+ * Route: /verify/resend
+ *
+ * Flow:
+ *  1. User enters their email address
+ *  2. POST /api/Auth/resend-verification-email
+ *  3. 200 → success state ("check your inbox")
+ *     400 → email already verified → success state + auto-navigate to /login after 2s
+ *     404 → no account with that email → error state
+ *     Other errors → generic error state
+ */
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Check, AlertCircle, ArrowLeft } from 'lucide-react'
 import { API_BASE_URL } from '../utils/api'
 
+/** @returns {JSX.Element} */
 const ResendVerification = () => {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)

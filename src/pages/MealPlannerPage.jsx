@@ -1,3 +1,23 @@
+/**
+ * MealPlannerPage
+ *
+ * Layer: Authenticated, premium/trial-gated meal planning page.
+ * Route: /meal-planner
+ *
+ * What this page does:
+ *  - Lets premium/trial users create named weekly meal plans with a date range
+ *  - Within a plan: assign recipes to specific days and meal types (Breakfast/Lunch/Dinner/Snack)
+ *  - Calendar week view navigates with ChevronLeft/ChevronRight buttons
+ *  - Recipe picker modal searches the user's own recipes and cookbook recipes
+ *  - Generates a shopping list from the plan's ingredients via a dedicated button
+ *  - Free users without premium access see an upgrade prompt
+ *
+ * State managed:
+ *  - plans — list of the user's meal plans
+ *  - selectedPlanId, selectedPlan — currently viewed plan and its full data
+ *  - showCreateForm, newPlanName, newPlanStart, newPlanEnd — create form state
+ *  - showRecipePicker, pickerDate, pickerMealType — recipe picker modal state
+ */
 import React, { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {

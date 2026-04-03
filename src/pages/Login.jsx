@@ -1,3 +1,20 @@
+/**
+ * Login
+ *
+ * Layer: Public authentication page.
+ * Route: /login  (honours ?redirect= query param for post-login navigation)
+ *
+ * What this page does:
+ *  - Primary path: Google OAuth via SocialLoginButtons component
+ *  - Secondary path: collapsible email/password form (hidden by default to reduce friction)
+ *  - On successful login, writes JWT + user object via AuthContext.login()
+ *  - Redirects to ?redirect= path after login, falling back to /feed
+ *    (redirect is sanitised to same-site only — no open-redirect)
+ *  - OAuth users whose username contains '@' (email-based username) are sent to
+ *    /onboarding to set a proper username before using the app
+ *  - `remember` checkbox controls whether the token is stored in localStorage (persistent)
+ *    or sessionStorage (session-only); default is unchecked for security
+ */
 import { useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { ChevronDown, ChevronUp } from 'lucide-react'
@@ -25,6 +42,7 @@ const needsOnboarding = (user) => {
   return user.username.includes('@')
 }
 
+/** @returns {JSX.Element} */
 const Login = () => {
   const { login } = useAuth()
   const [form, setForm] = useState({ email: '', password: '' })

@@ -1,3 +1,20 @@
+/**
+ * SaveToCookbookSection
+ *
+ * Layer: Inline save-to-cookbook UI component (non-portalled, used inside RecipeDetailsPage).
+ * Distinct from SaveToCookbookDropdown which is a portalled floating dropdown.
+ *
+ * What this component does:
+ *  - Fetches the user's own cookbooks and collaborative cookbooks in parallel
+ *  - Renders a flat list of cookbook rows the user can save to, grouped by ownership
+ *  - POST /api/Cookbook/:cookbookId/recipes on row click; tracks savedTo as a local Set
+ *    for optimistic "already saved" styling without a re-fetch
+ *  - `onCreatedNewCookbook` callback is called when the user creates a new cookbook
+ *    from within this section (triggers a refresh of the cookbook list)
+ *
+ * @param {{ recipeId: string, onCreatedNewCookbook?: () => void }} props
+ * @returns {JSX.Element}
+ */
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../utils/api";
@@ -25,6 +42,7 @@ const SkeletonRow = () => (
   </div>
 );
 
+/** @returns {JSX.Element} */
 const SaveToCookbookSection = ({ recipeId, onCreatedNewCookbook }) => {
   const { token } = useAuth();
   const headers = useMemo(() => (token ? { Authorization: `Bearer ${token}` } : {}), [token]);

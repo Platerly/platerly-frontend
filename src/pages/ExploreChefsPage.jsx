@@ -1,3 +1,13 @@
+/**
+ * ExploreChefsPage
+ *
+ * Layer: Public chef/user discovery page.
+ * Route: /explore-chefs
+ *
+ * Fetches GET /api/User/explore and displays a grid of chef cards.
+ * Each card shows the chef's avatar, name, recipe count, and a "View Profile" button.
+ * The list is read-only and unauthenticated — no follow action here.
+ */
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChefHat, Users, ArrowRight } from 'lucide-react'

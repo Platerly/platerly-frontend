@@ -1,3 +1,30 @@
+/**
+ * main.jsx — Layer: Bootstrap / Application entry point
+ *
+ * Mounts the React application into the DOM.  Execution order is intentional:
+ *
+ *  1. `./sentry`          — Sentry is imported first (side-effectful) so it is
+ *                           active before any React code runs, capturing bootstrap errors.
+ *  2. React / ReactDOM    — Core renderer.
+ *  3. BrowserRouter       — HTML5 history-based routing.
+ *  4. HelmetProvider      — Provides <head> management (og:tags, page titles) to all routes.
+ *  5. AuthProvider        — Session bootstrap: reads stored token / attempts silent refresh.
+ *                           Must wrap NotificationsProvider because notifications depend on authed state.
+ *  6. NotificationsProvider — Polling and notification state; requires AuthContext.
+ *  7. AppRoutes           — Route definitions (lazy-loaded pages, RequireAuth guards).
+ *  8. SoftWallRoot        — Guest engagement prompt; rendered outside routes so it overlays any page.
+ *  9. Toaster             — react-hot-toast portal; outside routes to survive page transitions.
+ *
+ * GA4 initialisation:
+ *  Google Analytics is initialised here (not in sentry.js) because it is a
+ *  separate concern from error tracking.  It only fires in production when
+ *  VITE_GA_ID is set.  An initial 'pageview' is sent for the landing page;
+ *  subsequent page views are tracked by the RouteTracker component in AppRoutes.jsx.
+ *
+ * www canonicalisation:
+ *  In production, bare `recipzee.com` is immediately redirected to `www.recipzee.com`
+ *  before React renders to avoid duplicate-domain indexing issues.
+ */
 import "./sentry";
 import React from 'react'
 import ReactDOM from 'react-dom/client'
@@ -12,25 +39,35 @@ import SoftWallRoot from './components/softwall/SoftWallRoot'
 import ReactGA from "react-ga4";
 
 // Temporary canonicalization in production: force www
+// Redirects recipzee.com → www.recipzee.com to consolidate SEO authority
 if (import.meta.env.PROD && location.hostname === 'recipzee.com') {
   location.replace(`https://www.recipzee.com${location.pathname}${location.search}${location.hash}`);
 }
 
 
-// Initialize GA only in production
+// Initialize GA only in production when the measurement ID is available
 if (import.meta.env.VITE_GA_ID && import.meta.env.VITE_ENV === "production") {
   ReactGA.initialize(import.meta.env.VITE_GA_ID);
+  // Fire an initial pageview for the entry URL (SPA — only happens once on load)
   ReactGA.send("pageview");
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
+  // StrictMode intentionally double-invokes certain lifecycle methods in dev
+  // to surface side-effect bugs — has no effect in production builds
   <React.StrictMode>
+    {/* HelmetProvider must be an outer ancestor so all pages can write <head> tags */}
     <HelmetProvider>
+      {/* AuthProvider bootstraps session state before any child component renders */}
       <AuthProvider>
+        {/* NotificationsProvider depends on AuthContext for the token and authed state */}
         <NotificationsProvider>
+          {/* BrowserRouter scopes history to the component tree below */}
           <BrowserRouter>
             <AppRoutes />
+            {/* SoftWallRoot renders outside routes so it can overlay any page */}
             <SoftWallRoot />
+            {/* Toaster renders toast notifications in a fixed portal overlay */}
             <Toaster position="top-right" reverseOrder={false} />
           </BrowserRouter>
         </NotificationsProvider>

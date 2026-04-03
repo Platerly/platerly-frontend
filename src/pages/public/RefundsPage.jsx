@@ -1,6 +1,25 @@
+/**
+ * RefundsPage.jsx
+ * Layer: Public / Legal
+ *
+ * Refund and subscription policy page covering:
+ *   - Monthly billing via Stripe at the posted price
+ *   - Automatic renewals and price-change notification
+ *   - Free trial conversion and cancellation timing
+ *   - Self-service cancellation via Settings > Billing
+ *   - Refund policy: no partial-period refunds; 14-day window for disputes
+ *   - Plan upgrades (immediate, Stripe-prorated) and downgrades (end of period)
+ *   - Failed-payment dunning and card update flow
+ *   - Chargeback handling and escalation path
+ *
+ * Rendered inside PublicPage for consistent layout and styling.
+ */
 import React from "react";
 import PublicPage from "./PublicPage";
 
+/**
+ * @returns {JSX.Element}
+ */
 const RefundsPage = () => (
   <PublicPage
     title="Refund & Subscription Policy"

@@ -1,12 +1,43 @@
+/**
+ * RecipeIndexPanel.jsx
+ * Layer: Admin (sub-component embedded in AdminDashboard)
+ *
+ * Displays the state of the Recipzee Bot recipe-indexing pipeline and allows
+ * admins to manage domain-level access controls.
+ *
+ * Data fetched on mount (and after mutations):
+ *   - GET /api/admin/recipe-index/stats          — aggregate counts + per-domain breakdown
+ *   - GET /api/admin/recipe-index/blocked-domains — domains permanently excluded from indexing
+ *
+ * Actions:
+ *   - Process opt-out: POST /api/admin/recipe-index/opt-out
+ *       Removes all recipes for the given domain and permanently blocks future crawls.
+ *       Payload: { domain, contactEmail?, reason? }
+ *   - Unblock domain: DELETE /api/admin/recipe-index/blocked-domains/:domain
+ *       Lifts the block so the domain can be re-indexed on the next crawl cycle.
+ *
+ * Stats displayed:
+ *   - Total indexed, analysed, pending analysis, discarded (Halal Gate failures)
+ *   - Per-domain table: robots.txt status (Allowed / Disallowed / Unchecked),
+ *     indexed count, discarded count, last run date
+ *
+ * Props:
+ *   @param {string} token — JWT access token passed down from AdminDashboard
+ */
 import { useEffect, useState, useCallback } from 'react'
 import { API_BASE_URL } from '../../utils/api'
 
+// Colour tokens for the robots.txt compliance status column
 const STATUS_COLOR = {
   Allowed:   'bg-green-100 text-green-700',
   Disallowed:'bg-red-100 text-red-700',
   Unchecked: 'bg-gray-100 text-gray-600',
 }
 
+/**
+ * @param {{ token: string }} props
+ * @returns {JSX.Element}
+ */
 export default function RecipeIndexPanel({ token }) {
   const [stats, setStats]           = useState(null)
   const [blocked, setBlocked]       = useState([])
@@ -20,6 +51,8 @@ export default function RecipeIndexPanel({ token }) {
 
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
 
+  // Fetch both stats and blocked-domain list in parallel; wrapped in useCallback
+  // so the effect dependency is stable across renders
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -47,6 +80,7 @@ export default function RecipeIndexPanel({ token }) {
     setSubmitting(true)
     setOptOutMsg(null)
     try {
+      // Normalise domain to lowercase before sending; fallback reason if omitted
       const res = await fetch(`${API_BASE_URL}/api/admin/recipe-index/opt-out`, {
         method: 'POST',
         headers,

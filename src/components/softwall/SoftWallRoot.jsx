@@ -1,3 +1,33 @@
+/**
+ * SoftWallRoot.jsx — Guest page-view tracking and soft/hard paywall overlays.
+ *
+ * Layer: Application root / monetisation gate.
+ *
+ * Wraps the entire app (inside AuthProvider) and overlays paywall UI once guest
+ * view thresholds are reached.  Authenticated users and exempt pages are skipped.
+ *
+ * Two-level paywall:
+ *
+ *   Soft wall (dismissable bottom banner):
+ *     - Shown when the rolling-window view count (`rollingViews`) reaches
+ *       `SOFT_BANNER_THRESHOLD` (= SOFT_WALL_DAILY_LIMIT from config).
+ *     - Dismissable via "Not now"; dismissal timestamp is persisted in
+ *       localStorage and respected for `SOFT_WALL_COOLDOWN_MS`.
+ *     - Uses a rolling time window (`SOFT_WALL_ROLLING_WINDOW_MS`) so bursts of
+ *       views are measured accurately.
+ *
+ *   Hard wall (blocking modal):
+ *     - Shown when the cumulative total view count reaches `HARD_WALL_THRESHOLD` (10).
+ *     - Not dismissable — user must sign up or log in to continue.
+ *     - Takes precedence over the soft wall.
+ *
+ * Only routes matching `CONTENT_ALLOWLIST` (/feed, /explore, /recipe, etc.)
+ * increment the counter and can show the wall.  Auth pages (`EXEMPT_PAGES`) are
+ * fully excluded.
+ *
+ * Props:
+ *   @prop {ReactNode} children — The full application subtree.
+ */
 // src/components/softwall/SoftWallRoot.jsx
 import React, { useEffect, useMemo, useState } from 'react'
 import { useLocation, Link } from 'react-router-dom'
@@ -31,8 +61,10 @@ const writeArray = (key, arr) => {
 }
 
 /* ---------- Path configuration ---------- */
-const HARD_WALL_THRESHOLD = 10  // Blocking modal after this many views
-const SOFT_BANNER_THRESHOLD = SOFT_WALL_DAILY_LIMIT  // Dismissable banner threshold
+// Cumulative view count that triggers the blocking hard wall (not dismissable)
+const HARD_WALL_THRESHOLD = 10
+// Rolling-window view count that triggers the dismissable soft banner
+const SOFT_BANNER_THRESHOLD = SOFT_WALL_DAILY_LIMIT
 
 // Only these paths COUNT toward the wall and can SHOW it
 const CONTENT_ALLOWLIST = [
@@ -80,10 +112,28 @@ const SoftWallRoot = ({ children }) => {
   // Banner dismissed state
   const [bannerDismissed, setBannerDismissed] = useState(false)
 
-  // Increment view count for guests on content routes
+  // Increment view count for guests on content routes.
+  // Deduplicated via seenTokens: each unique pathname is counted at most once per
+  // session so rapid tab switching or back-button navigation doesn't burn through
+  // the quota multiple times for the same page.
   useEffect(() => {
     if (!SOFT_WALL_ENABLED || authed) return
     if (!isContentPath(pathname)) return
+
+    // Skip if this exact path has already been counted in this session
+    const seenTokens = readArray(SOFT_WALL_KEYS.seenTokens)
+    if (seenTokens.includes(pathname)) {
+      // Still need to re-check cooldown on re-visit
+      const dismissedAt = readInt(SOFT_WALL_KEYS.dismissedAt, 0)
+      if (dismissedAt && (now() - dismissedAt) < SOFT_WALL_COOLDOWN_MS) {
+        setBannerDismissed(true)
+      }
+      return
+    }
+
+    // Mark this path as seen so it isn't counted again this session
+    seenTokens.push(pathname)
+    writeArray(SOFT_WALL_KEYS.seenTokens, seenTokens)
 
     // Update cumulative count
     const nextTotal = totalViews + 1

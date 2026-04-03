@@ -1,3 +1,23 @@
+/**
+ * RightColumn.jsx — Desktop right-hand panel for the Recipzee app shell.
+ *
+ * Layer: Layout / feature widget.
+ *
+ * Visible only on xl+ screens (hidden xl:block in AppLayout).
+ *
+ * Contains:
+ *   - Quick search box with typeahead (debounced 250 ms, GET /api/search)
+ *   - Trending recipes widget (GET /api/feed/trending-top, period toggle: week/month)
+ *   - Hidden gems widget (GET /api/feed/hidden-gems)
+ *   - Trending dietary tags (GET /api/feed/trending-tags)
+ *   - Trending ingredients widget (GET /api/feed/trending-ingredients — premium only)
+ *   - Feed filter panel (difficulty, tags, hide remixes, hide allergens) which
+ *     syncs with the URL search params via updateParam() helpers
+ *   - BottomSheet modal for mobile filter access
+ *
+ * Trending ingredients require premium: the API returns 402 for free users and
+ * the widget is hidden entirely for non-premium sessions.
+ */
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { API_BASE_URL } from '../../utils/api'

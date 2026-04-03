@@ -1,7 +1,26 @@
+/**
+ * AuditLogsPage.jsx
+ * Layer: Admin
+ *
+ * Displays a paginated, read-only table of all admin audit log entries from
+ * GET /api/admin/audit-logs?skip=&take=. Each row shows timestamp, admin
+ * username, IP address, action type (colour-coded), affected entity, a
+ * truncated description with an expandable diff (old/new JSON), and a
+ * success/failure status badge.
+ *
+ * Pagination is cursor-free (skip/take). Page size is fixed at 50 rows.
+ * "Previous" is disabled on page 0; "Next" is disabled when the current
+ * page returned fewer rows than the page size.
+ *
+ * Access: JWT-authenticated admin users only.
+ */
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { API_BASE_URL } from "../../utils/api";
 
+/**
+ * @returns {JSX.Element}
+ */
 const AuditLogsPage = () => {
   const { token } = useAuth();
   const [logs, setLogs] = useState([]);
@@ -9,6 +28,7 @@ const AuditLogsPage = () => {
   const [error, setError] = useState("");
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  // Number of rows fetched per request — also used to detect whether there is a next page
   const pageSize = 50;
 
   const authHeader = useMemo(() => (token ? { Authorization: `Bearer ${token}` } : {}), [token]);
@@ -22,6 +42,7 @@ const AuditLogsPage = () => {
       if (!res.ok) throw new Error("Failed to fetch audit logs");
       const data = await res.json();
       setLogs(data);
+      // If the API returned a full page, assume another page exists
       setHasMore(data.length === pageSize);
     } catch (err) {
       setError(err.message);
@@ -34,6 +55,7 @@ const AuditLogsPage = () => {
     if (token) fetchLogs(page);
   }, [token, page]);
 
+  // Colour map for the action-type badge in each log row
   const actionColors = {
     Create: "bg-green-100 text-green-800",
     Update: "bg-blue-100 text-blue-800",
@@ -107,6 +129,7 @@ const AuditLogsPage = () => {
                     {log.description}
                   </div>
                   {log.oldValues && (
+                    // Collapsible diff: red = old values, green = new values (stored as JSON strings)
                     <details className="text-xs text-gray-500 mt-1">
                       <summary className="cursor-pointer hover:text-gray-700">View Changes</summary>
                       <div className="mt-1 p-2 bg-gray-50 rounded text-xs overflow-auto max-h-32">

@@ -1,3 +1,34 @@
+/**
+ * Sidebar.jsx — Left-hand navigation sidebar for Recipzee (desktop + mobile tabs).
+ *
+ * Layer: Layout.
+ *
+ * Exports:
+ *   - `SidebarPanel`  — Pure panel content (logo + nav items + footer).  Rendered
+ *     inside both the desktop fixed aside and the mobile drawer in AppLayout.
+ *   - `Sidebar`       — Desktop wrapper (hidden on < lg); wraps SidebarPanel.
+ *   - `MobileTabBar`  — Fixed bottom 5-tab bar for mobile/tablet (hidden on md+).
+ *   - default export  — Composite: `<Sidebar /> + <MobileTabBar />` — used in AppLayout.
+ *
+ * Auth-conditional navigation:
+ *   Authed users see the full nav (Feed, Explore, Chefs, Create, Cookbooks,
+ *   Shopping List, Meal Planner, Notifications, Profile, Settings).
+ *   Guest users see only a "Join Recipzee" CTA in the panel, and the mobile
+ *   tab bar renders a single full-width "Join Recipzee" button.
+ *
+ * `useAuthed` helper:
+ *   Checks user/token from context AND falls back to localStorage/sessionStorage
+ *   so the sidebar shows the correct state on cold page loads before the async
+ *   auth context resolves.
+ *
+ * `FeedNavItem` / `FeedTabItem`:
+ *   Special variants that scroll-to-top instead of navigating when the user is
+ *   already on /feed, improving the "refresh feed" UX.
+ *
+ * `NavItem`:
+ *   Reusable nav link with an icon container, active highlight (green pill),
+ *   optional notification badge count, and keyboard focus ring.
+ */
 // src/components/layout/Sidebar.jsx
 import React from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
@@ -109,7 +140,11 @@ const FeedNavItem = ({ icon: Icon }) => {
   )
 }
 
-/* Authed check also reads persisted token for cold loads */
+/**
+ * Derives authenticated status from context OR persisted storage.
+ * Falls back to localStorage/sessionStorage so the sidebar renders the
+ * correct state immediately on cold page load, before AuthContext resolves.
+ */
 const useAuthed = (user, token) => {
   const stored =
     typeof window !== 'undefined' &&

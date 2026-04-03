@@ -1,3 +1,24 @@
+/**
+ * SocialLoginButtons.jsx — Google OAuth login button for Recipzee.
+ *
+ * Layer: Auth / UI.
+ *
+ * Google OAuth flow:
+ *   1. The Google Identity Services (GIS) script is loaded lazily on first click.
+ *   2. `google.accounts.oauth2.initTokenClient` opens the Google consent popup.
+ *   3. On success the callback receives an access token, which is then exchanged
+ *      for a Recipzee JWT via POST /api/Auth/external (provider: 'google').
+ *   4. `onSuccess(data)` is called with the Recipzee login response so the
+ *      parent page can call `login(data.token, data.user)`.
+ *
+ * The component renders nothing if `VITE_GOOGLE_CLIENT_ID` is not configured.
+ *
+ * Props:
+ *   @prop {(data: object) => void} [onSuccess]    — Called with the backend auth response.
+ *   @prop {(msg: string)  => void} [onError]      — Called with a human-readable error string.
+ *   @prop {boolean}                [disabled=false]— Disables the button (e.g. form submitting).
+ *   @prop {boolean}                [showDivider=true] — Whether to render the "or continue with email" divider.
+ */
 import { useState } from 'react'
 import { API_BASE_URL } from '../../utils/api'
 
@@ -12,6 +33,14 @@ import { API_BASE_URL } from '../../utils/api'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
+/**
+ * @param {Object}  props
+ * @param {(data: object) => void} [props.onSuccess]
+ * @param {(msg: string)  => void} [props.onError]
+ * @param {boolean} [props.disabled=false]
+ * @param {boolean} [props.showDivider=true]
+ * @returns {JSX.Element|null}
+ */
 export default function SocialLoginButtons({ onSuccess, onError, disabled = false, showDivider = true }) {
   const [loading, setLoading] = useState(false)
 
@@ -54,14 +83,16 @@ export default function SocialLoginButtons({ onSuccess, onError, disabled = fals
             return
           }
 
-          // Get ID token using the access token
+          // Use the Google access token to fetch the user's profile, then
+          // forward the token to our backend which validates it with Google
           try {
             const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
               headers: { Authorization: `Bearer ${response.access_token}` }
             })
-            await userInfoRes.json() // Validate response
+            await userInfoRes.json() // Validate the token is still live
 
-            // Send to our backend
+            // POST the access token to our backend; backend exchanges it with Google
+            // and returns a Recipzee JWT + user object
             const authRes = await fetch(`${API_BASE_URL}/api/Auth/external`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },

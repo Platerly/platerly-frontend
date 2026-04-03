@@ -1,3 +1,30 @@
+/**
+ * RemixPage
+ *
+ * Layer: Authenticated, premium/trial-gated recipe creation page.
+ * Route: /recipe/:originalId/remix
+ *
+ * What this page does:
+ *  - Lets a premium or trial user create a derivative ("remix") of an existing recipe
+ *  - Pre-fills the form with the original recipe's data fetched from the API
+ *  - Uses the same tag taxonomy as CreateRecipe (Course, Diet, Style, Healthiness + Sensitivity)
+ *  - Submits to POST /api/Recipe/:originalId/remix
+ *
+ * Subscription tier gate:
+ *  - The gate renders ONLY after `premiumLoading` is false to avoid a flash of the
+ *    lock screen for users who are premium but whose status hasn't loaded yet.
+ *  - If `!isPremium && !isOnTrial` after loading resolves, a full-page upgrade prompt
+ *    is shown and the form is never rendered.
+ *  - The API itself enforces the same gate with a 403, so the UI gate is UX-only.
+ *
+ * State managed:
+ *  - form — all text fields in a single consolidated object (avoids re-render churn)
+ *  - ingredients — array of {name, quantity}
+ *  - selectedGroups — single-select tag group values (course/diet/style/health)
+ *  - selectedSensitivities — multi-select sensitivity tags
+ *  - extraTags — free-form tags from autocomplete
+ *  - error — { message, violations } or null; violations trigger ProhibitedIngredientsError
+ */
 import React, { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { RefreshCw, Plus, X, Check, Clock, Flame, Lock } from 'lucide-react'
@@ -23,6 +50,7 @@ const TAG_GROUPS = [
 ]
 const SENSITIVITY_OPTIONS = ['Low Nickel','Nut Free','Soy Free','Egg Free','Shellfish Free']
 
+/** @returns {JSX.Element} */
 const RemixPage = () => {
   const { originalId } = useParams()
   const navigate = useNavigate()
@@ -348,7 +376,10 @@ const RemixPage = () => {
     }
   }
 
-  // Premium gate — show upgrade prompt for free users (wait for premium status to load)
+  // Premium/trial gate — must check `!premiumLoading` first.
+  // Without the premiumLoading guard, the lock screen would flash momentarily for
+  // premium users while usePremium is still fetching their status from the API.
+  // The gate waits for a definitive answer before deciding to block or allow access.
   if (!premiumLoading && !isPremium && !isOnTrial) {
     return (
       <div className="min-h-screen bg-recipzee-dark flex items-center justify-center px-4">

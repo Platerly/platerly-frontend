@@ -1,3 +1,12 @@
+/**
+ * AccountPage.jsx — User account settings page for Recipzee.
+ *
+ * Layer: Page / account management.
+ *
+ * Tabbed settings interface (tab selected via ?tab= URL param) covering:
+ * profile, allergen preferences, notifications, and subscription/billing.
+ * Reads auth state from AuthContext and tab from URL search params.
+ */
 // src/pages/AccountPage.jsx
 import { useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";

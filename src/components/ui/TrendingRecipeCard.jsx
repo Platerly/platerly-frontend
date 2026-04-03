@@ -1,3 +1,17 @@
+/**
+ * TrendingRecipeCard.jsx — Compact trending recipe card for the RightColumn widget.
+ *
+ * Layer: Presentational / sidebar widget.
+ *
+ * Displays a small thumbnail, a flame-icon rank badge (top-left), and the
+ * recipe title.  Clicking anywhere on the card navigates to /recipe/:id.
+ *
+ * Props:
+ *   @prop {string|number} id       — Recipe ID for navigation.
+ *   @prop {number}        rank     — Trending position (1-based) shown in the badge.
+ *   @prop {string}        title    — Recipe title.
+ *   @prop {string}        [imageUrl] — Thumbnail URL; falls back to /placeholder.png.
+ */
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Flame } from 'lucide-react'

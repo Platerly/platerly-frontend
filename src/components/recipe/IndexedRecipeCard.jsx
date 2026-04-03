@@ -1,3 +1,45 @@
+/**
+ * IndexedRecipeCard.jsx — Card for third-party indexed (scraped) recipes.
+ *
+ * Layer: Feature / recipe search results.
+ *
+ * Unlike RecipeCard (which shows user-created recipes), this card represents
+ * recipes sourced from external websites and stored in the indexed-recipes
+ * pipeline.  It links out to the original source rather than to an internal
+ * recipe detail page.
+ *
+ * Key behaviours:
+ *   - Nickel badge: only rendered when `userAllergenNames.includes('nickel')`.
+ *     The badge level (SAFE / MODERATE / EXCEEDED / Unknown) comes from
+ *     `recipe.nickelRiskLevel` which is set by the nickel scoring pipeline.
+ *
+ *   - `flaggedAllergens` filter: `allergenSummary.flaggedAllergens` is the
+ *     pre-computed list of allergen detail strings produced by the indexing
+ *     pipeline (e.g. "Gluten — Wheat flour").  When the user has an allergen
+ *     profile, we filter this list to only show matches.  Each user allergen
+ *     name may be underscore-separated (e.g. "dairy_lactose"), so we split on
+ *     '_' and check each term against the lowercased detail string.
+ *
+ *   - Ingredient pill colour classes: determined by `recipe.allergenSummary.overallRiskLevel`
+ *     mapped through ALLERGEN_RISK.  High = red, Medium = orange, Low = amber, None = emerald.
+ *
+ *   - Allergen detail gate: free users who have hit their weekly scan limit
+ *     (`atLimit && !isPremium && !isOnTrial`) see a blurred placeholder with an
+ *     "Upgrade" link instead of real allergen data.
+ *
+ *   - Save to Cookbook: calls `onSave(recipe)` which the parent uses to open
+ *     `IndexedSaveToCookbookModal`.
+ *
+ * Props:
+ *   @prop {object}   recipe                — Indexed recipe data from the API.
+ *   @prop {boolean}  [atLimit=false]       — True when the user has used all free scans this week.
+ *   @prop {boolean}  [isAuthenticated=false]
+ *   @prop {boolean}  [isPremium=false]
+ *   @prop {boolean}  [isOnTrial=false]
+ *   @prop {boolean}  [isSaved=false]       — Whether this recipe is already in a cookbook.
+ *   @prop {(recipe) => void} [onSave]      — Callback to open the save modal.
+ *   @prop {string[]} [userAllergenNames=[]] — Lower-cased allergen names from the user profile.
+ */
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ShieldCheck, Clock, ExternalLink, BookmarkPlus, ChevronDown, ChevronUp, AlertTriangle, Leaf } from 'lucide-react'
@@ -61,9 +103,12 @@ export default function IndexedRecipeCard({
   const canSeeAllergenDetail = isPremium || isOnTrial || !atLimit
   const allFlaggedAllergens  = recipe.allergenSummary?.flaggedAllergens ?? []
 
-  // If the user has an allergen profile, show only allergens that match it.
-  // Each user allergen name may be underscore-separated (e.g. "dairy_lactose")
-  // so we split on '_' and check each term against the detail string.
+  // Filter allergenSummary.flaggedAllergens to only those relevant to this user.
+  // `allFlaggedAllergens` is the pre-computed list of allergen detail strings
+  // produced by the indexing pipeline (e.g. "Gluten — Wheat flour").
+  // When no user allergen profile is set, all flagged allergens are shown.
+  // Each user allergen key may be compound (e.g. "dairy_lactose"), so we split
+  // on '_' and test each term independently against the lowercased detail string.
   const flaggedAllergens = userAllergenNames.length > 0
     ? allFlaggedAllergens.filter(detail => {
         const detailLower = detail.toLowerCase()
@@ -131,7 +176,8 @@ export default function IndexedRecipeCard({
 
         {/* ── Badges row ───────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-1.5">
-          {/* Nickel risk — only shown when user has nickel in their allergen profile */}
+          {/* Nickel badge — gated to users who have 'nickel' in their allergen profile.
+              The badge reflects the nickel risk tier calculated by the indexing pipeline. */}
           {userAllergenNames.includes('nickel') && (
             <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${nickelBadge.cls}`}>
               {nickelBadge.label}
@@ -191,6 +237,8 @@ export default function IndexedRecipeCard({
 
           {canSeeAllergenDetail ? (
             hasFlaggedAllergens ? (
+              // Allergen pills — colour comes from ALLERGEN_RISK mapped to overallRiskLevel:
+              // High = red, Medium = orange, Low = amber, None = emerald, Unknown = muted
               <div className="flex flex-wrap gap-1">
                 {flaggedAllergens.slice(0, 6).map((a, i) => (
                   <span key={i} className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs ${allergenRiskCls}`}>

@@ -1,8 +1,32 @@
+/**
+ * BotPage.jsx
+ * Layer: Public / Transparency
+ *
+ * Informational page explaining how the Recipzee Bot web crawler works,
+ * what data it collects, and how site owners can opt out of indexing.
+ *
+ * Sections:
+ *   - What Recipzee Bot is and how it identifies itself (user-agent string)
+ *   - What data the bot collects (title, ingredients, times, og:image, source URL)
+ *   - What it never collects (instructions, blog text, author images)
+ *   - How indexed recipes appear on Recipzee (discovery layer, not reproduction)
+ *   - Benefits for bloggers (qualified traffic, allergen exposure, no SEO impact)
+ *   - Robots.txt compliance explanation
+ *   - Two opt-out options:
+ *       Option 1 — add a robots.txt disallow rule (prevents future crawling)
+ *       Option 2 — email removal request (removes existing indexed recipes)
+ *   - Contact information
+ *
+ * Rendered inside PublicPage for consistent layout and styling.
+ */
 import React from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import PublicPage from './PublicPage'
 
+/**
+ * @returns {JSX.Element}
+ */
 const BotPage = () => (
   <PublicPage
     title="Recipzee Bot"

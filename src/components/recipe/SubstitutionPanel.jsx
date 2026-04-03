@@ -1,3 +1,36 @@
+/**
+ * SubstitutionPanel.jsx — Bottom-sheet panel for allergen-safe ingredient substitutions.
+ *
+ * Layer: Feature / recipe detail.
+ *
+ * Triggered when a user taps an ingredient on the recipe detail page.
+ * Slides up from the bottom of the screen as a modal sheet.
+ *
+ * API endpoints:
+ *   GET  /api/substitution/ingredient/name/:name — fetch substitution suggestions
+ *   POST /api/substitution/:id/vote              — upvote/downvote a suggestion (auth required)
+ *   POST /api/substitution/:id/used              — record that the user used a substitution (fire & forget)
+ *   POST /api/substitution                       — submit a new community suggestion (auth required)
+ *
+ * Allergen-safe substitution suggestions:
+ *   Each substitution card includes a `reason` tag (Allergy, DietaryPreference,
+ *   Cost, Taste, Health, Religious, Availability) and a `confidenceScore` bar.
+ *   Verified substitutions show a green "Verified" badge.
+ *
+ * Voting:
+ *   Optimistic UI — the vote counts are updated immediately and reverted if the
+ *   API call fails.  `votedIds` prevents duplicate votes in the same session.
+ *
+ * Suggest alternative form:
+ *   Collapsible form that requires authentication.  On submit, re-fetches the
+ *   substitution list so the new suggestion appears immediately.
+ *
+ * Props:
+ *   @prop {{ name: string } | null} ingredient — The ingredient being substituted;
+ *     null closes/hides the panel.
+ *   @prop {() => void}              onClose    — Callback to close the panel.
+ *   @prop {string|null}             token      — JWT token for voting/submitting.
+ */
 import React, { useEffect, useRef, useState } from 'react'
 import { X, ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, Check } from 'lucide-react'
 import { API_BASE_URL } from '../../utils/api'

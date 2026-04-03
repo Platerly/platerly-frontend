@@ -1,3 +1,32 @@
+/**
+ * RecipeLineage.jsx — Collapsible "Recipe Evolution" panel for a recipe detail page.
+ *
+ * Layer: Feature / recipe detail.
+ *
+ * Shows the remix ancestry chain and direct remixes of a given recipe.
+ * Content is fetched lazily — only when the user expands the panel.
+ *
+ * API calls (both fired in parallel on expand):
+ *   GET /api/Recipe/:id/lineage  — ordered ancestor chain (oldest first)
+ *   GET /api/Recipe/:id/remixes  — direct child remixes
+ *
+ * Premium gate:
+ *   - Free users see a blurred skeleton with an upgrade overlay instead of the
+ *     real lineage tree.  The fetch still fires (so the "original recipe" empty
+ *     state works for premium), but the blurred overlay prevents free users from
+ *     reading the data.
+ *   - Premium badge is shown in the header for non-premium users.
+ *
+ * Colour coding (HoloDot):
+ *   - amber  — original (root) recipe
+ *   - blue   — intermediate ancestor
+ *   - green  — current recipe being viewed
+ *
+ * Props:
+ *   @prop {string|number} recipeId    — The recipe to load lineage for.
+ *   @prop {boolean}       isRemix     — Whether this recipe was remixed from another.
+ *   @prop {number}        [remixCount=0] — Number of direct remixes (for the sub-heading).
+ */
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { GitBranch, Crown, ChevronRight, User, Calendar, Sparkles, Lock } from 'lucide-react'

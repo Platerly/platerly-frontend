@@ -1,3 +1,24 @@
+/**
+ * IngredientsPage.jsx
+ * Layer: Public / Ingredient directory
+ *
+ * Live-search ingredient directory that lets any visitor (no auth required)
+ * look up the nickel classification of an ingredient by name.
+ *
+ * Search: GET /api/public/ingredients/search?q=&limit=12
+ *   - Triggered with a 300 ms debounce after the user types.
+ *   - Minimum query length is 2 characters.
+ *   - Results are displayed as a 2-column grid of link cards, each showing
+ *     the ingredient name, nutritional category, and a NickelBadge.
+ *
+ * Default state (no search): shows a classification guide (LOW / MODERATE /
+ * HIGH thresholds) and a row of common-ingredient quick-search buttons.
+ *
+ * Data source: Rebelytics R&D Inc., v9.1.1 (257 studies, 20,575 measurements).
+ * Clinical thresholds: LOW <10 μg/serving, MODERATE 10–20 μg, HIGH >20 μg.
+ *
+ * Clicking a result navigates to /ingredients/:slug (IngredientDetailPage).
+ */
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
@@ -7,6 +28,12 @@ import { API_BASE_URL } from '../../utils/api'
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
+/**
+ * Returns display config (label + Tailwind classes) for a given nickel
+ * classification string.
+ * @param {string|undefined} classification
+ * @returns {{ label: string, bg: string, text: string, border: string, dot: string }}
+ */
 function nickelBadge(classification) {
   switch (classification?.toLowerCase()) {
     case 'low':      return { label: 'LOW',      bg: 'bg-emerald-500/15', text: 'text-emerald-300', border: 'border-emerald-500/30', dot: 'bg-emerald-400' }
@@ -16,6 +43,11 @@ function nickelBadge(classification) {
   }
 }
 
+/**
+ * Pill badge showing a nickel classification level with a coloured dot.
+ * @param {{ classification: string, size?: string }} props
+ * @returns {JSX.Element}
+ */
 const NickelBadge = ({ classification, size = 'sm' }) => {
   const badge = nickelBadge(classification)
   return (
@@ -28,6 +60,9 @@ const NickelBadge = ({ classification, size = 'sm' }) => {
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 
+/**
+ * @returns {JSX.Element}
+ */
 export default function IngredientsPage() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
@@ -58,6 +93,7 @@ export default function IngredientsPage() {
     }
   }, [])
 
+  // Debounce the search by 300 ms to avoid firing on every keystroke
   useEffect(() => {
     clearTimeout(debounceRef.current)
     if (!query.trim()) {

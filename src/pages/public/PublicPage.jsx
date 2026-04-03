@@ -1,7 +1,32 @@
+/**
+ * PublicPage.jsx
+ * Layer: Public / Shared shell
+ *
+ * Reusable layout wrapper used by all static public and marketing pages
+ * (Privacy, Terms, Guidelines, Contact, Allergy Disclaimer, etc.).
+ *
+ * Responsibilities:
+ *   - Scrolls to the top on every title change (navigating between static pages)
+ *   - Updates document.title to "{title} • Recipzee"
+ *   - Renders a skip-to-content accessibility link for keyboard users
+ *   - Renders the page title (in recipzee-green) and optional subtitle
+ *   - Wraps children in a Tailwind Typography (prose-invert) article element
+ *     with design-system overrides for code blocks, links, and list markers
+ *   - Appends the full-width Footer
+ *
+ * Props:
+ *   @param {string}       title    — page heading and <title> segment
+ *   @param {string}       [subtitle] — muted sub-heading shown below the title
+ *   @param {React.ReactNode} children — page body content
+ */
 // src/pages/public/PublicPage.jsx
 import React, { useEffect } from 'react'
 import Footer from '../../components/Footer'
 
+/**
+ * @param {{ title: string, subtitle?: string, children: React.ReactNode }} props
+ * @returns {JSX.Element}
+ */
 const PublicPage = ({ title, subtitle, children }) => {
   useEffect(() => {
     window.scrollTo(0, 0)

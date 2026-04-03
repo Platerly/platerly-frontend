@@ -1,3 +1,28 @@
+/**
+ * RoadmapPage.jsx
+ * Layer: Public / Marketing
+ *
+ * Public product roadmap page showing shipped features, items in progress,
+ * features coming soon, and planned work. Content is maintained in the static
+ * ROADMAP array — there is no API call; updates require a code deploy.
+ *
+ * Sections:
+ *   - Hero         — page title + "built by someone with nickel allergy" context
+ *   - Roadmap grid — four STATUS columns (shipped, inProgress, comingSoon, planned)
+ *                    rendered as RoadmapCard components grouped by SectionHeader
+ *   - Email signup — client-side only form; validates email format and shows a
+ *                    confirmation state (no backend call wired yet)
+ *   - Footer nav   — back to home + links to API, Contact, Disclaimer
+ *
+ * Each roadmap item may include an optional `eta` string (shown as a badge)
+ * and an optional `link` / `linkLabel` for deep-linking to related pages.
+ *
+ * Status display config (STATUS constant):
+ *   - shipped     — blue badges/glow
+ *   - inProgress  — green badges/glow
+ *   - comingSoon  — yellow badges/glow
+ *   - planned     — muted/neutral
+ */
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
@@ -127,6 +152,11 @@ const ROADMAP = [
   },
 ]
 
+/**
+ * Pill badge showing a status label and icon.
+ * @param {{ status: keyof typeof STATUS }} props
+ * @returns {JSX.Element}
+ */
 const StatusBadge = ({ status }) => {
   const cfg = STATUS[status]
   const Icon = cfg.icon
@@ -138,6 +168,12 @@ const StatusBadge = ({ status }) => {
   )
 }
 
+/**
+ * Individual roadmap feature card. Applies status-specific border and glow.
+ * Renders an optional ETA badge and an optional internal link.
+ * @param {{ item: object, status: keyof typeof STATUS }} props
+ * @returns {JSX.Element}
+ */
 const RoadmapCard = ({ item, status }) => {
   const cfg = STATUS[status]
   return (
@@ -160,6 +196,11 @@ const RoadmapCard = ({ item, status }) => {
   )
 }
 
+/**
+ * Column header for a roadmap status group, showing an icon, label, and item count.
+ * @param {{ status: keyof typeof STATUS, count: number }} props
+ * @returns {JSX.Element}
+ */
 const SectionHeader = ({ status, count }) => {
   const cfg = STATUS[status]
   const Icon = cfg.icon
@@ -186,11 +227,16 @@ const SectionHeader = ({ status, count }) => {
   )
 }
 
+/**
+ * @returns {JSX.Element}
+ */
 export default function RoadmapPage() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [emailError, setEmailError] = useState('')
 
+  // Basic client-side email validation before showing the success state
+  // No API call is wired — this is a placeholder for a future mailing-list integration
   const handleSignup = (e) => {
     e.preventDefault()
     if (!email.includes('@') || !email.includes('.')) {

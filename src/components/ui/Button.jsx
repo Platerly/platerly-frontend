@@ -1,3 +1,14 @@
+/**
+ * Button.jsx — Primitive button component for Recipzee.
+ *
+ * Layer: Presentational / design system primitive.
+ *
+ * Supports variants: primary (green), secondary (card), danger (red),
+ * ghost (transparent), outline (green border).
+ * Supports sizes: sm, md, lg.
+ * Shows an animated spinner when `loading` is true and disables the button.
+ * All extra props are forwarded to the underlying <button> element.
+ */
 import React from 'react'
 import classNames from 'classnames'
 

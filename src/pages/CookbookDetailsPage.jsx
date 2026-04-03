@@ -1,3 +1,25 @@
+/**
+ * CookbookDetailsPage
+ *
+ * Layer: Authenticated cookbook detail and management page.
+ * Route: /cookbook/:id  (id may be a GUID or a slug)
+ *
+ * What this page does:
+ *  - Loads and displays a single cookbook: cover image, metadata, recipes list
+ *  - Owners can: rename, set visibility, change cover image, delete the cookbook,
+ *    reorder recipes via drag-and-drop, add notes per recipe, and remove recipes
+ *  - Collaborative cookbooks: owners can invite collaborators by username;
+ *    collaborators can add/remove recipes but not change metadata
+ *  - Sharing: copy link, Twitter, Facebook share buttons
+ *  - isGuid() helper detects whether the :id param is a GUID or a slug for routing
+ *  - moveIndex() handles the in-memory reorder before persisting to the API
+ *
+ * State managed:
+ *  - cookbook, recipes, collaborators — API data
+ *  - editing — whether the header metadata fields are in edit mode
+ *  - dragIdx — the recipe index currently being dragged (for reorder UX)
+ *  - inviteUsername, inviteError — collaborator invite form
+ */
 // src/pages/CookbookDetailsPage.jsx
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";

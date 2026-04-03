@@ -1,3 +1,25 @@
+/**
+ * SettingsPage
+ *
+ * Layer: Authenticated multi-tab settings hub.
+ * Route: /settings  (tab controlled via ?tab= query param: profile | account | allergies | subscription)
+ *
+ * What this page does:
+ *  - Renders four settings tabs in a sticky tab bar:
+ *      "profile"      — display name, bio, avatar (EditProfileTab logic inlined here)
+ *      "account"      — email change, password change, GDPR data export, account deletion
+ *      "allergies"    — allergen profile CRUD (delegates to AllergySettingsTab component)
+ *      "subscription" — billing status and upgrade flow (delegates to BillingPanel component)
+ *  - Tab selection is reflected in the URL so it survives page refresh and can be linked
+ *    (e.g. /settings?tab=subscription from upgrade prompts throughout the app)
+ *  - TAB_KEYS, TAB_ICONS, and TabBtn define the tab navigation UI
+ *  - TabPanel renders children only when the panel is active (prevents unnecessary renders)
+ *
+ * State managed (profile/account panels):
+ *  - Profile form: displayName, bio, website, region, profileImageUrl
+ *  - Account panel: email change (with verification step), password change, data export
+ *  - Shared: saving, error, success state per panel
+ */
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Settings, User, AlertTriangle, CreditCard, Check, LogOut, Shield, Eye, EyeOff, Mail, Lock, Globe, Download, Trash2 } from "lucide-react";

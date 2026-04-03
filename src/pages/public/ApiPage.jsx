@@ -1,3 +1,29 @@
+/**
+ * ApiPage.jsx
+ * Layer: Public / Marketing — B2B landing page
+ *
+ * Marketing landing page for the Recipzee Allergen Intelligence B2B API.
+ * All CTAs direct to api@recipzee.com — there is no self-serve sign-up;
+ * API keys are provisioned manually after contact.
+ *
+ * Sections (top to bottom):
+ *   1. Hero           — headline, sub-copy, primary CTA (mailto), secondary link to /roadmap
+ *   2. Problem        — three bullet points on gaps in existing allergen APIs
+ *   3. Features       — nine FEATURES cards (nickel data, allergen intelligence, substitution
+ *                       engine, recipe safety audit, nutrition, regional demand, dietary trends,
+ *                       white-label widget, webhooks)
+ *   4. How it works   — three-step onboarding summary (request → authenticate → query)
+ *   5. Pricing        — four subscription tiers (Starter $299, Professional $699,
+ *                       Enterprise $1,499, Clinical Research $2,999) + Pay Per Report ($49)
+ *   6. CTA            — copyable email address + pre-filled mailto inquiry link
+ *   7. Legal          — data source citation and liability disclaimer
+ *
+ * The "copied!" state on the email button resets automatically after 2 s.
+ *
+ * Note: this page uses the dark Recipzee design system (recipzee-dark,
+ * recipzee-card, etc.) rather than PublicPage — it has its own custom layout
+ * and imports Footer directly.
+ */
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
@@ -178,6 +204,11 @@ const PROBLEMS = [
 
 // ── Components ────────────────────────────────────────────────────────────────
 
+/**
+ * Individual capability card shown in the "Everything in one API" features grid.
+ * @param {{ icon: React.ElementType, title: string, desc: string, color: string, bg: string }} props
+ * @returns {JSX.Element}
+ */
 const FeatureCard = ({ icon: Icon, title, desc, color, bg }) => (
   <div className="rounded-2xl bg-recipzee-card border border-recipzee-border p-5 flex flex-col gap-3">
     <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center`}>
@@ -188,9 +219,17 @@ const FeatureCard = ({ icon: Icon, title, desc, color, bg }) => (
   </div>
 )
 
+/**
+ * Pricing tier card. Special visual treatment is applied for the two badged
+ * tiers: "Professional" receives a green glow and "Clinical Research" receives
+ * a violet glow to distinguish them at a glance.
+ * @param {{ tier: object }} props
+ * @returns {JSX.Element}
+ */
 const PricingCard = ({ tier }) => {
   const Icon = tier.icon
   const hasBadge = !!tier.badge
+  // Drive colour variants for the two highlighted tiers
   const isGreen = hasBadge && tier.name === 'Professional'
   const isViolet = hasBadge && tier.name === 'Clinical Research'
   return (
@@ -249,15 +288,20 @@ const PricingCard = ({ tier }) => {
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
+/**
+ * B2B API landing page component.
+ * @returns {JSX.Element}
+ */
 export default function ApiPage() {
   const [copied, setCopied] = useState(false)
 
+  // Copies the contact email to the clipboard and shows a transient "Copied!" label
   const copyEmail = async () => {
     try {
       await navigator.clipboard.writeText('api@recipzee.com')
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    } catch { /* ignore */ }
+    } catch { /* ignore — clipboard permission denied */ }
   }
 
   return (

@@ -1,3 +1,23 @@
+/**
+ * WidgetPreviewPage
+ *
+ * Layer: B2B developer tool — embeddable allergen-search widget configuration and preview.
+ * Route: /widget-preview  (accessible to authenticated users with a dev API key)
+ *
+ * What this page does:
+ *  - Lets B2B API subscribers customise the embeddable Recipzee widget theme
+ *    (accent colour, background, text, border, placeholder text)
+ *  - Sends theme JSON to POST /api/widget/configure (authenticated via user's dev API key
+ *    mapped from the Bearer token) to persist config and retrieve the widget's embed code
+ *  - Renders a live iframe preview of the widget with the current theme applied
+ *  - "Save Theme" persists the configuration; "Copy Embed Code" copies the <script> tag
+ *  - DEFAULT_THEME provides sensible dark-mode defaults matching Recipzee's brand palette
+ *
+ * State managed:
+ *  - config — saved widget configuration from the API (contains widgetId and embed snippet)
+ *  - theme — live theme object being edited in the UI
+ *  - copied — transient "Copied!" state on the copy button
+ */
 import React, { useState, useEffect, useRef } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Code2, Copy, Check, ExternalLink, Paintbrush, Info } from 'lucide-react'
@@ -13,6 +33,7 @@ const DEFAULT_THEME = {
   placeholderText: 'Search for an ingredient…'
 }
 
+/** @returns {JSX.Element} */
 export default function WidgetPreviewPage() {
   const { token } = useAuth()
   const [config, setConfig] = useState(null)

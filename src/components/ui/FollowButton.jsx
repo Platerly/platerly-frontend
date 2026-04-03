@@ -1,3 +1,22 @@
+/**
+ * FollowButton.jsx — Optimistic follow/unfollow toggle for user profiles.
+ *
+ * Layer: Presentational / social feature.
+ *
+ * Optimistic UI:
+ *   The follow state is flipped immediately in local state before the API call
+ *   completes.  If the API call fails, the state is reverted and the error is
+ *   logged.  This avoids visible latency on the button.
+ *
+ *   POST   /api/User/:id/follow — follow a user
+ *   DELETE /api/User/:id/follow — unfollow a user
+ *
+ * Props:
+ *   @prop {string|number} targetUserId             — ID of the user to follow/unfollow.
+ *   @prop {boolean}       [isInitiallyFollowing=false] — Seed state from the parent.
+ *   @prop {'outline'|'solid'} [variant='outline']  — Visual style.
+ *   @prop {boolean}       [fullWidth=false]         — Whether to stretch to container width.
+ */
 import React, { useState } from "react";
 import { UserPlus, UserMinus } from "lucide-react";
 import { API_BASE_URL } from "../../utils/api";

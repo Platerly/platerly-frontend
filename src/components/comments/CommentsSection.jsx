@@ -1,3 +1,32 @@
+/**
+ * CommentsSection.jsx — Full-featured comment thread for a recipe page.
+ *
+ * Layer: Feature component (recipe detail page).
+ *
+ * Sub-components:
+ *   - `CommentInput`      — Textarea with @mention autocomplete, Ctrl+Enter submit.
+ *   - `Comment`           — Individual comment with like/edit/delete/reply actions.
+ *   - `CommentsSection`   — Root component; manages the flat comment list, thread
+ *                           assembly, and the delete-confirmation dialog.
+ *
+ * API endpoints used:
+ *   GET    /api/Recipe/:id/comments           — initial list (passed as prop)
+ *   POST   /api/Recipe/:id/comments           — post a new top-level comment
+ *   PUT    /api/Recipe/:id/comments/:cid      — edit own comment
+ *   DELETE /api/Recipe/:id/comments/:cid      — delete own comment
+ *   POST   /api/Recipe/:id/comments/:cid/like — like a comment
+ *   DELETE /api/Recipe/:id/comments/:cid/like — unlike a comment
+ *   POST   /api/Recipe/:id/comments/:cid/replies — post a reply
+ *   GET    /api/User/search?q=...             — @mention user search (debounced 150 ms)
+ *
+ * All mutating operations use optimistic updates and revert on API failure.
+ * Replies are nested one level deep; the `depth` prop on Comment controls indentation.
+ *
+ * Props (CommentsSection):
+ *   @prop {string|number} recipeId             — The recipe this thread belongs to.
+ *   @prop {Array}         [initialComments=[]] — Pre-fetched comment list from SSR/parent.
+ */
+
 import React, { useState, useMemo, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
@@ -593,9 +622,11 @@ const CommentsSection = ({ recipeId, initialComments = [] }) => {
   const [loading, setLoading] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, commentId: null, loading: false })
 
-  // Organize comments into threads
-  // Backend returns nested replies in comment.replies, but we also handle
-  // optimistically added replies in the flat comments array
+  // Merge the flat comment list into a nested structure.
+  // The backend populates `comment.replies[]` for already-persisted threads;
+  // replies added optimistically in this session live in the flat `comments`
+  // array with a `parentCommentId` field and are merged in here to avoid
+  // duplicate rendering after a page refresh reloads the API-provided nesting.
   const threadedComments = useMemo(() => {
     const roots = []
     const childrenMap = {}

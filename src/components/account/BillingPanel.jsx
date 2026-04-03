@@ -1,3 +1,17 @@
+/**
+ * BillingPanel.jsx — Stripe subscription management panel for Recipzee.
+ *
+ * Layer: Feature / account settings.
+ *
+ * Fetches subscription status from GET /api/billing/status and surfaces:
+ *   - Current plan (free / trial / premium) with trial days remaining.
+ *   - Stripe Checkout link for upgrading (POST /api/billing/create-checkout-session).
+ *   - Stripe Customer Portal link for managing/cancelling (POST /api/billing/portal).
+ *
+ * Re-fetches billing status automatically when returning from the Stripe portal
+ * (?portal=return) or after a checkout session (?success / ?canceled) so the UI
+ * reflects the latest subscription state without requiring a manual refresh.
+ */
 // BillingPanel.jsx (FULL WORKING VERSION)
 // ✅ Re-fetches status after returning from Stripe portal (portal=return)
 // ✅ Also re-fetches after checkout success/cancel

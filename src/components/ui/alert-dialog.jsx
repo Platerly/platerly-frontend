@@ -1,3 +1,20 @@
+/**
+ * alert-dialog.jsx — Radix UI AlertDialog primitive wrappers for Recipzee.
+ *
+ * Layer: Presentational / design system primitive.
+ *
+ * Thin styled wrappers around `@radix-ui/react-alert-dialog` that apply
+ * Recipzee design tokens.  All keyboard behaviour (Escape to close, focus
+ * trap, ARIA roles) is handled by Radix.
+ *
+ * Consumed by ConfirmDialog (../common/ConfirmDialog.jsx) which adds higher-
+ * level trigger/controlled-mode logic on top of these primitives.
+ *
+ * Exports: AlertDialog, AlertDialogTrigger, AlertDialogPortal,
+ *          AlertDialogOverlay, AlertDialogContent, AlertDialogHeader,
+ *          AlertDialogFooter, AlertDialogTitle, AlertDialogDescription,
+ *          AlertDialogAction, AlertDialogCancel.
+ */
 import * as React from "react"
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 

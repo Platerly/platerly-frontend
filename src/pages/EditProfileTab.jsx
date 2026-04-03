@@ -1,3 +1,25 @@
+/**
+ * EditProfileTab
+ *
+ * Layer: Settings sub-component (rendered inside SettingsPage under the "Profile" tab).
+ *        Also used standalone in some contexts.
+ * Route: /settings?tab=profile
+ *
+ * What this page does:
+ *  - Loads the current user's profile from GET /api/User/me
+ *  - Lets the user update displayName, bio, and profile image
+ *  - Profile image upload: file → FormData POST /api/User/upload-profile-image
+ *    Returns a URL that is immediately previewed and stored in form state
+ *  - On save: PATCH /api/User/me with the updated fields, then calls AuthContext.updateUser()
+ *    to reflect the changes in the auth context without a full page reload
+ *  - Image validation: max 5 MB, JPEG/PNG/WebP only (client-side guard before upload)
+ *
+ * State managed:
+ *  - form: {displayName, bio, profileImageUrl}
+ *  - preview — object URL for local image preview before upload completes
+ *  - file — the selected File object awaiting upload
+ *  - loading, successMessage, errorText
+ */
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { API_BASE_URL } from '../utils/api'
 import Input from '../components/ui/Input'
@@ -10,6 +32,7 @@ import { Camera, User } from 'lucide-react'
 const MAX_IMG_MB = 5
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
+/** @returns {JSX.Element} */
 const EditProfileTab = () => {
   const [form, setForm] = useState({
     displayName: '',

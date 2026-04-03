@@ -1,3 +1,24 @@
+/**
+ * UserProfilePage
+ *
+ * Layer: Public user profile view (viewable by anyone; own-profile actions require auth).
+ * Route: /profile/:username
+ *
+ * What this page does:
+ *  - Displays a user's public profile: cover photo, avatar, bio, links, follower counts
+ *  - Shows the user's recipe grid and public cookbook list in tabbed sections
+ *  - Bio links and URLs are rendered with autolinkBio() which sanitises with DOMPurify
+ *    then hyperlinks URLs and #hashtags
+ *  - Authenticated users can follow/unfollow; current user sees an Edit Profile button instead
+ *  - Cover photo and avatar upload are available on own profile via ImagePlus button
+ *  - Helmet sets open-graph meta for social sharing
+ *
+ * State managed:
+ *  - profile, recipes, cookbooks — API data
+ *  - isFollowing, followerCount — follow state (optimistic update)
+ *  - activeTab — 'recipes' | 'cookbooks'
+ *  - uploading, uploadTarget — image upload state
+ */
 // src/pages/UserProfilePage.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";

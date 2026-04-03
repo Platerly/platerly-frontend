@@ -10,8 +10,22 @@ import RecipeCard from "../components/ui/RecipeCard";
 import { logger } from "../utils/logger";
 
 /**
- * SearchResultsPage - Premium search with advanced filters
- * Filters: difficulty, time, tags, and more
+ * SearchResultsPage
+ *
+ * Layer: Public search page for Recipzee's recipe and user catalogue.
+ * Route: /search?q=<query>  (additional filter params: difficulty, time, tags, etc.)
+ *
+ * What this page does:
+ *  - Searches recipes and users simultaneously (two tabs: Recipes | Chefs)
+ *  - Fetches from GET /api/Recipe/search and GET /api/User/search in parallel
+ *  - Advanced recipe filters: difficulty, prep+cook time ceiling, tag chips
+ *  - Filter state is reflected in URL search params so searches are shareable/bookmarkable
+ *  - TabBtn shows result count badge when results are loaded
+ *  - SkeletonRecipe and SkeletonUser render during the loading state
+ *
+ * State managed:
+ *  - q (query), tab, difficulty, maxTime, selectedTags — filter state (URL-driven)
+ *  - recipeResults, userResults, loading, error — search output
  */
 
 // Tab button component

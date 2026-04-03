@@ -1,3 +1,36 @@
+/**
+ * CreateRecipe
+ *
+ * Layer: Authenticated recipe creation form.
+ * Route: /create  (redirects to /login?next=/create if unauthenticated)
+ *
+ * What this page does:
+ *  - Collects all data needed to POST /api/Recipe
+ *  - Manages a dynamic ingredient list (add/remove rows)
+ *  - Handles image upload (file → POST /api/Recipe/upload-recipe-image → blob URL stored)
+ *  - Validates tag completeness: user must pick one value from each of four mandatory
+ *    single-select groups (Course, Diet, Style, Healthiness) plus at least one Sensitivity
+ *  - Supports free-form extra tags with autocomplete from GET /api/tags?search=…
+ *  - `canSubmit` gate prevents form submission until all required tags are selected,
+ *    at least one Sensitivity is chosen, title + instructions are filled, and an image exists
+ *
+ * Ingredient management:
+ *  - Starts with one blank {name, quantity} row
+ *  - "Add Ingredient" appends a new row; the remove button is disabled when only one row remains
+ *
+ * Halal gate note:
+ *  - The backend runs all submitted ingredients through the Halal Gate on submission.
+ *    If any ingredient fails, the API returns a 400 with a violations array.
+ *    The frontend renders ProhibitedIngredientsError when violations are present.
+ *
+ * State managed:
+ *  - form — text fields consolidated into a single object
+ *  - selectedGroups — single-select required tag group values
+ *  - selectedSensitivities — multi-select sensitivity tags
+ *  - extraTags, tagQuery, tagSuggestions — free-form tag chips + autocomplete
+ *  - error — { message, violations } or null
+ *  - imageError — image-specific validation messages (type/size)
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChefHat, Plus, X, Check, Clock, Flame } from 'lucide-react'
@@ -21,6 +54,7 @@ const TAG_GROUPS = [
 // Multi-select group (at least one required)
 const SENSITIVITY_OPTIONS = ['Low Nickel','Nut Free','Soy Free','Egg Free','Shellfish Free']
 
+/** @returns {JSX.Element} */
 const CreateRecipe = () => {
   const [form, setForm] = useState({
     title: '', description: '', instructions: '', region: '',

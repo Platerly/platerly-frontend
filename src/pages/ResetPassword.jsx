@@ -8,9 +8,19 @@ import logger from "../utils/logger";
 
 /**
  * ResetPassword
- * - Premium platerly styling with gradient orbs
- * - Strong a11y (labels, aria-live, focus rings)
- * - Inline password validator + strength bar
+ *
+ * Layer: Public password reset completion page.
+ * Route: /reset-password?token=<jwt>
+ *
+ * Flow:
+ *  1. User arrives via the link emailed by ForgotPassword
+ *  2. Token is extracted from the ?token= query param
+ *  3. User sets a new password (validated against 5 rules with a live strength bar)
+ *  4. POST to resetPassword(token, password) → navigates to /login on success
+ *  5. Missing or invalid tokens show an error immediately via the useEffect guard
+ *
+ * Styling: premium Platerly dark theme, gradient orbs (hidden on mobile for perf)
+ * A11y: aria-live strength bar, focus-visible rings, aria-label on toggle buttons
  */
 
 const rules = [
@@ -31,6 +41,7 @@ const rules = [
 
 const scorePassword = (v) => rules.reduce((acc, r) => acc + (r.test(v) ? 1 : 0), 0);
 
+/** @returns {JSX.Element} */
 export default function ResetPassword() {
   const navigate = useNavigate();
   const location = useLocation();

@@ -1,3 +1,29 @@
+/**
+ * EditRecipePage
+ *
+ * Layer: Authenticated recipe editing form.
+ * Route: /recipe/:id/edit
+ *
+ * What this page does:
+ *  - Loads an existing recipe via GET /api/Recipe/:id and pre-fills all form fields
+ *  - Allows editing all recipe attributes: title, description, instructions, region,
+ *    ingredients, tags (with the same Course/Diet/Style/Healthiness taxonomy as CreateRecipe),
+ *    sensitivities, extra tags, timing, difficulty, and image
+ *  - Image replacement: same upload flow as CreateRecipe
+ *    (POST /api/Recipe/upload-recipe-image → stores blobName for deletion cleanup)
+ *  - Saves via PUT /api/Recipe/:id
+ *  - Halal Gate: same as CreateRecipe — backend validates ingredients against the halal list;
+ *    violations surface as ProhibitedIngredientsError
+ *  - toDifficultyLabel/toDifficultyIndex helpers normalise between the API's numeric enum
+ *    (0=Easy, 1=Medium, 2=Hard) and the UI's string labels
+ *
+ * State managed:
+ *  - form — all text/numeric fields in one object
+ *  - selectedGroups — single-select required tag group values
+ *  - selectedSensitivities — multi-select sensitivity chips
+ *  - extraTags, tagQuery, tagSuggestions — free-form tag autocomplete
+ *  - error — { message, violations } or null
+ */
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { API_BASE_URL } from '../utils/api'
@@ -31,6 +57,7 @@ const TAG_GROUPS = [
 ]
 const SENSITIVITY_OPTIONS = ['Low Nickel','Nut Free','Soy Free','Egg Free','Shellfish Free']
 
+/** @returns {JSX.Element} */
 export default function EditRecipePage() {
   const { id } = useParams()
   const navigate = useNavigate()

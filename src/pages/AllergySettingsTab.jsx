@@ -1,3 +1,27 @@
+/**
+ * AllergySettingsTab
+ *
+ * Layer: Settings sub-page (rendered inside SettingsPage under the "Allergies" tab).
+ * Route: /settings?tab=allergies
+ *
+ * What this page does:
+ *  - Lets the user manage their allergen profile — the list of allergens Recipzee
+ *    will highlight and warn about throughout the app
+ *  - Fetches two lists in parallel on mount:
+ *      1. GET /api/Allergy/all   — full catalogue of known allergens [{id, name}]
+ *      2. GET /api/Allergy/my-allergies — user's current selections (plain string[])
+ *  - Note: /api/Allergy/my-allergies returns plain lowercase strings, NOT objects.
+ *    The `norm()` helper normalises them to lowercase for consistent comparison.
+ *  - Saves via PUT /api/Allergy/update with an array of allergen IDs (not names),
+ *    converting the user's selected name set back to IDs before sending.
+ *  - Helper actions: Select All, Clear, Invert for batch operations on the pill grid
+ *  - Search box filters the visible pill list client-side; does not affect savedNames
+ *
+ * State managed:
+ *  - allAllergies [{id, name}] — full catalogue
+ *  - selectedNames [string] — lowercase normalised names of selected allergens
+ *  - query — live search filter string
+ */
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../utils/api";
@@ -6,6 +30,7 @@ import { toast } from "react-hot-toast";
 import { norm } from "../utils/allergenHelpers";
 import { logger } from "../utils/logger";
 
+/** @returns {JSX.Element} */
 export default function AllergySettingsTab() {
   const { token } = useAuth();
 
@@ -38,8 +63,10 @@ export default function AllergySettingsTab() {
         if (cancelled) return;
         setAllAllergies(Array.isArray(allRes.data) ? allRes.data : []);
         setSelectedNames(
-          Array.isArray(userRes.data)
-            ? userRes.data.map(norm) // server returns lowercase strings
+          // /api/Allergy/my-allergies returns plain lowercase strings, not objects.
+        // norm() further normalises them (trims, lowercases) for safe Set comparison.
+        Array.isArray(userRes.data)
+            ? userRes.data.map(norm)
             : []
         );
       } catch (e) {
@@ -88,7 +115,9 @@ export default function AllergySettingsTab() {
     if (!token) return;
     try {
       setSaving(true);
-      // names -> ids (robust to name casing)
+      // Convert the user's selected names back to IDs before sending to the API.
+      // The PUT endpoint expects an array of integer IDs, not name strings.
+      // norm() handles any casing differences between the display names and stored names.
       const selectedIds = allAllergies
         .filter((a) => selectedNames.includes(norm(a.name)))
         .map((a) => a.id);

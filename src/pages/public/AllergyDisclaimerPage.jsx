@@ -1,6 +1,24 @@
+/**
+ * AllergyDisclaimerPage.jsx
+ * Layer: Public / Legal
+ *
+ * Static content page that communicates Recipzee's allergy and medical
+ * disclaimer to users. Rendered inside the shared PublicPage shell which
+ * handles the page title, header, footer, and prose styling.
+ *
+ * Key messages:
+ *   - Recipzee tools are informational only, not a substitute for
+ *     professional medical or dietary advice.
+ *   - Ingredient databases may be incomplete; users are responsible
+ *     for verifying safety independently.
+ *   - Community-submitted recipes do not guarantee allergen accuracy.
+ */
 import React from "react";
 import PublicPage from "./PublicPage";
 
+/**
+ * @returns {JSX.Element}
+ */
 const AllergyDisclaimerPage = () => (
   <PublicPage
     title="Allergy & Medical Disclaimer"

@@ -1,6 +1,21 @@
+/**
+ * GuidelinesPage.jsx
+ * Layer: Public / Community
+ *
+ * Static community-guidelines page covering:
+ *   - Respect & Safety — no harassment, hate speech, or harmful content
+ *   - Attribution & Remixes — credit original creators, no IP removal
+ *   - Allergy Awareness — accurate allergen tagging, no misrepresentation
+ *   - Enforcement — content removal, account restrictions, appeal process
+ *
+ * Rendered inside PublicPage for consistent layout and styling.
+ */
 import React from "react";
 import PublicPage from "./PublicPage";
 
+/**
+ * @returns {JSX.Element}
+ */
 const GuidelinesPage = () => (
   <PublicPage
     title="Community Guidelines"
