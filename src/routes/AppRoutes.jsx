@@ -194,6 +194,18 @@ const withAdmin = (Component, superAdminOnly = false) => (
 )
 
 /**
+ * Renderless component that scrolls to the top of the page on every route change.
+ * Prevents the browser from preserving scroll position when navigating between pages.
+ */
+const ScrollToTop = () => {
+  const location = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location.pathname])
+  return null
+}
+
+/**
  * Renderless component that fires a GA4 pageview on every route change.
  * Placed inside BrowserRouter so it has access to useLocation.
  * Only fires in production when VITE_GA_ID is set.
@@ -325,7 +337,7 @@ const AppRoutes = () => {
   ])
   return (
     <>
-      {/* RouteTracker fires GA4 pageview on every navigation */}
+      <ScrollToTop />
       <RouteTracker />
       {routes}
     </>

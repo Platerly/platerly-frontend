@@ -10,7 +10,8 @@
  */
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Check, Zap, Building2, Rocket, ArrowRight, ShieldCheck, BarChart3, Webhook, Globe2 } from 'lucide-react'
+import { Helmet } from 'react-helmet-async'
+import { Check, Zap, Building2, Rocket, ArrowRight, ShieldCheck, BarChart3, Webhook, Globe2, FlaskConical } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useB2BSubscription } from '../../hooks/useB2BSubscription'
 import { API_BASE_URL } from '../../utils/api'
@@ -71,7 +72,7 @@ const PLANS = [
       'Dietary trend analytics',
       'White-label allergen widget',
       'Webhooks (real-time ingredient alerts)',
-      'Priority support (email + Slack)',
+      'Priority email support',
       '99.9% SLA',
     ],
     notIncluded: [
@@ -123,7 +124,7 @@ const COMPARISON_ROWS = [
   { label: 'Webhooks', starter: false, professional: true, enterprise: true },
   { label: 'Dedicated account manager', starter: false, professional: false, enterprise: true },
   { label: 'Custom SLA', starter: '99.5%', professional: '99.9%', enterprise: '99.99%' },
-  { label: 'Support', starter: 'Email', professional: 'Email + Slack', enterprise: 'Dedicated' },
+  { label: 'Support', starter: 'Email', professional: 'Priority email', enterprise: 'Dedicated' },
 ]
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -177,16 +178,28 @@ export default function B2BPricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-recipzee-dark text-recipzee-text">
+    <div className="min-h-screen bg-recipzee-dark text-recipzee-text relative overflow-hidden flex flex-col">
+      <Helmet>
+        <title>B2B API Pricing — Recipzee</title>
+        <meta name="description" content="Choose a Recipzee Allergen Intelligence API plan. Starter, Professional, or Enterprise — instant self-serve checkout for Starter and Professional." />
+      </Helmet>
+
+      {/* Background glows — matches /api page */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-recipzee-green/5 rounded-full blur-[160px]" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-recipzee-yellow/4 rounded-full blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 flex-1">
 
       {/* ── Hero ── */}
-      <div className="max-w-5xl mx-auto px-4 pt-16 pb-10 text-center">
-        <div className="inline-flex items-center gap-2 bg-recipzee-green/10 text-recipzee-green text-xs font-medium px-3 py-1 rounded-full mb-4">
-          <ShieldCheck size={13} />
-          Recipzee Allergen Intelligence API
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-10 text-center">
+        <div className="inline-flex items-center gap-2 bg-recipzee-green/10 border border-recipzee-green/20 text-recipzee-green text-sm font-medium px-3 py-1.5 rounded-full mb-6">
+          <FlaskConical size={14} />
+          B2B Allergen Intelligence API
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold mb-3">Simple, transparent B2B pricing</h1>
-        <p className="text-recipzee-muted max-w-xl mx-auto mb-8 text-sm">
+        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight mb-4">Simple, transparent pricing</h1>
+        <p className="text-recipzee-muted max-w-xl mx-auto mb-8">
           Choose the plan that fits your scale. Upgrade, downgrade, or cancel at any time from your billing dashboard.
         </p>
 
@@ -219,7 +232,7 @@ export default function B2BPricingPage() {
       </div>
 
       {/* ── Plan cards ── */}
-      <div className="max-w-5xl mx-auto px-4 pb-12">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-16">
         {error && (
           <div className="mb-6 bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-lg px-4 py-3">
             {error}
@@ -231,14 +244,16 @@ export default function B2BPricingPage() {
             const Icon = plan.icon
             const price = billing === 'annual' ? plan.annualPriceLabel : plan.monthlyPriceLabel
             const isCurrentPlan = isActive && planTier === plan.id
+            const cardBorder =
+              plan.id === 'professional' ? 'border-recipzee-green shadow-[0_0_40px_rgba(34,197,94,0.12)]' :
+              plan.id === 'enterprise'   ? 'border-purple-500/40' :
+                                           'border-recipzee-border'
 
             return (
               <div
                 key={plan.id}
-                className={`relative flex flex-col rounded-2xl border p-6 ${
-                  plan.highlighted
-                    ? 'border-recipzee-green/50 bg-recipzee-green/5'
-                    : 'border-white/10 bg-recipzee-card'
+                className={`relative flex flex-col rounded-2xl border-2 p-6 bg-recipzee-card ${cardBorder} ${
+                  plan.highlighted ? 'bg-recipzee-green/5' : ''
                 }`}
               >
                 {plan.highlighted && (
@@ -255,7 +270,7 @@ export default function B2BPricingPage() {
                 <p className="text-recipzee-muted text-xs mb-4 leading-relaxed">{plan.description}</p>
 
                 <div className="mb-1">
-                  <span className="text-3xl font-bold">{price}</span>
+                  <span className="text-4xl font-extrabold">{price}</span>
                   <span className="text-recipzee-muted text-sm ml-1">
                     {billing === 'annual' ? '/ year' : '/ month'}
                   </span>
@@ -315,7 +330,7 @@ export default function B2BPricingPage() {
         {/* ── Feature comparison table ── */}
         <div className="mt-14">
           <h2 className="text-xl font-semibold text-center mb-6">Full feature comparison</h2>
-          <div className="overflow-x-auto rounded-xl border border-white/10">
+          <div className="overflow-x-auto rounded-2xl border border-recipzee-border">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/10 bg-recipzee-card/50">
@@ -351,7 +366,7 @@ export default function B2BPricingPage() {
             { icon: Globe2, color: 'text-recipzee-green', bg: 'bg-recipzee-green/10', title: 'Global coverage', desc: 'FDA Big 9 + EU 14 + nickel — the only commercial API with per-ingredient nickel measurements.' },
             { icon: Webhook, color: 'text-purple-400', bg: 'bg-purple-400/10', title: 'Webhooks included', desc: 'Real-time ingredient change alerts pushed to your endpoint — no polling required.' },
           ].map(({ icon: Icon, color, bg, title, desc }) => (
-            <div key={title} className="bg-recipzee-card border border-white/10 rounded-xl p-5">
+            <div key={title} className="bg-recipzee-card border border-recipzee-border rounded-2xl p-5">
               <div className={`w-9 h-9 ${bg} rounded-lg flex items-center justify-center mx-auto mb-3`}>
                 <Icon size={16} className={color} />
               </div>
@@ -380,7 +395,11 @@ export default function B2BPricingPage() {
         </div>
       </div>
 
-      <Footer />
+      </div>{/* end relative z-10 */}
+
+      <div className="pb-[env(safe-area-inset-bottom)]">
+        <Footer variant="full" />
+      </div>
     </div>
   )
 }

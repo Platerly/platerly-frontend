@@ -140,7 +140,7 @@ const TIERS = [
       'Dietary trend analytics',
       'Menu optimisation suggestions',
       'Webhook delivery',
-      'Priority email support',
+      'Priority email support (48 h SLA)',
     ],
   },
   {
