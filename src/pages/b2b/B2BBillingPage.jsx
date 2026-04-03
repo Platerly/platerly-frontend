@@ -20,7 +20,8 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import {
   CreditCard, FileText, ExternalLink, Settings, AlertCircle,
-  CheckCircle2, ChevronRight, Building2, ArrowUpRight, Loader2
+  CheckCircle2, ChevronRight, Building2, ArrowUpRight, Loader2,
+  Key, Copy, Check, Trash2, Plus
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useB2BSubscription } from '../../hooks/useB2BSubscription'
@@ -65,6 +66,16 @@ export default function B2BBillingPage() {
   const [actionLoading, setActionLoading] = useState(null) // 'portal' | 'cancel' | 'resume' | 'update'
   const [actionError, setActionError] = useState(null)
 
+  // API key state
+  const [apiKeys, setApiKeys] = useState([])
+  const [keysLoading, setKeysLoading] = useState(false)
+  const [showNewKeyForm, setShowNewKeyForm] = useState(false)
+  const [newKeyName, setNewKeyName] = useState('')
+  const [creatingKey, setCreatingKey] = useState(false)
+  const [createdKey, setCreatedKey] = useState(null) // raw key shown once
+  const [copiedKey, setCopiedKey] = useState(false)
+  const [revokingKeyId, setRevokingKeyId] = useState(null)
+
   // Company name / billing email edit state
   const [editCompany, setEditCompany] = useState('')
   const [editBillingEmail, setEditBillingEmail] = useState('')
@@ -79,6 +90,70 @@ export default function B2BBillingPage() {
       refetch()
     }
   }, [subParam, portalParam, refetch])
+
+  // Fetch API keys once active
+  useEffect(() => {
+    if (!isActive || !token) return
+    setKeysLoading(true)
+    fetch(`${API_BASE_URL}/api/api-keys`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.json())
+      .then(data => setApiKeys(Array.isArray(data) ? data : []))
+      .catch(() => {})
+      .finally(() => setKeysLoading(false))
+  }, [isActive, token])
+
+  async function handleCreateKey(e) {
+    e.preventDefault()
+    if (!newKeyName.trim()) return
+    setCreatingKey(true)
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/api-keys`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: newKeyName.trim() }),
+      })
+      if (!res.ok) throw new Error(await res.text())
+      const created = await res.json()
+      setCreatedKey(created.key)
+      setNewKeyName('')
+      setShowNewKeyForm(false)
+      // Refresh key list (new entry, without raw key)
+      const listRes = await fetch(`${API_BASE_URL}/api/api-keys`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (listRes.ok) setApiKeys(await listRes.json())
+    } catch (err) {
+      setActionError(err.message)
+    } finally {
+      setCreatingKey(false)
+    }
+  }
+
+  async function handleRevokeKey(keyId) {
+    if (!confirm('Revoke this API key? This cannot be undone.')) return
+    setRevokingKeyId(keyId)
+    try {
+      await fetch(`${API_BASE_URL}/api/api-keys/${keyId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      setApiKeys(prev => prev.filter(k => k.id !== keyId))
+    } catch (err) {
+      setActionError(err.message)
+    } finally {
+      setRevokingKeyId(null)
+    }
+  }
+
+  async function copyKey(value) {
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopiedKey(true)
+      setTimeout(() => setCopiedKey(false), 2000)
+    } catch { /* ignore */ }
+  }
 
   // Fetch invoices once we know the user is active
   useEffect(() => {
@@ -413,6 +488,121 @@ export default function B2BBillingPage() {
               View plans <ArrowUpRight size={12} />
             </Link>
           </div>
+        </section>
+      )}
+
+      {/* ── API Keys ── */}
+      {isActive && (
+        <section className="bg-recipzee-card border border-white/10 rounded-2xl p-6 mb-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold flex items-center gap-2">
+              <Key size={16} className="text-recipzee-muted" />
+              API Keys
+            </h2>
+            {!showNewKeyForm && (
+              <button
+                onClick={() => setShowNewKeyForm(true)}
+                className="text-xs text-recipzee-green border border-recipzee-green/30 px-3 py-1.5 rounded-lg hover:bg-recipzee-green/10 transition-colors flex items-center gap-1"
+              >
+                <Plus size={12} /> New key
+              </button>
+            )}
+          </div>
+
+          {/* One-time raw key display */}
+          {createdKey && (
+            <div className="mb-4 bg-recipzee-green/5 border border-recipzee-green/30 rounded-xl p-4">
+              <p className="text-xs font-medium text-recipzee-green mb-2">
+                Copy this key now — it will never be shown again.
+              </p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 text-xs bg-black/30 text-recipzee-text px-3 py-2 rounded-lg font-mono break-all">
+                  {createdKey}
+                </code>
+                <button
+                  onClick={() => copyKey(createdKey)}
+                  className="shrink-0 p-2 rounded-lg bg-recipzee-green/10 hover:bg-recipzee-green/20 transition-colors"
+                  title="Copy key"
+                >
+                  {copiedKey ? <Check size={14} className="text-recipzee-green" /> : <Copy size={14} className="text-recipzee-green" />}
+                </button>
+              </div>
+              <button
+                onClick={() => setCreatedKey(null)}
+                className="text-xs text-recipzee-muted underline mt-2 hover:text-recipzee-text"
+              >
+                I've saved it, dismiss
+              </button>
+            </div>
+          )}
+
+          {/* New key form */}
+          {showNewKeyForm && (
+            <form onSubmit={handleCreateKey} className="mb-4 flex gap-2">
+              <input
+                autoFocus
+                type="text"
+                value={newKeyName}
+                onChange={e => setNewKeyName(e.target.value)}
+                placeholder="Key name (e.g. Production)"
+                className="flex-1 bg-recipzee-dark border border-white/10 rounded-lg px-3 py-2 text-sm text-recipzee-text placeholder:text-recipzee-muted focus:outline-none focus:border-recipzee-green/50"
+              />
+              <button
+                type="submit"
+                disabled={creatingKey || !newKeyName.trim()}
+                className="bg-recipzee-green text-black text-sm font-medium px-4 py-2 rounded-lg hover:bg-recipzee-green/90 disabled:opacity-50 transition-colors whitespace-nowrap"
+              >
+                {creatingKey ? 'Creating…' : 'Create'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowNewKeyForm(false); setNewKeyName('') }}
+                className="text-sm text-recipzee-muted px-3 py-2 rounded-lg border border-white/10 hover:text-recipzee-text transition-colors"
+              >
+                Cancel
+              </button>
+            </form>
+          )}
+
+          {/* Keys list */}
+          {keysLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 size={18} className="animate-spin text-recipzee-muted" />
+            </div>
+          ) : apiKeys.length === 0 ? (
+            <p className="text-recipzee-muted text-sm text-center py-4">No API keys yet. Create one to start making requests.</p>
+          ) : (
+            <div className="space-y-2">
+              {apiKeys.map(k => (
+                <div key={k.id} className="flex items-center justify-between py-2.5 px-3 bg-recipzee-dark/50 rounded-xl border border-white/5">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-recipzee-text truncate">{k.name}</p>
+                    <div className="flex items-center gap-3 mt-0.5">
+                      <code className="text-xs text-recipzee-muted font-mono">{k.keyPrefix}</code>
+                      {k.lastUsedAt ? (
+                        <span className="text-xs text-recipzee-muted">Last used {new Date(k.lastUsedAt).toLocaleDateString()}</span>
+                      ) : (
+                        <span className="text-xs text-recipzee-muted/50">Never used</span>
+                      )}
+                      <span className="text-xs text-recipzee-muted">{k.totalRequests.toLocaleString()} reqs</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleRevokeKey(k.id)}
+                    disabled={revokingKeyId === k.id}
+                    className="shrink-0 ml-3 p-1.5 text-recipzee-muted hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors disabled:opacity-50"
+                    title="Revoke key"
+                  >
+                    {revokingKeyId === k.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <p className="text-xs text-recipzee-muted mt-4">
+            Pass your key as an <code className="text-recipzee-subtle">X-API-Key</code> header on every request.
+          </p>
         </section>
       )}
 
