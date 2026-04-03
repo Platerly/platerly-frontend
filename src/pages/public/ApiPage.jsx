@@ -105,14 +105,14 @@ const FEATURES = [
 const TIERS = [
   {
     name: 'Starter',
-    price: '$299',
+    price: '$499',
     period: '/month',
     icon: Rocket,
     accent: 'border-recipzee-border',
     badge: null,
     cta: 'Get started',
     features: [
-      '5,000 API calls / month',
+      '10,000 API calls / month',
       'Allergen intelligence (FDA Big 9 + EU 14 + Nickel)',
       'Per-ingredient nickel content data',
       'Ingredient substitution engine',
@@ -124,7 +124,7 @@ const TIERS = [
   },
   {
     name: 'Professional',
-    price: '$699',
+    price: '$1,299',
     period: '/month',
     icon: Zap,
     accent: 'border-recipzee-green',
@@ -133,7 +133,7 @@ const TIERS = [
     cta: 'Get started',
     features: [
       'Everything in Starter',
-      '25,000 API calls / month',
+      '100,000 API calls / month',
       'Recipe safety audit',
       'Nutrition estimation (USDA-backed)',
       'Regional demand forecasting',
@@ -145,7 +145,7 @@ const TIERS = [
   },
   {
     name: 'Enterprise',
-    price: '$1,499',
+    price: '$3,499',
     period: '/month',
     icon: Building2,
     accent: 'border-recipzee-yellow/40',
@@ -163,7 +163,7 @@ const TIERS = [
   },
   {
     name: 'Clinical Research',
-    price: '$2,999',
+    price: '$5,999',
     period: '/month',
     icon: Microscope,
     accent: 'border-violet-500/40',
@@ -269,19 +269,31 @@ const PricingCard = ({ tier }) => {
         ))}
       </ul>
 
-      <a
-        href="mailto:api@recipzee.com"
-        className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90 ${
-          isGreen
-            ? 'bg-recipzee-green text-recipzee-dark'
-            : isViolet
+      {tier.cta === 'Get started' ? (
+        <Link
+          to="/b2b/pricing"
+          className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90 ${
+            isGreen
+              ? 'bg-recipzee-green text-recipzee-dark'
+              : 'bg-white/5 border border-recipzee-border text-recipzee-text hover:bg-white/10'
+          }`}
+        >
+          {tier.cta}
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      ) : (
+        <a
+          href="mailto:api@recipzee.com"
+          className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90 ${
+            isViolet
               ? 'bg-violet-500/20 border border-violet-500/30 text-violet-200 hover:bg-violet-500/30'
               : 'bg-white/5 border border-recipzee-border text-recipzee-text hover:bg-white/10'
-        }`}
-      >
-        {tier.cta}
-        <ArrowRight className="w-4 h-4" />
-      </a>
+          }`}
+        >
+          {tier.cta}
+          <ArrowRight className="w-4 h-4" />
+        </a>
+      )}
     </div>
   )
 }
@@ -403,8 +415,8 @@ export default function ApiPage() {
               {[
                 {
                   step: '1',
-                  title: 'Request access',
-                  desc: 'Email api@recipzee.com and we\'ll provision your API key within one business day.',
+                  title: 'Choose a plan',
+                  desc: 'Starter and Professional have instant self-serve checkout. Enterprise and Clinical Research are provisioned by our team — contact api@recipzee.com.',
                 },
                 {
                   step: '2',

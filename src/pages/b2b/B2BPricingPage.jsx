@@ -27,9 +27,9 @@ const PLANS = [
     icon: Zap,
     iconColor: 'text-sky-400',
     iconBg: 'bg-sky-400/10',
-    monthlyPriceLabel: '$299',
-    annualPriceLabel: '$2,990',
-    annualSavings: 'Save $599',
+    monthlyPriceLabel: '$499',
+    annualPriceLabel: '$4,990',
+    annualSavings: 'Save $998',
     description: 'For indie developers and small food-tech teams getting started with allergen data.',
     priceIdMonthly: 'price_b2b_starter_monthly_placeholder',
     priceIdAnnual: 'price_b2b_starter_annual_placeholder',
@@ -50,6 +50,7 @@ const PLANS = [
       'Dedicated account manager',
     ],
     highlighted: false,
+    contactUs: false,
   },
   {
     id: 'professional',
@@ -57,9 +58,9 @@ const PLANS = [
     icon: Building2,
     iconColor: 'text-recipzee-green',
     iconBg: 'bg-recipzee-green/10',
-    monthlyPriceLabel: '$699',
-    annualPriceLabel: '$6,990',
-    annualSavings: 'Save $1,398',
+    monthlyPriceLabel: '$1,299',
+    annualPriceLabel: '$12,990',
+    annualSavings: 'Save $2,598',
     description: 'For growing food-tech companies that need richer analytics and higher throughput.',
     priceIdMonthly: 'price_b2b_professional_monthly_placeholder',
     priceIdAnnual: 'price_b2b_professional_annual_placeholder',
@@ -78,6 +79,7 @@ const PLANS = [
       'Custom data pipelines',
     ],
     highlighted: true,
+    contactUs: false,
   },
   {
     id: 'enterprise',
@@ -85,12 +87,12 @@ const PLANS = [
     icon: Rocket,
     iconColor: 'text-purple-400',
     iconBg: 'bg-purple-400/10',
-    monthlyPriceLabel: '$1,499',
-    annualPriceLabel: '$14,990',
-    annualSavings: 'Save $2,998',
+    monthlyPriceLabel: '$3,499',
+    annualPriceLabel: '$34,990',
+    annualSavings: 'Save $6,998',
     description: 'For enterprises, clinical platforms, and teams needing unlimited scale and custom SLAs.',
-    priceIdMonthly: 'price_b2b_enterprise_monthly_placeholder',
-    priceIdAnnual: 'price_b2b_enterprise_annual_placeholder',
+    priceIdMonthly: null,
+    priceIdAnnual: null,
     features: [
       'Unlimited API calls',
       'Everything in Professional',
@@ -103,13 +105,14 @@ const PLANS = [
     ],
     notIncluded: [],
     highlighted: false,
+    contactUs: true,
   },
 ]
 
 // ── Feature comparison table rows ────────────────────────────────────────────
 
 const COMPARISON_ROWS = [
-  { label: 'Monthly API calls', starter: '10,000', professional: '100,000', enterprise: 'Unlimited' },
+  { label: 'Monthly API calls', starter: '10,000', professional: '100,000', enterprise: 'Unlimited (custom)' },
   { label: 'Allergen Intelligence', starter: true, professional: true, enterprise: true },
   { label: 'Nickel content data', starter: true, professional: true, enterprise: true },
   { label: 'Substitution Engine', starter: true, professional: true, enterprise: true },
@@ -269,6 +272,13 @@ export default function B2BPricingPage() {
                   >
                     Manage Plan
                   </Link>
+                ) : plan.contactUs ? (
+                  <a
+                    href="mailto:api@recipzee.com?subject=Enterprise%20API%20Inquiry"
+                    className="w-full py-2.5 rounded-lg text-sm font-medium mb-5 transition-colors border border-white/20 text-recipzee-text hover:border-white/40 flex items-center justify-center"
+                  >
+                    Contact us
+                  </a>
                 ) : (
                   <button
                     onClick={() => handleSubscribe(plan)}
