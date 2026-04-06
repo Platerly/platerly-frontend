@@ -25,6 +25,8 @@ import { useAuth } from "../../context/AuthContext";
 import { formatDate } from "../../utils/formatDate";
 import { logger } from "../../utils/logger";
 import { trackUpgrade } from "../../utils/analytics";
+import { clearPremiumCache } from "../../hooks/usePremium";
+import { clearScanStatusCache } from "../../hooks/useScanStatus";
 
 const cx = (...xs) => xs.filter(Boolean).join(" ");
 
@@ -148,6 +150,14 @@ export default function BillingPanel() {
     if (sub === "success") {
       toast.success("Subscription successful. Welcome to Premium!");
       trackUpgrade();
+      // Clear premium + scan caches so the rest of the app reflects premium state
+      // immediately without waiting for their TTLs to expire.
+      clearPremiumCache();
+      clearScanStatusCache();
+      // Re-fetch billing status now and again after 1.2 s to account for webhook latency.
+      fetchStatus({ silent: true });
+      const t = setTimeout(() => fetchStatus({ silent: true }), 1200);
+      return () => clearTimeout(t);
     }
     if (sub === "cancel") toast("Checkout canceled.");
 

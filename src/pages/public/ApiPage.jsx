@@ -13,10 +13,11 @@
  *                       engine, recipe safety audit, nutrition, regional demand, dietary trends,
  *                       white-label widget, webhooks)
  *   4. How it works   — three-step onboarding summary (request → authenticate → query)
- *   5. Pricing        — four subscription tiers (Starter $299, Professional $699,
- *                       Enterprise $1,499, Clinical Research $2,999) + Pay Per Report ($49)
- *   6. CTA            — copyable email address + pre-filled mailto inquiry link
- *   7. Legal          — data source citation and liability disclaimer
+ *   5. Rate limits    — table of X-RateLimit-Limit / -Remaining / -Reset response headers
+ *   6. Pricing        — four subscription tiers (Starter $299, Professional $699,
+ *                       Enterprise $3,499, Clinical Research $5,999) + Pay Per Report ($49)
+ *   7. CTA            — copyable email address + pre-filled mailto inquiry link
+ *   8. Legal          — data source citation and liability disclaimer
  *
  * The "copied!" state on the email button resets automatically after 2 s.
  *
@@ -438,6 +439,44 @@ export default function ApiPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* ── Rate limits ────────────────────────────────────────────────── */}
+        <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-20">
+          <div className="rounded-2xl bg-recipzee-card border border-recipzee-border p-8 sm:p-10">
+            <h2 className="text-2xl font-bold mb-2">Rate limits</h2>
+            <p className="text-sm text-recipzee-muted mb-6">
+              Every response includes three headers so you can monitor usage in real time.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left border-b border-recipzee-border">
+                    <th className="pb-3 pr-6 font-semibold text-recipzee-text">Header</th>
+                    <th className="pb-3 pr-6 font-semibold text-recipzee-text">Type</th>
+                    <th className="pb-3 font-semibold text-recipzee-text">Description</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-recipzee-border">
+                  {[
+                    { header: 'X-RateLimit-Limit', type: 'integer', desc: 'Maximum requests allowed per minute for your API key.' },
+                    { header: 'X-RateLimit-Remaining', type: 'integer', desc: 'Requests remaining in the current one-minute window.' },
+                    { header: 'X-RateLimit-Reset', type: 'unix timestamp', desc: 'UTC epoch second at which the window resets and the counter returns to the limit.' },
+                  ].map(({ header, type, desc }) => (
+                    <tr key={header}>
+                      <td className="py-3 pr-6 font-mono text-xs text-recipzee-green whitespace-nowrap">{header}</td>
+                      <td className="py-3 pr-6 text-recipzee-muted whitespace-nowrap">{type}</td>
+                      <td className="py-3 text-recipzee-muted leading-relaxed">{desc}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-recipzee-muted mt-5">
+              When the limit is exceeded the API returns <span className="font-mono text-amber-400">429 Too Many Requests</span> with a{' '}
+              <span className="font-mono text-amber-400">Retry-After: 60</span> header. Limits vary by plan — contact us if you need a higher quota.
+            </p>
           </div>
         </section>
 
