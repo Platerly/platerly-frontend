@@ -30,7 +30,7 @@ import { Helmet } from 'react-helmet-async'
 import {
   ShieldCheck, ExternalLink, BookmarkPlus, ArrowLeft,
   AlertTriangle, Clock, ChefHat, Flame, TrendingUp,
-  CheckCircle2, XCircle, Info
+  CheckCircle2, XCircle, Info, FileDown
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { usePremium } from '../hooks/usePremium'
@@ -38,6 +38,7 @@ import { useScanStatus } from '../hooks/useScanStatus'
 import { API_BASE_URL } from '../utils/api'
 import { logger } from '../utils/logger'
 import IndexedSaveToCookbookModal from '../components/recipe/IndexedSaveToCookbookModal'
+import { exportIndexedRecipePdf } from '../utils/exportPdf'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function extractId(idSlug) {
@@ -124,6 +125,7 @@ export default function IndexedRecipeDetailPage() {
   const [userAllergens, setUserAllergens] = useState([])
   const [saveOpen,      setSaveOpen]      = useState(false)
   const [isSaved,       setIsSaved]       = useState(false)
+  const [pdfLoading,    setPdfLoading]    = useState(false)
 
   // Parsed analysis data
   const [nickelData,   setNickelData]   = useState(null)
@@ -300,6 +302,33 @@ export default function IndexedRecipeDetailPage() {
   }
 
   const canonicalUrl = `https://recipzee.com/recipes/${recipeId}-${slugify(recipe.title)}`
+
+  const handleExportPdf = async () => {
+    if (!recipe) return
+    setPdfLoading(true)
+    try {
+      await exportIndexedRecipePdf({
+        recipe,
+        personalFlags,
+        personalHits,
+        ingFlagMap,
+        nickelData,
+        userHasNickel,
+        nickelRiskLabel: nickelConf.label,
+        totalNickelMcg,
+        thresholdPercent,
+        overallAllergenRisk,
+        isPersonallySafe,
+        hasPersonalProfile,
+        isPremium,
+        isOnTrial,
+        token,
+        apiBase: API_BASE_URL,
+      })
+    } finally {
+      setPdfLoading(false)
+    }
+  }
 
   // JSON-LD structured data
   const jsonLd = {
@@ -640,6 +669,15 @@ export default function IndexedRecipeDetailPage() {
             >
               <BookmarkPlus className="w-4 h-4" />
               {isSaved ? 'Saved to Cookbook' : 'Save to Cookbook'}
+            </button>
+
+            <button
+              onClick={handleExportPdf}
+              disabled={pdfLoading}
+              className="flex items-center justify-center gap-2 rounded-2xl border border-recipzee-border bg-white/5 px-5 py-3 font-medium text-sm text-recipzee-subtle hover:border-recipzee-green/40 hover:text-recipzee-text transition-all disabled:opacity-50"
+            >
+              <FileDown className="w-4 h-4" />
+              {pdfLoading ? 'Preparing…' : 'Export PDF'}
             </button>
 
             <a

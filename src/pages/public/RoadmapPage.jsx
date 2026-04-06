@@ -88,11 +88,6 @@ const ROADMAP = [
         link: '/api',
         linkLabel: 'View API docs →',
       },
-    ],
-  },
-  {
-    status: 'inProgress',
-    items: [
       {
         title: 'Individual ingredient nickel lookup',
         desc: 'Query any ingredient by name and get its exact nickel content in micrograms per serving — with confidence scoring and clinical source citations.',
@@ -280,7 +275,7 @@ export default function RoadmapPage() {
           </p>
 
           <p className="mt-3 text-xs text-recipzee-muted/60">
-            Last updated March 2026 · <span className="text-blue-400">4 features shipped</span>
+            Last updated April 2026 · <span className="text-blue-400">7 features shipped</span>
           </p>
         </div>
 

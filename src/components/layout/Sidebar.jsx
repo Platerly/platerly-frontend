@@ -32,7 +32,7 @@
 // src/components/layout/Sidebar.jsx
 import React from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { Home, PlusCircle, Book, Settings, User, Users, Sparkles, Bell, ShoppingCart, CalendarDays, Globe } from 'lucide-react'
+import { Home, PlusCircle, Book, Settings, User, Users, Sparkles, Bell, ShoppingCart, CalendarDays, Globe, FlaskConical } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import NotificationBell from '../notifications/NotificationBell'
 import { useNotifications } from '../../context/NotificationsContext'
@@ -183,6 +183,7 @@ export const SidebarPanel = () => {
             <NavItem to="/cookbooks" icon={Book} end>My Cookbooks</NavItem>
             <NavItem to="/shopping-list" icon={ShoppingCart} end>Shopping List</NavItem>
             <NavItem to="/meal-planner" icon={CalendarDays} end>Meal Planner</NavItem>
+            <NavItem to="/ingredients" icon={FlaskConical} end>Nickel Lookup</NavItem>
             <NavItem to="/notifications" icon={Bell} end badge={unreadCount}>Notifications</NavItem>
 
             {user && (

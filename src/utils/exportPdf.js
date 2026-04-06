@@ -453,6 +453,481 @@ ${subHtml}
   popup.document.close()
 }
 
+/**
+ * Generates and opens a print-ready allergen intelligence PDF for an indexed
+ * (externally-sourced) recipe in a new browser window.
+ *
+ * Indexed recipes do not include cooking instructions — those live at the original
+ * source.  The PDF focuses on Recipzee's value-add: allergen analysis, nickel load,
+ * ingredient safety summary, and (premium/trial only) substitution suggestions for
+ * allergen-flagged ingredients.
+ *
+ * @param {Object}    options
+ * @param {Object}    options.recipe             - Indexed recipe object (title, thumbnailUrl, ingredients[], sourceDomain, sourceUrl, etc.)
+ * @param {Object[]}  options.personalFlags      - Profile-filtered allergen flags ({severity, detail, ingredientName})
+ * @param {string[]}  options.personalHits       - User's allergen names that triggered flags (e.g. ["dairy", "nickel"])
+ * @param {Object}    options.ingFlagMap         - Map of lowercase ingredient name → 'high' | 'medium'
+ * @param {Object|null} options.nickelData       - Raw nickel load API response (meals[0].ingredients, etc.)
+ * @param {boolean}   options.userHasNickel      - Whether user has nickel in their allergen profile
+ * @param {string}    options.nickelRiskLabel    - Human-readable nickel risk label ("Low Risk", "Moderate", "High Risk")
+ * @param {number}    options.totalNickelMcg     - Total nickel contribution in micrograms
+ * @param {number}    options.thresholdPercent   - Percentage of 150μg daily threshold
+ * @param {string}    options.overallAllergenRisk - Overall allergen risk level string
+ * @param {boolean}   options.isPersonallySafe   - Whether recipe is safe for the user's profile
+ * @param {boolean}   options.hasPersonalProfile - Whether user has a configured allergen profile
+ * @param {boolean}   options.isPremium          - Premium subscription flag
+ * @param {boolean}   options.isOnTrial          - Trial subscription flag
+ * @param {string|null} options.token            - Bearer token for the substitution API
+ * @param {string}    options.apiBase            - Base URL of the Recipzee API
+ */
+export async function exportIndexedRecipePdf({
+  recipe,
+  personalFlags = [],
+  personalHits = [],
+  ingFlagMap = {},
+  nickelData = null,
+  userHasNickel = false,
+  nickelRiskLabel = '',
+  totalNickelMcg = 0,
+  thresholdPercent = 0,
+  overallAllergenRisk = 'Unknown',
+  isPersonallySafe = true,
+  hasPersonalProfile = false,
+  isPremium = false,
+  isOnTrial = false,
+  token = null,
+  apiBase = '',
+}) {
+  // ── Fetch substitutions for allergen-flagged ingredients (premium/trial only) ──
+  // Uses the ingredient names from personalFlags so the sub API can find matches
+  // even when the user's profile allergen terms are compound (e.g. "dairy_lactose").
+  let substitutions = {}
+  const canSeeSubstitutions = isPremium || isOnTrial
+
+  if (canSeeSubstitutions && token && personalFlags.length > 0) {
+    const flaggedIngNames = [...new Set(
+      personalFlags.map((f) => f.ingredientName).filter(Boolean)
+    )]
+    let authFailedDuringFetch = false
+    await Promise.allSettled(
+      flaggedIngNames.map(async (name) => {
+        try {
+          const res = await fetch(
+            `${apiBase}/api/substitution/ingredient/name/${encodeURIComponent(name)}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
+          if (res.status === 401 || res.status === 403) {
+            authFailedDuringFetch = true
+            return
+          }
+          if (!res.ok) return
+          const json = await res.json()
+          const subs = Array.isArray(json) ? json : (json?.data ?? [])
+          if (subs.length > 0) substitutions[name] = subs.slice(0, 3)
+        } catch { /* ignore */ }
+      })
+    )
+    if (authFailedDuringFetch) {
+      toast.error('Your session expired — substitution suggestions could not be loaded. Please log in and try again.')
+    }
+  }
+
+  // ── Build ingredient rows with allergen severity coloring ─────────────────
+  // Ingredients are strings (e.g. "2 cups all-purpose flour") — use substring
+  // matching against ingFlagMap keys (lowercase ingredient names) to find severity.
+  const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : []
+  const ingredientRows = ingredients.map((ing) => {
+    const lower = (ing || '').toLowerCase()
+    let severity = null
+    for (const [name, level] of Object.entries(ingFlagMap)) {
+      if (lower.includes(name)) {
+        if (level === 'high') { severity = 'high'; break }
+        severity = 'medium'
+      }
+    }
+    return { display: ing, severity }
+  })
+
+  // ── Date ─────────────────────────────────────────────────────────────────
+  const dateStr = new Date().toLocaleDateString(undefined, {
+    year: 'numeric', month: 'long', day: 'numeric',
+  })
+
+  // ── Meta pills ────────────────────────────────────────────────────────────
+  const metaPills = [
+    recipe.cuisineType ? `<span class="pill">${escHtml(recipe.cuisineType)}</span>` : '',
+    recipe.prepTimeMinutes > 0 ? `<span class="pill">Prep: ${escHtml(String(recipe.prepTimeMinutes))} min</span>` : '',
+    recipe.cookTimeMinutes > 0 ? `<span class="pill">Cook: ${escHtml(String(recipe.cookTimeMinutes))} min</span>` : '',
+  ].filter(Boolean).join('')
+
+  // ── Image ─────────────────────────────────────────────────────────────────
+  const imageHtml = recipe.thumbnailUrl
+    ? `<div class="recipe-image-wrap">
+        <img class="recipe-image" src="${escHtml(recipe.thumbnailUrl)}" alt="${escHtml(recipe.title || 'Recipe image')}" crossorigin="anonymous" />
+       </div>`
+    : ''
+
+  // ── Personal safety banner ────────────────────────────────────────────────
+  let safetyHtml = ''
+  if (hasPersonalProfile) {
+    safetyHtml = isPersonallySafe
+      ? `<div class="safety-banner safety-safe">
+          <strong>✓ Safe for your allergen profile</strong> — No allergens matching your profile were detected in this recipe.
+         </div>`
+      : `<div class="safety-banner safety-unsafe">
+          <strong>⚠ Not safe for your allergen profile</strong> — This recipe contains allergens you have flagged:
+          <strong>${personalHits.map(escHtml).join(', ')}</strong>.
+          Please verify all ingredients before consuming.
+         </div>`
+  }
+
+  // ── Allergen analysis section ─────────────────────────────────────────────
+  const profileNote = hasPersonalProfile ? ' <span class="profile-note">(Your Profile)</span>' : ''
+  let allergenSectionHtml = ''
+  if (personalFlags.length > 0) {
+    const flagChips = personalFlags.map((flag) => {
+      const sev = (flag.severity || '').toLowerCase()
+      const cls = sev === 'high' ? 'flag-high' : sev === 'medium' ? 'flag-medium' : 'flag-low'
+      return `<span class="flag-chip ${cls}">${escHtml(flag.detail || flag.ingredientName || '')}</span>`
+    }).join('')
+    const riskCls = `risk-${escHtml(overallAllergenRisk.toLowerCase())}`
+    allergenSectionHtml = `
+      <section class="section">
+        <h2 class="section-title">Allergen Analysis${profileNote}</h2>
+        <div class="flag-row">${flagChips}</div>
+        <p class="risk-summary">Overall risk: <span class="${riskCls}">${escHtml(overallAllergenRisk)}</span></p>
+      </section>`
+  } else if (recipe.isAnalysed !== false) {
+    allergenSectionHtml = `
+      <section class="section">
+        <h2 class="section-title">Allergen Analysis${profileNote}</h2>
+        <p class="safe-text">✓ ${hasPersonalProfile ? 'No allergens matching your profile detected' : 'No allergens detected in this recipe'}</p>
+      </section>`
+  }
+
+  // ── Nickel load section (only when user has nickel in their profile) ───────
+  let nickelHtml = ''
+  if (userHasNickel && totalNickelMcg > 0) {
+    const pct = Math.min(100, Math.round(thresholdPercent))
+    const nickelIngredients = nickelData?.meals?.[0]?.ingredients ?? []
+    // Nickel bar color matches risk level: green → amber → red
+    const barColor = pct >= 100 ? '#ef4444' : pct >= 67 ? '#f59e0b' : '#22c55e'
+    const rowsHtml = nickelIngredients.length > 0
+      ? `<table class="nickel-table">
+          <thead><tr>
+            <th>Ingredient</th><th class="num-cell">μg</th><th class="num-cell">Classification</th>
+          </tr></thead>
+          <tbody>${nickelIngredients.map((ing) => `
+            <tr>
+              <td>${escHtml(ing.name || '')}</td>
+              <td class="num-cell">${ing.nickelContributionMcg > 0 ? escHtml(ing.nickelContributionMcg.toFixed(1)) : '—'}</td>
+              <td class="num-cell nickel-class-${escHtml((ing.nickelClassification || 'unknown').toLowerCase())}">${escHtml(ing.nickelClassification || '—')}</td>
+            </tr>`).join('')}
+          </tbody>
+         </table>`
+      : ''
+    nickelHtml = `
+      <section class="section">
+        <h2 class="section-title">Nickel Load</h2>
+        <div class="nickel-summary">
+          <span class="nickel-mcg">${Math.round(totalNickelMcg)}μg</span>
+          <span class="nickel-label">${escHtml(nickelRiskLabel)}</span>
+        </div>
+        <div class="nickel-bar-wrap">
+          <div class="nickel-bar" style="width:${pct}%;background:${barColor}"></div>
+        </div>
+        <p class="nickel-threshold">${pct}% of 150μg daily threshold (Mislankar &amp; Zirwas 2013)</p>
+        ${rowsHtml}
+      </section>`
+  }
+
+  // ── Ingredient list HTML ──────────────────────────────────────────────────
+  const ingredientHtml = ingredientRows.length > 0
+    ? `<ul class="ingredient-list">${
+        ingredientRows.map(({ display, severity }) => {
+          const cls = severity === 'high' ? 'allergen-high' : severity === 'medium' ? 'allergen-medium' : ''
+          return `<li class="${cls}">${escHtml(display)}</li>`
+        }).join('')
+      }</ul>`
+    : `<p class="muted">No ingredients data available.</p>`
+
+  // ── Substitutions (premium/trial only) ───────────────────────────────────
+  const hasSubstitutions = Object.keys(substitutions).length > 0
+  const subHtml = hasSubstitutions
+    ? `<section class="section sub-section">
+        <h2 class="section-title">Allergen Substitutions <span class="premium-badge">Premium</span></h2>
+        <p class="sub-note">Allergen-safe alternatives for flagged ingredients:</p>
+        ${Object.entries(substitutions).map(([name, subs]) => `
+          <div class="sub-group">
+            <h3 class="sub-ingredient">Instead of: <em>${escHtml(name)}</em></h3>
+            <ul class="sub-list">
+              ${subs.map((s) => `
+                <li>
+                  <strong>${escHtml(s.substituteIngredientName || s.SubstituteIngredientName || '')}</strong>
+                  ${s.reason || s.Reason ? `<span class="sub-reason">(${escHtml(s.reason || s.Reason)})</span>` : ''}
+                  ${s.conversionRatio || s.ConversionRatio ? `<span class="sub-ratio">Ratio: ${escHtml(String(s.conversionRatio || s.ConversionRatio))}x</span>` : ''}
+                  ${s.notes || s.Notes ? `<span class="sub-notes"> — ${escHtml(s.notes || s.Notes)}</span>` : ''}
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        `).join('')}
+       </section>`
+    : ''
+
+  // ── Full HTML document ────────────────────────────────────────────────────
+  const sourceLink = recipe.sourceUrl
+    ? `<a href="${escHtml(recipe.sourceUrl)}">${escHtml(recipe.sourceDomain || recipe.sourceUrl)}</a>`
+    : `<strong>${escHtml(recipe.sourceDomain || 'the original source')}</strong>`
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>${escHtml(recipe.title || 'Recipe')} — Allergen Report — Recipzee</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    color: #111827;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 36px 40px 60px;
+    font-size: 13pt;
+    line-height: 1.6;
+  }
+
+  /* ── Branding ── */
+  .brand-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid #22c55e;
+    padding-bottom: 10px;
+    margin-bottom: 28px;
+  }
+  .brand-name { font-family: Arial, sans-serif; font-size: 18pt; font-weight: 800; color: #22c55e; letter-spacing: -0.5px; }
+  .brand-tagline { font-family: Arial, sans-serif; font-size: 9pt; color: #6b7280; }
+  .brand-date { font-family: Arial, sans-serif; font-size: 9pt; color: #6b7280; }
+
+  /* ── Recipe header ── */
+  .recipe-title { font-size: 24pt; font-weight: 700; color: #111827; line-height: 1.2; margin-bottom: 6px; }
+  .recipe-source { font-family: Arial, sans-serif; font-size: 10pt; color: #6b7280; margin-bottom: 14px; }
+
+  /* ── Meta pills ── */
+  .meta-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+  .pill {
+    font-family: Arial, sans-serif; font-size: 9pt;
+    background: #f3f4f6; border: 1px solid #e5e7eb;
+    border-radius: 999px; padding: 3px 10px; color: #374151;
+  }
+
+  /* ── Image ── */
+  .recipe-image-wrap { margin-bottom: 24px; }
+  .recipe-image { width: 100%; max-height: 300px; object-fit: cover; border-radius: 10px; }
+
+  /* ── Safety banner ── */
+  .safety-banner {
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 22px;
+    font-family: Arial, sans-serif; font-size: 10pt;
+  }
+  .safety-safe  { background: #f0fdf4; border: 1.5px solid #86efac; color: #166534; }
+  .safety-unsafe { background: #fef2f2; border: 1.5px solid #fca5a5; color: #7f1d1d; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 28px; }
+  .section-title {
+    font-family: Arial, sans-serif; font-size: 13pt; font-weight: 700;
+    color: #111827; border-bottom: 1.5px solid #e5e7eb;
+    padding-bottom: 5px; margin-bottom: 12px;
+  }
+  .profile-note { font-size: 9pt; font-weight: 400; color: #6b7280; }
+  .muted { color: #9ca3af; font-style: italic; }
+
+  /* ── Allergen flag chips ── */
+  .flag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .flag-chip {
+    font-family: Arial, sans-serif; font-size: 9pt;
+    border-radius: 999px; padding: 3px 10px; border: 1px solid;
+  }
+  .flag-high   { background: #fef2f2; border-color: #fca5a5; color: #7f1d1d; }
+  .flag-medium { background: #fff7ed; border-color: #fdba74; color: #7c2d12; }
+  .flag-low    { background: #fefce8; border-color: #fde047; color: #713f12; }
+  .risk-summary { font-family: Arial, sans-serif; font-size: 9pt; color: #6b7280; }
+  .risk-high    { color: #b91c1c; font-weight: 700; }
+  .risk-medium  { color: #c2410c; font-weight: 700; }
+  .risk-low     { color: #b45309; font-weight: 700; }
+  .risk-unknown { color: #6b7280; }
+  .safe-text { color: #15803d; font-family: Arial, sans-serif; font-size: 10pt; }
+
+  /* ── Nickel load ── */
+  .nickel-summary { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+  .nickel-mcg   { font-size: 20pt; font-weight: 700; color: #111827; }
+  .nickel-label { font-family: Arial, sans-serif; font-size: 11pt; font-weight: 600; color: #374151; }
+  .nickel-bar-wrap { height: 8px; background: #e5e7eb; border-radius: 999px; overflow: hidden; margin-bottom: 6px; }
+  .nickel-bar  { height: 100%; border-radius: 999px; }
+  .nickel-threshold { font-family: Arial, sans-serif; font-size: 9pt; color: #6b7280; margin-bottom: 12px; }
+  .nickel-table { width: 100%; border-collapse: collapse; font-size: 9pt; margin-top: 10px; }
+  .nickel-table th {
+    font-family: Arial, sans-serif; font-weight: 600; color: #6b7280;
+    text-align: left; padding: 4px 8px 4px 0; border-bottom: 1px solid #e5e7eb;
+    text-transform: uppercase; font-size: 8pt;
+  }
+  .nickel-table td { padding: 5px 8px 5px 0; border-bottom: 1px solid #f3f4f6; color: #374151; }
+  .num-cell { text-align: right; }
+  .nickel-class-high     { color: #b91c1c; }
+  .nickel-class-moderate { color: #b45309; }
+  .nickel-class-low      { color: #15803d; }
+  .nickel-class-unknown  { color: #9ca3af; }
+
+  /* ── Ingredients ── */
+  .ingredient-list {
+    list-style: none;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px;
+  }
+  .ingredient-list li {
+    padding: 4px 0; border-bottom: 1px solid #f3f4f6; font-size: 11pt;
+  }
+  .ingredient-list li::before { content: "• "; color: #22c55e; font-weight: 700; }
+  .allergen-high   { color: #b91c1c !important; font-weight: 600; }
+  .allergen-high::before   { color: #ef4444 !important; content: "⚠ " !important; }
+  .allergen-medium { color: #c2410c !important; font-weight: 600; }
+  .allergen-medium::before { color: #f97316 !important; content: "⚠ " !important; }
+
+  /* ── Substitutions ── */
+  .sub-section { border-top: 2px solid #22c55e; padding-top: 20px; }
+  .premium-badge {
+    font-size: 8pt; background: #fef9c3; border: 1px solid #fde047;
+    border-radius: 4px; padding: 1px 6px; color: #713f12;
+    vertical-align: middle; margin-left: 6px;
+  }
+  .sub-note { font-family: Arial, sans-serif; font-size: 9pt; color: #6b7280; margin-bottom: 16px; }
+  .sub-group { margin-bottom: 18px; }
+  .sub-ingredient { font-size: 11pt; margin-bottom: 6px; color: #374151; }
+  .sub-list { list-style: none; padding-left: 0; }
+  .sub-list li { font-size: 10pt; padding: 4px 0; border-bottom: 1px solid #f3f4f6; }
+  .sub-reason { color: #6b7280; font-size: 9pt; }
+  .sub-ratio  { color: #059669; font-size: 9pt; margin-left: 8px; }
+  .sub-notes  { color: #6b7280; font-size: 9pt; }
+
+  /* ── Source note ── */
+  .source-note {
+    background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 8px;
+    padding: 12px 16px; margin-bottom: 22px;
+    font-family: Arial, sans-serif; font-size: 10pt; color: #374151;
+  }
+  .source-note a { color: #15803d; }
+
+  /* ── Footer ── */
+  .pdf-footer {
+    border-top: 2px solid #e5e7eb; margin-top: 40px; padding-top: 14px;
+    font-family: Arial, sans-serif; font-size: 8pt; color: #9ca3af; line-height: 1.5;
+  }
+  .footer-brand { font-weight: 700; color: #22c55e; }
+
+  /* ── Print setup ── */
+  @page { margin: 1.5cm 1.8cm; }
+  @media print {
+    body { padding: 0; }
+    .recipe-image { max-height: 240px; }
+    .safety-banner, .flag-chip, .source-note, .sub-section, .nickel-bar {
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .allergen-high, .allergen-medium {
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .brand-name { -webkit-print-color-adjust: exact; print-color-adjust: exact; color: #22c55e !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Branding header -->
+<header class="brand-header">
+  <div>
+    <div class="brand-name">Recipzee</div>
+    <div class="brand-tagline">Allergen Intelligence Report</div>
+  </div>
+  <div class="brand-date">Exported ${escHtml(dateStr)}</div>
+</header>
+
+<!-- Recipe title & source -->
+<h1 class="recipe-title">${escHtml(recipe.title || 'Untitled Recipe')}</h1>
+<div class="recipe-source">
+  Sourced from <strong>${escHtml(recipe.sourceDomain || 'external source')}</strong>
+  ${recipe.cuisineType ? ` &middot; ${escHtml(recipe.cuisineType)}` : ''}
+</div>
+
+<!-- Meta pills -->
+${metaPills ? `<div class="meta-row">${metaPills}</div>` : ''}
+
+<!-- Image -->
+${imageHtml}
+
+<!-- Personal safety banner -->
+${safetyHtml}
+
+<!-- Allergen analysis -->
+${allergenSectionHtml}
+
+<!-- Nickel load -->
+${nickelHtml}
+
+<!-- Ingredients -->
+<section class="section">
+  <h2 class="section-title">Ingredients</h2>
+  ${ingredientHtml}
+</section>
+
+<!-- Substitutions (premium/trial) -->
+${subHtml}
+
+<!-- Source note — instructions at original source -->
+<div class="source-note">
+  <strong>📖 For full cooking instructions</strong>, visit the original recipe at: ${sourceLink}
+</div>
+
+<!-- Footer -->
+<footer class="pdf-footer">
+  <p>
+    <span class="footer-brand">Recipzee</span> &mdash; recipzee.com &nbsp;&middot;&nbsp;
+    Allergen and nickel load data is for informational purposes only and does not constitute medical advice.
+    Source: Rebelytics R&amp;D Inc. v9.1.1 (2025), 257 studies, 20,575 measurements.
+    Consult a healthcare professional for allergy management decisions.
+    Recipe content from ${escHtml(recipe.sourceDomain || 'external source')} — Recipzee is not responsible for changes to the original recipe.
+  </p>
+</footer>
+
+<script>
+  window.onload = function () {
+    setTimeout(function () { window.print(); }, 400);
+  };
+</script>
+</body>
+</html>`
+
+  const popup = window.open('', '_blank', 'width=900,height=700,scrollbars=yes')
+  if (!popup) {
+    try {
+      const blob = new Blob([html], { type: 'text/html' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${(recipe.title || 'recipe').replace(/[^a-z0-9]/gi, '_')}_allergen_report.html`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      toast('Pop-ups are blocked. Your allergen report was downloaded as an HTML file — open it in your browser and print to PDF.', { duration: 6000 })
+    } catch {
+      toast.error('Could not export PDF. Please allow pop-ups for this site and try again.')
+    }
+    return
+  }
+  popup.document.write(html)
+  popup.document.close()
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 /**

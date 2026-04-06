@@ -129,7 +129,7 @@ const validatePassword = (pwd) => {
   return { rules, passed, isValid: passed >= 4 };
 };
 
-const AccountSecurityTab = ({ token, user }) => {
+const AccountSecurityTab = ({ token, user, logout }) => {
   // Change Email state
   const [newEmail, setNewEmail] = useState("");
   const [emailPassword, setEmailPassword] = useState("");
@@ -333,7 +333,10 @@ const AccountSecurityTab = ({ token, user }) => {
         const msg = await res.text();
         throw new Error(msg || "Failed to delete account");
       }
-      // Redirect to home — account is gone, token is invalid
+      // Clear all auth state before redirecting — account is gone
+      logout();
+      sessionStorage.clear();
+      localStorage.clear();
       window.location.href = "/";
     } catch (err) {
       setDeleteError(err.message || "Failed to delete account");
@@ -960,7 +963,7 @@ const SettingsPage = () => {
 
       {/* Account Security */}
       <TabPanel id="account" active={activeTab === "account"}>
-        <AccountSecurityTab token={token} user={user} />
+        <AccountSecurityTab token={token} user={user} logout={logout} />
       </TabPanel>
 
       {/* Allergies */}
