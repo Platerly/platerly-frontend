@@ -186,11 +186,18 @@ export async function exportRecipePdf({
        </section>`
     : ''
 
-  // Recipe hero image — crossorigin="anonymous" is required so the print
-  // renderer can access the image even if it is hosted on a different origin.
-  const imageHtml = recipe.imageUrl
+  // Recipe hero image — embed as base64 data URL so the popup window (which
+  // has about:blank origin) never needs to make a cross-origin request.
+  // Avoids CORS failures with Azure Blob Storage and similar hosts.
+  // Falls back to the raw URL if the fetch fails so the popup still opens.
+  let imgSrc = recipe.imageUrl || null
+  if (imgSrc) {
+    const embedded = await toDataUrl(imgSrc)
+    if (embedded) imgSrc = embedded
+  }
+  const imageHtml = imgSrc
     ? `<div class="recipe-image-wrap">
-        <img class="recipe-image" src="${escHtml(recipe.imageUrl)}" alt="${escHtml(recipe.title || 'Recipe image')}" crossorigin="anonymous" />
+        <img class="recipe-image" src="${escHtml(imgSrc)}" alt="${escHtml(recipe.title || 'Recipe image')}" />
        </div>`
     : ''
 
@@ -560,10 +567,15 @@ export async function exportIndexedRecipePdf({
     recipe.cookTimeMinutes > 0 ? `<span class="pill">Cook: ${escHtml(String(recipe.cookTimeMinutes))} min</span>` : '',
   ].filter(Boolean).join('')
 
-  // ── Image ─────────────────────────────────────────────────────────────────
-  const imageHtml = recipe.thumbnailUrl
+  // ── Image — same base64 embedding strategy as exportRecipePdf ────────────
+  let imgSrc = recipe.thumbnailUrl || null
+  if (imgSrc) {
+    const embedded = await toDataUrl(imgSrc)
+    if (embedded) imgSrc = embedded
+  }
+  const imageHtml = imgSrc
     ? `<div class="recipe-image-wrap">
-        <img class="recipe-image" src="${escHtml(recipe.thumbnailUrl)}" alt="${escHtml(recipe.title || 'Recipe image')}" crossorigin="anonymous" />
+        <img class="recipe-image" src="${escHtml(imgSrc)}" alt="${escHtml(recipe.title || 'Recipe image')}" />
        </div>`
     : ''
 
@@ -929,6 +941,34 @@ ${subHtml}
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Fetches an image URL and converts it to a base64 data URL so it can be
+ * embedded directly in popup-window HTML.  Embedded images render reliably
+ * regardless of the server's CORS policy, because no additional network request
+ * is made from the popup's about:blank origin.
+ *
+ * Returns null on any network, CORS, or encoding failure — the caller should
+ * fall back to the original URL so the popup still opens even if embedding fails.
+ *
+ * @param {string} url - Absolute image URL
+ * @returns {Promise<string|null>} data: URL string, or null on failure
+ */
+async function toDataUrl(url) {
+  try {
+    const res = await fetch(url, { mode: 'cors', cache: 'force-cache' })
+    if (!res.ok) return null
+    const blob = await res.blob()
+    return await new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(typeof reader.result === 'string' ? reader.result : null)
+      reader.onerror  = () => resolve(null)
+      reader.readAsDataURL(blob)
+    })
+  } catch {
+    return null
+  }
+}
 
 /**
  * Escapes a value for safe insertion into HTML attribute values and text nodes.

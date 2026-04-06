@@ -54,7 +54,8 @@
  */
 import React, { useState, useEffect, useMemo, memo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Heart, Repeat2, Wand2, Share2, LinkIcon, Mail, Flame, X, Check } from 'lucide-react'
+import { Heart, Repeat2, Wand2, Share2, LinkIcon, Mail, Flame, X, Check, FileDown } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { API_BASE_URL } from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
 import { usePremium } from '../../hooks/usePremium'
@@ -63,6 +64,15 @@ import { norm, variants, isSevere, sevRank } from '../../utils/allergenHelpers'
 import { logger } from '../../utils/logger'
 import { TAGS_INLINE_MAX } from '../../constants/limits'
 import { getRecipeUrl, getRecipeShareUrl } from '../../utils/recipeUrl'
+import { exportRecipePdf } from '../../utils/exportPdf'
+
+const fmtMins = (m) => {
+  if (!m) return null
+  const h = Math.floor(m / 60), mm = m % 60
+  if (h && mm) return `${h} hr ${mm} min`
+  if (h) return `${h} hr`
+  return `${mm} min`
+}
 
 const PRIORITY = {
   sensitivity: ['low nickel','nut free','soy free','egg free','shellfish free','peanut free','gluten free','dairy free'],
@@ -125,6 +135,7 @@ const RecipeCard = ({
   likes = 0, isLiked = false,
   reposts = 0, isRepostedByCurrentUser = false,
   ingredientNames = [],
+  matchedAllergenTerms = [],
   allergenSeverity = {},
   prepTime, cookTime, difficulty,
   tags = '',
@@ -140,6 +151,7 @@ const RecipeCard = ({
   const [repostCount, setRepostCount] = useState(typeof reposts === 'number' ? reposts : 0)
   const [shareOpen, setShareOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [pdfLoading, setPdfLoading] = useState(false)
 
   const navigate = useNavigate()
   const { token } = useAuth()
@@ -299,6 +311,42 @@ const RecipeCard = ({
       navigate(`/remix/${id}`)
     } else {
       setRemixUpgradeOpen(true)
+    }
+  }
+
+  const handleExportPdf = async (e) => {
+    e.stopPropagation()
+    if (pdfLoading) return
+    setPdfLoading(true)
+    try {
+      // Fetch full recipe so we have ingredients with quantities and instructions
+      const res = await fetch(`${API_BASE_URL}/api/Recipe/${id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!res.ok) throw new Error(`Recipe fetch failed (${res.status})`)
+      const data = await res.json()
+      const fullRecipe = data.recipe ?? data
+
+      const prepMin = fullRecipe.prepTimeMinutes ?? fullRecipe.prepMinutes ?? prepTime
+      const cookMin = fullRecipe.cookTimeMinutes ?? fullRecipe.cookMinutes ?? cookTime
+
+      await exportRecipePdf({
+        recipe: fullRecipe,
+        allergenTerms: matchedAllergenTerms,
+        difficulty: fullRecipe.difficulty || difficulty,
+        prep: fmtMins(prepMin),
+        cook: fmtMins(cookMin),
+        total: (prepMin || cookMin) ? fmtMins((prepMin || 0) + (cookMin || 0)) : null,
+        scale: 1,
+        isPremium,
+        token,
+        apiBase: API_BASE_URL,
+      })
+    } catch (err) {
+      logger.error('RecipeCard PDF export failed', err)
+      toast.error('Could not export recipe — please try again.')
+    } finally {
+      setPdfLoading(false)
     }
   }
 
@@ -521,6 +569,20 @@ const RecipeCard = ({
             </div>
           )}
 
+          <div className="flex items-center gap-3 sm:gap-4">
+            <button
+              onClick={handleExportPdf}
+              disabled={pdfLoading}
+              title="Export as PDF"
+              className="flex items-center gap-1 text-sm text-recipzee-subtle hover:text-recipzee-green min-h-[44px] disabled:opacity-50"
+            >
+              {pdfLoading
+                ? <div className="w-4 h-4 border-2 border-recipzee-green border-t-transparent rounded-full animate-spin" />
+                : <FileDown className="w-5 h-5 sm:w-4 sm:h-4" />
+              }
+              <span className="hidden sm:inline">Export</span>
+            </button>
+
           <div className="relative">
             <button
               onClick={toggleShareMenu}
@@ -653,6 +715,7 @@ const RecipeCard = ({
               </div>
             )}
           </div>
+          </div>{/* end flex items-center gap-3 (Export + Share group) */}
         </div>
       </div>
 

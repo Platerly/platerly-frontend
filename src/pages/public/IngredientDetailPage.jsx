@@ -47,6 +47,22 @@ const XR_SEEN_KEY = 'rz_xr_seen'
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 /**
+ * Returns the clinical threshold range string for a nickel classification when
+ * no exact μg measurement is available.
+ * Thresholds: Mislankar & Zirwas (2013) Dermatitis 24(4).
+ * @param {string|undefined} classification
+ * @returns {string}
+ */
+function classificationRange(classification) {
+  switch (classification?.toLowerCase()) {
+    case 'low':      return '< 10 μg'
+    case 'moderate': return '10–20 μg'
+    case 'high':     return '> 20 μg'
+    default:         return '—'
+  }
+}
+
+/**
  * Returns Tailwind class sets for colouring the nickel classification card
  * based on LOW / MODERATE / HIGH (or unknown).
  * @param {string|undefined} classification
@@ -304,7 +320,7 @@ export default function IngredientDetailPage() {
                 </div>
               </div>
               <div className="text-right">
-                {data.nickelMicrogramsPerServing ? (
+                {data.nickelMicrogramsPerServing != null ? (
                   <>
                     <p className={`text-2xl font-extrabold ${colors.text}`}>
                       {parseFloat(data.nickelMicrogramsPerServing).toFixed(1)} μg
@@ -314,7 +330,12 @@ export default function IngredientDetailPage() {
                     </p>
                   </>
                 ) : (
-                  <p className="text-sm text-recipzee-muted">No μg data</p>
+                  <>
+                    <p className={`text-2xl font-extrabold ${colors.text}`}>
+                      {classificationRange(data.nickelClassification)}
+                    </p>
+                    <p className="text-xs text-recipzee-muted">per serving (est. range)</p>
+                  </>
                 )}
               </div>
             </div>
