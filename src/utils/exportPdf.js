@@ -689,7 +689,7 @@ export async function exportIndexedRecipePdf({
 
   // ── Full HTML document ────────────────────────────────────────────────────
   const sourceLink = recipe.sourceUrl
-    ? `<a href="${escHtml(recipe.sourceUrl)}">${escHtml(recipe.sourceDomain || recipe.sourceUrl)}</a>`
+    ? `<a href="${escHtml(recipe.sourceUrl)}">${escHtml(recipe.sourceDomain || recipe.sourceUrl)}</a> <span style="word-break:break-all;">(${escHtml(recipe.sourceUrl)})</span>`
     : `<strong>${escHtml(recipe.sourceDomain || 'the original source')}</strong>`
 
   const html = `<!DOCTYPE html>
