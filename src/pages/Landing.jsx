@@ -216,7 +216,7 @@ const Landing = () => {
             >
               Explore halal recipes →
             </Link>
-          </div>
+          </div>   
         </div>
 
         {/* ── PRICING ── */}
