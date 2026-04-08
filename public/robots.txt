@@ -25,7 +25,6 @@
 
 # --- All crawlers (default rules) ---
 User-agent: *
-Content-Signal: search=yes,ai-train=no
 # Block private app routes
 Disallow: /settings
 Disallow: /billing
