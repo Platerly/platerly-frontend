@@ -66,7 +66,7 @@ export default function CookieConsentBanner() {
                 onClick={rejectAll}
                 className="px-4 py-2 rounded-xl text-sm font-medium
                            border border-recipzee-border bg-white/5
-                           text-recipzee-subtle hover:text-recipzee-text hover:bg-white/10
+                           text-recipzee-text hover:bg-white/10
                            transition-colors whitespace-nowrap"
               >
                 Reject all

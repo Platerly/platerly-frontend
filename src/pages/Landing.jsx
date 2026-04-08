@@ -102,7 +102,7 @@ const Landing = () => {
 
           <p className="mt-4 text-xs text-recipzee-subtle">
             Already have an account?{' '}
-            <Link to="/login" className="text-recipzee-green hover:underline">Sign in</Link>
+            <Link to="/login" className="text-recipzee-green underline underline-offset-2">Sign in</Link>
           </p>
         </div>
 
@@ -112,7 +112,7 @@ const Landing = () => {
             <div className="w-9 h-9 rounded-lg bg-recipzee-green/20 flex items-center justify-center mb-3">
               <ShieldCheck className="w-5 h-5 text-recipzee-green" />
             </div>
-            <h3 className="font-semibold mb-1">Instant allergen scan</h3>
+            <h2 className="font-semibold mb-1 text-base">Instant allergen scan</h2>
             <p className="text-sm text-recipzee-subtle">
               Open any recipe and see exactly which ingredients conflict with your allergies — highlighted instantly.
             </p>
@@ -122,7 +122,7 @@ const Landing = () => {
             <div className="w-9 h-9 rounded-lg bg-recipzee-green/20 flex items-center justify-center mb-3">
               <Shuffle className="w-5 h-5 text-recipzee-green" />
             </div>
-            <h3 className="font-semibold mb-1">Allergen-aware substitutions</h3>
+            <h2 className="font-semibold mb-1 text-base">Allergen-aware substitutions</h2>
             <p className="text-sm text-recipzee-subtle">
               Click any ingredient to see community-tested alternatives with confidence scores and conversion ratios.
             </p>
@@ -132,7 +132,7 @@ const Landing = () => {
             <div className="w-9 h-9 rounded-lg bg-recipzee-green/20 flex items-center justify-center mb-3">
               <Filter className="w-5 h-5 text-recipzee-green" />
             </div>
-            <h3 className="font-semibold mb-1">Filter your feed</h3>
+            <h2 className="font-semibold mb-1 text-base">Filter your feed</h2>
             <p className="text-sm text-recipzee-subtle">
               Hide recipes that contain your allergens from the entire feed — browse thousands of recipes without the anxiety.
             </p>
