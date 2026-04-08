@@ -21,7 +21,6 @@
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net https://browser.sentry-cdn.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.sentry.io https://*.ingest.sentry.io https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://connect.facebook.net; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'"
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()"
   }
 }
