@@ -410,7 +410,7 @@ const UserProfilePage = () => {
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content={profileTitle} />
         <meta name="twitter:description" content={profileDescription} />
-        <link rel="canonical" content={`https://www.recipzee.com/profile/${username}`} />
+        <link rel="canonical" content={`https://recipzee.com/profile/${username}`} />
       </Helmet>
       {/* Background gradient orbs */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-recipzee-green/5 rounded-full blur-[128px]" />

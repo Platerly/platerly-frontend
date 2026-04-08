@@ -35,7 +35,7 @@ const BotPage = () => (
     <Helmet>
       <title>Recipzee Bot — How It Works & How to Opt Out</title>
       <meta name="description" content="Learn what Recipzee Bot collects, how it displays your recipes, and how to opt out by adding a single line to your robots.txt." />
-      <link rel="canonical" href="https://www.recipzee.com/bot" />
+      <link rel="canonical" href="https://recipzee.com/bot" />
     </Helmet>
 
     <section className="space-y-12 leading-relaxed text-recipzee-text">

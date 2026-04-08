@@ -55,7 +55,7 @@ const Landing = () => {
       <Helmet>
         <title>Recipzee — Nickel Allergy Recipes &amp; Allergen-Aware Cooking Community</title>
         <meta name="description" content="Recipzee is the only recipe community built for nickel allergy sufferers — and every other allergy too. Find low-nickel recipes, flag allergens instantly, and cook with total confidence." />
-        <link rel="canonical" href="https://www.recipzee.com/" />
+        <link rel="canonical" href="https://recipzee.com/" />
       </Helmet>
 
       {/* Background gradient orbs */}

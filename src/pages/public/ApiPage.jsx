@@ -322,7 +322,7 @@ export default function ApiPage() {
       <Helmet>
         <title>Allergen Intelligence API — Recipzee</title>
         <meta name="description" content="The only commercial API with clinical nickel content data, allergen intelligence, and recipe safety auditing for food companies, dietitian platforms, and developers." />
-        <link rel="canonical" href="https://www.recipzee.com/api" />
+        <link rel="canonical" href="https://recipzee.com/api" />
       </Helmet>
 
       {/* Background glows */}

@@ -305,7 +305,7 @@ const Feed = () => {
         <meta name="description" content="Browse thousands of allergen-aware recipes on Recipzee — low-nickel, gluten-free, dairy-free, halal, vegan and more. Filter by your allergen profile and make informed food choices." />
         <meta property="og:title" content="Explore Allergen-Aware Recipes — Recipzee" />
         <meta property="og:description" content="Browse thousands of allergen-aware recipes on Recipzee — low-nickel, gluten-free, dairy-free, halal, vegan and more." />
-        <link rel="canonical" href="https://www.recipzee.com/feed" />
+        <link rel="canonical" href="https://recipzee.com/feed" />
       </Helmet>
       {/* Sticky tabs */}
       <div className="sticky top-0 z-20 bg-recipzee-dark/95 backdrop-blur py-3 border-b border-recipzee-light">

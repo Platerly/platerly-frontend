@@ -140,7 +140,7 @@ export default function IngredientsPage() {
           name="description"
           content="Look up the nickel content of any ingredient. Sourced from Rebelytics v9.1.1 — 257 peer-reviewed studies, 20,575 measurements. Free to use."
         />
-        <link rel="canonical" href="https://www.recipzee.com/ingredients" />
+        <link rel="canonical" href="https://recipzee.com/ingredients" />
       </Helmet>
 
       {/* Background glow */}

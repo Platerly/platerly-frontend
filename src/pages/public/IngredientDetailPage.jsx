@@ -241,7 +241,7 @@ export default function IngredientDetailPage() {
       <Helmet>
         <title>{data.name} — Nickel Content &amp; Allergy Info — Recipzee</title>
         <meta name="description" content={metaDesc} />
-        <link rel="canonical" href={`https://www.recipzee.com/ingredients/${slug}`} />
+        <link rel="canonical" href={`https://recipzee.com/ingredients/${slug}`} />
 
         {/* Structured data for Google */}
         <script type="application/ld+json">{JSON.stringify({
@@ -249,7 +249,7 @@ export default function IngredientDetailPage() {
           "@type": "Article",
           "headline": `${data.name} — Nickel Content for Allergy Management`,
           "description": metaDesc,
-          "url": `https://www.recipzee.com/ingredients/${slug}`,
+          "url": `https://recipzee.com/ingredients/${slug}`,
           "publisher": { "@type": "Organization", "name": "Recipzee" }
         })}</script>
       </Helmet>
@@ -511,7 +511,7 @@ export default function IngredientDetailPage() {
               </Link>
               {' · '}
               <a
-                href="https://www.recipzee.com/disclaimer"
+                href="https://recipzee.com/disclaimer"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-recipzee-muted hover:text-recipzee-text transition-colors underline-offset-2 underline"

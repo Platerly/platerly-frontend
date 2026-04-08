@@ -22,8 +22,8 @@
  *  subsequent page views are tracked by the RouteTracker component in AppRoutes.jsx.
  *
  * www canonicalisation:
- *  In production, bare `recipzee.com` is immediately redirected to `www.recipzee.com`
- *  before React renders to avoid duplicate-domain indexing issues.
+ *  `recipzee.com` is the canonical domain. www redirects to non-www at the
+ *  infrastructure level (Azure Static Web Apps default domain).
  */
 import "./sentry";
 import React from 'react'
@@ -39,11 +39,8 @@ import SoftWallRoot from './components/softwall/SoftWallRoot'
 import { CookieConsentProvider } from './context/CookieConsentContext'
 import CookieConsentBanner from './components/common/CookieConsentBanner'
 
-// Temporary canonicalization in production: force www
-// Redirects recipzee.com → www.recipzee.com to consolidate SEO authority
-if (import.meta.env.PROD && location.hostname === 'recipzee.com') {
-  location.replace(`https://www.recipzee.com${location.pathname}${location.search}${location.hash}`);
-}
+// www → non-www canonicalisation is handled at the infrastructure level
+// (Azure Static Web Apps default domain = recipzee.com). No client-side redirect needed.
 
 // GA4 and Meta Pixel are now initialised lazily inside CookieConsentContext
 // only when the user has granted the corresponding consent category.

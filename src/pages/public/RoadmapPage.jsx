@@ -247,7 +247,7 @@ export default function RoadmapPage() {
       <Helmet>
         <title>Roadmap — Recipzee</title>
         <meta name="description" content="See what Recipzee is building — allergen intelligence features in progress, coming soon, and planned for the future." />
-        <link rel="canonical" href="https://www.recipzee.com/roadmap" />
+        <link rel="canonical" href="https://recipzee.com/roadmap" />
       </Helmet>
 
       {/* Background glow */}

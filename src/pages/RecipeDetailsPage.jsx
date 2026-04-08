@@ -617,9 +617,9 @@ const RecipeDetailsPage = () => {
     author: {
       '@type': 'Person',
       name: recipe.user?.username ?? 'Recipzee Chef',
-      url: recipe.user?.username ? `https://www.recipzee.com/profile/${recipe.user.username}` : 'https://www.recipzee.com',
+      url: recipe.user?.username ? `https://recipzee.com/profile/${recipe.user.username}` : 'https://recipzee.com',
     },
-    url: `https://www.recipzee.com/${recipe.user?.username ?? 'recipe'}/${recipe.slug ?? recipe.id}`,
+    url: `https://recipzee.com/${recipe.user?.username ?? 'recipe'}/${recipe.slug ?? recipe.id}`,
     cookTime: recipe.cookTime ? `PT${recipe.cookTime}M` : undefined,
     prepTime: recipe.prepTime ? `PT${recipe.prepTime}M` : undefined,
     recipeYield: recipe.servings ? `${recipe.servings} servings` : undefined,
