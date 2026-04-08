@@ -11,11 +11,6 @@
     {
       "route": "/api",
       "rewrite": "/index.html"
-    },
-    {
-      "route": "/sitemap.xml",
-      "redirect": "https://platerly-api-g9htcadmbda6h8ej.canadacentral-01.azurewebsites.net/sitemap.xml",
-      "statusCode": 301
     }
   ],
   "responseOverrides": {

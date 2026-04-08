@@ -1,28 +1,31 @@
 User-agent: *
+# Block private app routes
 Disallow: /settings
-Disallow: /api/
 Disallow: /billing
 Disallow: /admin
 Disallow: /admin/
+Disallow: /onboarding
+# Block backend API paths (not the /api marketing page)
+Disallow: /api/allergies
+Disallow: /api/recipe
+Disallow: /api/auth
+Disallow: /api/user
+Disallow: /api/b2b
 Allow: /
 
-# Block common bots from admin area
 User-agent: Googlebot
 Disallow: /admin
 
 User-agent: Bingbot
 Disallow: /admin
 
-User-agent: Slurp
-Disallow: /admin
-
 User-agent: DuckDuckBot
 Disallow: /admin
 
-User-agent: Baiduspider
+User-agent: Slurp
 Disallow: /admin
 
 User-agent: YandexBot
 Disallow: /admin
 
-Sitemap: https://www.recipzee.com/sitemap.xml
+Sitemap: https://recipzee.com/sitemap.xml
