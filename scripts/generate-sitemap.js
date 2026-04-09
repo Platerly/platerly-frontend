@@ -21,7 +21,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const API_URL =
   process.env.SITEMAP_API_URL ||
-  'https://platerly-api-g9htcadmbda6h8ej.canadacentral-01.azurewebsites.net/sitemap.xml'
+  'https://api.recipzee.com/sitemap.xml'
 
 const OUTPUT_PATH = resolve(__dirname, '../public/sitemap.xml')
 
