@@ -53,7 +53,7 @@ const NavItem = ({ to, icon: Icon, children, end = false, isActiveMatch, badge }
             ? isActiveMatch(location)
             : isActive
         return cx(
-          'group flex items-center gap-4 text-base px-4 py-3 rounded-xl transition-all duration-200 outline-none',
+          'group flex items-center gap-3 text-sm px-3 py-2 rounded-xl transition-all duration-200 outline-none',
           'focus-visible:ring-2 focus-visible:ring-recipzee-green/60 focus-visible:ring-offset-0',
           active
             ? 'bg-recipzee-green text-recipzee-dark font-semibold shadow-lg shadow-recipzee-green/20'
@@ -70,7 +70,7 @@ const NavItem = ({ to, icon: Icon, children, end = false, isActiveMatch, badge }
         return (
           <>
             <div className={cx(
-              'relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200',
+              'relative w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200',
               active
                 ? 'bg-recipzee-dark/20'
                 : 'bg-recipzee-card group-hover:bg-recipzee-green/10'
@@ -115,7 +115,7 @@ const FeedNavItem = ({ icon: Icon }) => {
       end
       onClick={handleClick}
       className={({ isActive }) => cx(
-        'group flex items-center gap-4 text-base px-4 py-3 rounded-xl transition-all duration-200 outline-none',
+        'group flex items-center gap-3 text-sm px-3 py-2 rounded-xl transition-all duration-200 outline-none',
         'focus-visible:ring-2 focus-visible:ring-recipzee-green/60 focus-visible:ring-offset-0',
         isActive
           ? 'bg-recipzee-green text-recipzee-dark font-semibold shadow-lg shadow-recipzee-green/20'
@@ -126,7 +126,7 @@ const FeedNavItem = ({ icon: Icon }) => {
       {({ isActive }) => (
         <>
           <div className={cx(
-            'relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200',
+            'relative w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200',
             isActive
               ? 'bg-recipzee-dark/20'
               : 'bg-recipzee-card group-hover:bg-recipzee-green/10'
@@ -160,23 +160,22 @@ export const SidebarPanel = () => {
   const homeTarget = authed ? '/feed' : '/login'
 
   return (
-    <div className="flex h-full w-full flex-col p-6 overflow-hidden">
-      {/* Logo — always visible */}
-      <button
-        onClick={() => window.location.href = homeTarget}
-        aria-label="Recipzee Home"
-        title="Reload Recipzee"
-        className="flex items-center gap-3 mb-6 group cursor-pointer flex-shrink-0"
-      >
-        <span className="text-3xl font-bold text-recipzee-green tracking-tight">
-          Recipzee
-        </span>
-      </button>
+    <div className="flex h-full w-full flex-col justify-between p-6">
+      <div>
+        {/* Logo with icon - click reloads the page */}
+        <button
+          onClick={() => window.location.href = homeTarget}
+          aria-label="Recipzee Home"
+          title="Reload Recipzee"
+          className="flex items-center gap-3 mb-6 group cursor-pointer"
+        >
+          <span className="text-3xl font-bold text-recipzee-green tracking-tight">
+            Recipzee
+          </span>
+        </button>
 
-      {/* Nav — scrollable when content overflows */}
-      <div className="flex-1 overflow-y-auto min-h-0 -mr-2 pr-2">
         {authed ? (
-          <nav className="flex flex-col space-y-1.5" role="navigation" aria-label="Main">
+          <nav className="flex flex-col space-y-0.5" role="navigation" aria-label="Main">
             <FeedNavItem icon={Home} />
             <NavItem to="/explore-recipes" icon={Globe} end>Explore Recipes</NavItem>
             <NavItem to="/explore-chefs" icon={Users} end>Explore Chefs</NavItem>
@@ -206,7 +205,7 @@ export const SidebarPanel = () => {
             </NavItem>
           </nav>
         ) : (
-          <div className="mt-4">
+          <div className="mt-10">
             <p className="mb-4 text-sm text-recipzee-subtle">
               Join Recipzee to create and save recipes
             </p>
@@ -220,8 +219,8 @@ export const SidebarPanel = () => {
         )}
       </div>
 
-      {/* Footer — always visible */}
-      <div className="pt-4 mt-4 border-t border-recipzee-border flex-shrink-0">
+      {/* Footer */}
+      <div className="pt-4 border-t border-recipzee-border">
         <div className="text-xs text-recipzee-subtle">
           &copy; {new Date().getFullYear()} Recipzee
         </div>
