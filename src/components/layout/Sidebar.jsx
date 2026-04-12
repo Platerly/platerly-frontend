@@ -53,7 +53,7 @@ const NavItem = ({ to, icon: Icon, children, end = false, isActiveMatch, badge }
             ? isActiveMatch(location)
             : isActive
         return cx(
-          'group flex items-center gap-3 text-sm px-3 py-2 rounded-xl transition-all duration-200 outline-none',
+          'group flex items-center gap-3 text-sm px-3 py-2.5 rounded-xl transition-all duration-200 outline-none',
           'focus-visible:ring-2 focus-visible:ring-recipzee-green/60 focus-visible:ring-offset-0',
           active
             ? 'bg-recipzee-green text-recipzee-dark font-semibold shadow-lg shadow-recipzee-green/20'
@@ -70,7 +70,7 @@ const NavItem = ({ to, icon: Icon, children, end = false, isActiveMatch, badge }
         return (
           <>
             <div className={cx(
-              'relative w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200',
+              'relative w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200',
               active
                 ? 'bg-recipzee-dark/20'
                 : 'bg-recipzee-card group-hover:bg-recipzee-green/10'
@@ -115,7 +115,7 @@ const FeedNavItem = ({ icon: Icon }) => {
       end
       onClick={handleClick}
       className={({ isActive }) => cx(
-        'group flex items-center gap-3 text-sm px-3 py-2 rounded-xl transition-all duration-200 outline-none',
+        'group flex items-center gap-3 text-sm px-3 py-2.5 rounded-xl transition-all duration-200 outline-none',
         'focus-visible:ring-2 focus-visible:ring-recipzee-green/60 focus-visible:ring-offset-0',
         isActive
           ? 'bg-recipzee-green text-recipzee-dark font-semibold shadow-lg shadow-recipzee-green/20'
@@ -126,7 +126,7 @@ const FeedNavItem = ({ icon: Icon }) => {
       {({ isActive }) => (
         <>
           <div className={cx(
-            'relative w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200',
+            'relative w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200',
             isActive
               ? 'bg-recipzee-dark/20'
               : 'bg-recipzee-card group-hover:bg-recipzee-green/10'
@@ -175,7 +175,7 @@ export const SidebarPanel = () => {
         </button>
 
         {authed ? (
-          <nav className="flex flex-col space-y-0.5" role="navigation" aria-label="Main">
+          <nav className="flex flex-col space-y-1" role="navigation" aria-label="Main">
             <FeedNavItem icon={Home} />
             <NavItem to="/explore-recipes" icon={Globe} end>Explore Recipes</NavItem>
             <NavItem to="/explore-chefs" icon={Users} end>Explore Chefs</NavItem>
