@@ -160,20 +160,21 @@ export const SidebarPanel = () => {
   const homeTarget = authed ? '/feed' : '/login'
 
   return (
-    <div className="flex h-full w-full flex-col justify-between p-6">
-      <div>
-        {/* Logo with icon - click reloads the page */}
-        <button
-          onClick={() => window.location.href = homeTarget}
-          aria-label="Recipzee Home"
-          title="Reload Recipzee"
-          className="flex items-center gap-3 mb-10 group cursor-pointer"
-        >
-          <span className="text-3xl font-bold text-recipzee-green tracking-tight">
-            Recipzee
-          </span>
-        </button>
+    <div className="flex h-full w-full flex-col p-6 overflow-hidden">
+      {/* Logo — always visible */}
+      <button
+        onClick={() => window.location.href = homeTarget}
+        aria-label="Recipzee Home"
+        title="Reload Recipzee"
+        className="flex items-center gap-3 mb-6 group cursor-pointer flex-shrink-0"
+      >
+        <span className="text-3xl font-bold text-recipzee-green tracking-tight">
+          Recipzee
+        </span>
+      </button>
 
+      {/* Nav — scrollable when content overflows */}
+      <div className="flex-1 overflow-y-auto min-h-0 -mr-2 pr-2">
         {authed ? (
           <nav className="flex flex-col space-y-1.5" role="navigation" aria-label="Main">
             <FeedNavItem icon={Home} />
@@ -205,7 +206,7 @@ export const SidebarPanel = () => {
             </NavItem>
           </nav>
         ) : (
-          <div className="mt-10">
+          <div className="mt-4">
             <p className="mb-4 text-sm text-recipzee-subtle">
               Join Recipzee to create and save recipes
             </p>
@@ -219,8 +220,8 @@ export const SidebarPanel = () => {
         )}
       </div>
 
-      {/* Footer */}
-      <div className="pt-4 border-t border-recipzee-border">
+      {/* Footer — always visible */}
+      <div className="pt-4 mt-4 border-t border-recipzee-border flex-shrink-0">
         <div className="text-xs text-recipzee-subtle">
           &copy; {new Date().getFullYear()} Recipzee
         </div>
