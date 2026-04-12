@@ -89,10 +89,16 @@ export default function SocialLoginButtons({ onSuccess, onError, disabled = fals
             const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
               headers: { Authorization: `Bearer ${response.access_token}` }
             })
-            await userInfoRes.json() // Validate the token is still live
+            const userInfo = await userInfoRes.json()
+            console.log('[Recipzee] Google userInfo status:', userInfoRes.status, userInfo)
+
+            if (!userInfoRes.ok) {
+              throw new Error('Google token validation failed')
+            }
 
             // POST the access token to our backend; backend exchanges it with Google
             // and returns a Recipzee JWT + user object
+            console.log('[Recipzee] Posting to backend:', `${API_BASE_URL}/api/Auth/external`)
             const authRes = await fetch(`${API_BASE_URL}/api/Auth/external`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -104,6 +110,7 @@ export default function SocialLoginButtons({ onSuccess, onError, disabled = fals
             })
 
             const data = await authRes.json()
+            console.log('[Recipzee] Backend response status:', authRes.status, data)
 
             if (!authRes.ok) {
               throw new Error(data.message || 'Authentication failed')
@@ -111,6 +118,7 @@ export default function SocialLoginButtons({ onSuccess, onError, disabled = fals
 
             onSuccess?.(data)
           } catch (err) {
+            console.error('[Recipzee] Google auth error:', err)
             onError?.(err.message || 'Google authentication failed')
           }
           setLoading(false)
